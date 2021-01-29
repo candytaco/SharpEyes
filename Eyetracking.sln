@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.1321
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Eyetracking", "Eyetracking\Eyetracking.csproj", "{74E3FF5A-9A62-46D2-AD03-E3CBCA9C0FB3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{74E3FF5A-9A62-46D2-AD03-E3CBCA9C0FB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74E3FF5A-9A62-46D2-AD03-E3CBCA9C0FB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74E3FF5A-9A62-46D2-AD03-E3CBCA9C0FB3}.Debug|x64.ActiveCfg = Debug|x64
+		{74E3FF5A-9A62-46D2-AD03-E3CBCA9C0FB3}.Debug|x64.Build.0 = Debug|x64
+		{74E3FF5A-9A62-46D2-AD03-E3CBCA9C0FB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74E3FF5A-9A62-46D2-AD03-E3CBCA9C0FB3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{74E3FF5A-9A62-46D2-AD03-E3CBCA9C0FB3}.Release|x64.ActiveCfg = Release|x64
+		{74E3FF5A-9A62-46D2-AD03-E3CBCA9C0FB3}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E90E98AB-149B-4691-8AE8-78C2DA6FA0FC}
+	EndGlobalSection
+EndGlobal
