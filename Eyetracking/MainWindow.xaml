@@ -41,6 +41,9 @@
 			<ToggleButton Height="21.3333333333333" VerticalAlignment="Top" Width="Auto" Name="drawWindowButton" Click="DrawWindowButton_Click">Draw window
 				<ToggleButton.ToolTip>Draw search window.</ToggleButton.ToolTip>
 			</ToggleButton>
+			<ToggleButton Height="21.3333333333333" VerticalAlignment="Top" Width="Auto" Name="movePupilEllipsedButton" Click="MovePupilEllipsedButton_Click">Move pupil
+				<ToggleButton.ToolTip>Move found pupil location.</ToggleButton.ToolTip>
+			</ToggleButton>
 		</ToolBar>
 		<StatusBar Margin="0,0,0,0" VerticalAlignment="Bottom" Height="21">
 			<StatusBar.ItemsPanel>
@@ -78,7 +81,7 @@
 			</StatusBarItem>
 			<Separator Grid.Column="7"/>
 			<StatusBarItem Grid.Column="8">
-				<ProgressBar Height="10" Width="200"/>
+				<ProgressBar Name="progressBar" Height="10" Width="200" Minimum="0" Maximum="100"/>
 			</StatusBarItem>
 			<StatusBarItem Grid.Column="9">
 				<TextBlock Name="StatusText">Current Status</TextBlock>
@@ -89,8 +92,8 @@
 			<MediaElement Name="VideoMediaElement" Margin="0,0,0,0" LoadedBehavior="Manual" ScrubbingEnabled="True" UnloadedBehavior="Manual" MediaEnded="VideoMediaElement_MediaEnded" Height="300" Width="400"/>
 			<Ellipse Name="PupilEllipse" Fill="Transparent" HorizontalAlignment="Left" Height="32" Margin="0" 
 					 Stroke="#FF00BAFF" VerticalAlignment="Top" Width="32" RenderTransformOrigin="0.5,0.5" StrokeThickness="3"/>
-			<Rectangle Name="SearchWindowRectangle" Fill="Transparent" HorizontalAlignment="Left" Height="182" Margin="0" 
-					   Stroke="#FF87CA00" VerticalAlignment="Top" Width="251" StrokeThickness="3" RenderTransformOrigin="0.5,0.5"/>
+			<Rectangle Name="SearchWindowRectangle" Fill="Transparent" HorizontalAlignment="Left" Height="300" Margin="0" 
+					   Stroke="#FF87CA00" VerticalAlignment="Top" Width="400" StrokeThickness="3" RenderTransformOrigin="0.5,0.5"/>
 		</Canvas>
 		<Button Name="PlayPauseButton" Content="Play" HorizontalAlignment="Left" Margin="179,377,0,0" VerticalAlignment="Top" Width="45" Click="PlayPauseButton_Click"/>
 		<Button Name="PreviousFrameButton" Content="&lt;" HorizontalAlignment="Left" Margin="154,377,0,0" VerticalAlignment="Top" Width="20" Click="PreviousFrameButton_Click"/>
@@ -99,5 +102,15 @@
 				MouseDown="VideoSlider_MouseDown" MouseUp="VideoSlider_MouseUp"
 				Thumb.DragCompleted="VideoSlider_DragCompleted" Thumb.DragStarted="VideoSlider_DragStarted"/>
 		<Label Name="VideoTimeLabel" Content="00:00:00;00" HorizontalAlignment="Left" HorizontalContentAlignment="Right" Margin="329,371,0,0" VerticalAlignment="Top" Width="76"/>
+		<TabControl HorizontalAlignment="Left" Height="380" Margin="419,54,0,0" VerticalAlignment="Top" Width="365">
+			<TabItem Header="TabItem">
+				<Grid Background="#FFE5E5E5">
+					<Button Name="ReadTimestampButton" Content="Read timestamps" HorizontalAlignment="Left" Margin="65,47,0,0" VerticalAlignment="Top" Width="Auto" Click="ReadTimestampButton_Click"/>
+				</Grid>
+			</TabItem>
+			<TabItem Header="TabItem">
+				<Grid Background="#FFE5E5E5"/>
+			</TabItem>
+		</TabControl>
 	</Grid>
 </Window>

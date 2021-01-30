@@ -1,24 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 using Microsoft.Win32;
 
-using OpenCvSharp;
-
 namespace Eyetracking
 {
+	public enum EditingState
+	{
+		None,
+		DrawingWindow,
+		MovingPupil
+	}
 
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
@@ -46,26 +40,22 @@ namespace Eyetracking
 		}
 
 		// video play related stuff
-		private string videoFileName = null;
-
-		private VideoCapture videoSource = null;
-
-		private int width = -1;
-		private int height = -1;
-		private int fps = -1;
-		private int frameCount = -1;
-		private double duration = -1.0;
+		private PupilFinder pupilFinder = null;
 
 		private bool isPlaying = false;
 		private DispatcherTimer timer;
 
 
 		// eyetracking setup related stuff
-		bool drawWindowMode = false;
-		bool isDrawingWindow = false;
+		private bool drawWindowMode = false;
+		private bool isDrawingWindow = false;
 		private System.Windows.Point mouseMoveStartPoint;
-		bool isMovingSearchWindow = false;
-		bool isMovingPupilEllipse = false;
+		private bool isMovingSearchWindow = false;
+		private bool isMovingPupilEllipse = false;
+		private bool isWindowManuallySet = false;
+
+		// data related stuff
+		private EditingState editingState = EditingState.None;
 
 		public bool IsPlaying
 		{
@@ -95,7 +85,7 @@ namespace Eyetracking
 		{
 			get
 			{
-				return !(videoFileName == null);
+				return !(pupilFinder.videoFileName == null);
 			}
 		}
 
@@ -114,8 +104,7 @@ namespace Eyetracking
 			};
 			if (openFileDialog.ShowDialog() == true)
 			{
-				videoFileName = openFileDialog.FileName;
-				LoadFile();
+				LoadFile(openFileDialog.FileName);
 			}
 		}
 
@@ -124,21 +113,22 @@ namespace Eyetracking
 
 		}
 
-		private void LoadFile()
+		public void SetStatus(string status = null)
 		{
-			videoSource = new VideoCapture(videoFileName);
-			width = (int)videoSource.Get(VideoCaptureProperties.FrameWidth);
-			height = (int)videoSource.Get(VideoCaptureProperties.FrameHeight);
-			fps = (int)videoSource.Get(VideoCaptureProperties.Fps);
-			frameCount = (int)videoSource.Get(VideoCaptureProperties.FrameCount);
-			duration = frameCount / fps;
+			StatusText.Text = status ?? "Idle";
+		}
+
+		private void LoadFile(string videoFileName)
+		{
+			SetStatus("Loading");
+			pupilFinder = new HoughPupilFinder(videoFileName);
 
 			VideoNameStatus.Text = videoFileName;
-			VideoDurationStatus.Text = FramesToDurationString(frameCount, fps);
-			VideoSizeStatus.Text = string.Format("{0}x{1}", width, height);
-			FPSStatus.Text = string.Format("{0:##} fps", fps);
+			VideoDurationStatus.Text = FramesToDurationString(pupilFinder.frameCount, pupilFinder.fps);
+			VideoSizeStatus.Text = string.Format("{0}x{1}", pupilFinder.width, pupilFinder.height);
+			FPSStatus.Text = string.Format("{0:##} fps", pupilFinder.fps);
 
-			MillisecondsPerFrame = 1000 / fps;
+			MillisecondsPerFrame = 1000 / pupilFinder.fps;
 			timePerFrame = TimeSpan.FromMilliseconds(MillisecondsPerFrame);
 
 			timer = new DispatcherTimer();
@@ -151,6 +141,7 @@ namespace Eyetracking
 			VideoMediaElement.Position = TimeSpan.Zero;
 			VideoMediaElement.Pause();
 			isPlaying = false;
+			SetStatus();
 		}
 
 		private void PlayPauseButton_Click(object sender, RoutedEventArgs e)
@@ -258,6 +249,8 @@ namespace Eyetracking
 
 		private void Canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
 		{
+			if (isDrawingWindow) isWindowManuallySet = true;
+
 			isDrawingWindow = false;
 			isMovingPupilEllipse = false;
 			drawWindowMode = false;
@@ -310,6 +303,17 @@ namespace Eyetracking
 		private void LoadSavedDataMenuItem_Click(object sender, RoutedEventArgs e)
 		{
 
+		}
+
+		private void MovePupilEllipsedButton_Click(object sender, RoutedEventArgs e)
+		{
+
+		}
+
+		private void ReadTimestampButton_Click(object sender, RoutedEventArgs e)
+		{
+			if (pupilFinder != null)
+				pupilFinder.ParseTimeStamps(progressBar, SetStatus);
 		}
 	}
 
