@@ -127,6 +127,7 @@
     </ApplicationDefinition>
     <Compile Include="HoughPupilFinder.cs" />
     <Compile Include="PupilFinder.cs" />
+    <Compile Include="TemplatePupilFinder.cs" />
     <Compile Include="Templates.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

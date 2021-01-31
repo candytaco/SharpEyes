@@ -125,7 +125,7 @@ namespace Eyetracking
 		private void LoadFile(string videoFileName)
 		{
 			SetStatus("Loading");
-			pupilFinder = new HoughPupilFinder(videoFileName, progressBar, SetStatus, this.UpdateFrameWithPupil);
+			pupilFinder = new TemplatePupilFinder(videoFileName, progressBar, SetStatus, this.UpdateFrameWithPupil);
 
 			VideoNameStatus.Text = videoFileName;
 			VideoDurationStatus.Text = FramesToDurationString(pupilFinder.frameCount, pupilFinder.fps);
