@@ -105,12 +105,19 @@
 		<TabControl HorizontalAlignment="Left" Height="380" Margin="419,54,0,0" VerticalAlignment="Top" Width="365">
 			<TabItem Header="TabItem">
 				<Grid Background="#FFE5E5E5">
-					<Button Name="ReadTimestampButton" Content="Read timestamps" HorizontalAlignment="Left" Margin="65,47,0,0" VerticalAlignment="Top" Width="Auto" Click="ReadTimestampButton_Click"/>
+					<Button Name="ReadTimestampButton" Content="Read timestamps" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="Auto" Click="ReadTimestampButton_Click"/>
+					<Button Name="FindPupilsButton"  Content="Find Pupils" HorizontalAlignment="Left" Margin="10,34,0,0" VerticalAlignment="Top" Width="Auto" Click="FindPupilsButton_Click"/>
 				</Grid>
 			</TabItem>
 			<TabItem Header="TabItem">
 				<Grid Background="#FFE5E5E5"/>
 			</TabItem>
 		</TabControl>
+		<Label Content="X" HorizontalAlignment="Left" Margin="10,380,0,0" VerticalAlignment="Top"/>
+		<Label Content="Y" HorizontalAlignment="Left" Margin="33,380,0,0" VerticalAlignment="Top"/>
+		<Label Content="Radius" HorizontalAlignment="Left" Margin="54,380,0,0" VerticalAlignment="Top"/>
+		<TextBlock Name="XPositionText" HorizontalAlignment="Left" Margin="14,406,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" TextAlignment="Center"/>
+		<TextBlock Name="YPositionText" HorizontalAlignment="Left" Margin="38,406,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" TextAlignment="Center"/>
+		<TextBlock Name="RadiusText" HorizontalAlignment="Left" Margin="73,406,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" TextAlignment="Center"/>
 	</Grid>
 </Window>

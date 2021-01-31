@@ -1,15 +1,31 @@
-﻿using System.IO;
-using System.ComponentModel;
+﻿using NumSharp;
 using OpenCvSharp;
-
-using NumSharp;
+using System.ComponentModel;
+using System.Windows.Controls;
+using System.Windows.Shapes;
+using System.Windows.Threading;
 using Num = NumSharp.np;
-using System.Windows;
 
 namespace Eyetracking
 {
-	internal abstract class PupilFinder
+	/// <summary>
+	/// Delegate for SetStatus from the main window
+	/// </summary>
+	/// <param name="status"></param>
+	public delegate void SetStatus(string status = null);
+
+	/// <summary>
+	/// Delegate for things to do when a the pupil is found on a frame
+	/// </summary>
+	/// <param name="time">time as 0-1 fraction of total time</param>
+	/// <param name="X">X center of pupil</param>
+	/// <param name="Y">Y center of pupil</param>
+	/// <param name="radius">Pupil radius</param>
+	public delegate void FrameProcessed(double time, double X, double Y, double radius);
+
+	internal abstract class PupilFinder : DispatcherObject
 	{
+		// video information
 		public string videoFileName { get; private set; }
 		protected VideoCapture videoSource = null;
 
@@ -19,25 +35,43 @@ namespace Eyetracking
 		public int frameCount { get; private set; } = -1;
 		public double duration { get; private set; } = -1.0;
 
-		public int currentFrameNumber { get; private set; } = 0;
+		// parsing video stuff
+		private int _currentFrameNumber = 0;
+		public int CurrentFrameNumber
+		{
+			get { return _currentFrameNumber; }
+			protected set
+			{
+				_currentFrameNumber = value;
+				videoSource.Set(VideoCaptureProperties.PosFrames, value);
+			}
+		}
+		public Mat cvFrame { get; protected set; } = null;
+		protected Mat[] colorChannels = new Mat[3];
+		protected Mat red;
+		public bool isTimestampParsed { get; private set; } = false;
 
-		public Mat currentFrameMatrix { get; private set; } = null;
-
-		public NDArray pupilLocations { get; private set; } = null;
-
+		// pupil finding stuff
+		public int left, right, top, bottom;    // window within which to look for pupil
+		public int minRadius = 6;               // min/max pupil sizes
+		public int maxRadius = 24;
+		public int nThreads = 1;
+		public NDArray pupilLocations { get; protected set; } = null;
 		private NDArray timeStamps = null;
+		protected Mat grayFrame = new Mat();
 
-		private NDArray frame = null;
+		// UI delegates/references
+		protected SetStatus setStatus { get; private set; }
+		protected System.Windows.Controls.ProgressBar progressBar;
+		protected FrameProcessed updateFrame;
 
-		private Mat cvFrame = null;
-		private Mat[] colorChannels = new Mat[3];
-		private Mat red;
-
-		protected static Mat[] DIGIT_TEMPLATES = new Mat[10];
-
-		public PupilFinder(string videoFileName)
+		public PupilFinder(string videoFileName, System.Windows.Controls.ProgressBar progressBar, 
+						   SetStatus setStatus, FrameProcessed updateFrame)
 		{
 			this.videoFileName = videoFileName;
+			this.progressBar = progressBar;
+			this.setStatus = setStatus;
+			this.updateFrame = updateFrame;
 			videoSource = new VideoCapture(videoFileName);
 			width = (int)videoSource.Get(VideoCaptureProperties.FrameWidth);
 			height = (int)videoSource.Get(VideoCaptureProperties.FrameHeight);
@@ -48,38 +82,53 @@ namespace Eyetracking
 			pupilLocations = Num.zeros((frameCount, 3), NPTypeCode.Double);
 			timeStamps = Num.zeros((frameCount, 4), NPTypeCode.Int32);
 
-			frame = Num.zeros((height, width));
 			cvFrame = new Mat();
 			for (int i = 0; i < 3; i++)
+			{
 				colorChannels[i] = new Mat();
+			}
+
 			red = colorChannels[0];
+
+			top = 0;
+			left = 0;
+			right = width;
+			bottom = height;
 		}
 
 		/// <summary>
 		/// Find pupils in some set of frames
 		/// </summary>
 		/// <param name="Frames"> number of frames from current to find pupils for </param>
-		abstract public void FindPupils(int Frames);
-
-		public delegate void SetStatus(string status = null);
-
-		public void ParseTimeStamps(System.Windows.Controls.ProgressBar progressBar, SetStatus setStatus)
+		public virtual void FindPupils(int Frames)
 		{
-			setStatus("Parsing time stamps");
-			BackgroundWorker worker = new BackgroundWorker();
-			worker.WorkerReportsProgress = true;
+			if (!isTimestampParsed)
+				ParseTimeStamps();
+		}
+
+
+		/// <summary>
+		/// Parses timestamps from the video
+		/// </summary>
+		public void ParseTimeStamps()
+		{
+			setStatus("Parsing timestamps 0/100%");
+			BackgroundWorker worker = new BackgroundWorker
+			{
+				WorkerReportsProgress = true
+			};
 			worker.DoWork += delegate (object sender, DoWorkEventArgs args)
 			{
 				for (int i = 0; i < frameCount; i++)
 				{
 					videoSource.Read(cvFrame);
 					Cv2.Split(cvFrame, out colorChannels);
-					timeStamps[i, 0] = Templates.MatchDigit(colorChannels[2][195, 207, 7, 15]) * 10 + Templates.MatchDigit(colorChannels[2][195, 207, 15, 23]);		// hours
-					timeStamps[i, 1] = Templates.MatchDigit(colorChannels[2][195, 207, 35, 43]) * 10 + Templates.MatchDigit(colorChannels[2][195, 207, 43, 51]);	// minutes
+					timeStamps[i, 0] = Templates.MatchDigit(colorChannels[2][195, 207, 7, 15]) * 10 + Templates.MatchDigit(colorChannels[2][195, 207, 15, 23]);     // hours
+					timeStamps[i, 1] = Templates.MatchDigit(colorChannels[2][195, 207, 35, 43]) * 10 + Templates.MatchDigit(colorChannels[2][195, 207, 43, 51]);    // minutes
 
-					if (Templates.SecondsMarkerMatch(colorChannels[0][195, 207, 103, 111]))	// check for seconds marker location
+					if (Templates.SecondsMarkerMatch(colorChannels[0][195, 207, 103, 111])) // check for seconds marker location
 					{
-						timeStamps[i, 2] = Templates.MatchDigit(colorChannels[2][195, 207, 67, 75]);			// a single seconds digit
+						timeStamps[i, 2] = Templates.MatchDigit(colorChannels[2][195, 207, 67, 75]);            // a single seconds digit
 						timeStamps[i, 3] = Templates.MatchDigit(colorChannels[2][195, 207, 79, 87]) * 100 +
 										   Templates.MatchDigit(colorChannels[2][195, 207, 87, 95]) * 10 +
 										   Templates.MatchDigit(colorChannels[2][195, 207, 95, 103]);
@@ -101,6 +150,7 @@ namespace Eyetracking
 
 			worker.ProgressChanged += delegate (object sender, ProgressChangedEventArgs e)
 			{
+				setStatus(string.Format("Parsing timestamps {0}/100%", e.ProgressPercentage));
 				progressBar.Value = e.ProgressPercentage;
 			};
 
@@ -108,9 +158,55 @@ namespace Eyetracking
 			{
 				progressBar.Value = 0;
 				setStatus();
+				// seek to beginning
+				CurrentFrameNumber = 0;
+				isTimestampParsed = true;
 			};
 
 			worker.RunWorkerAsync();
+
+		}
+
+		/// <summary>
+		/// Read the next frame and increment the internal counter
+		/// </summary>
+		/// <returns></returns>
+		protected bool ReadFrame()
+		{
+			bool success = videoSource.Read(cvFrame);
+			if (!success)
+			{
+				return success;
+			}
+
+			_currentFrameNumber++;
+			return success;
+		}
+
+		/// <summary>
+		/// Reads the next frame and makes it grayscale
+		/// </summary>
+		/// <returns></returns>
+		protected bool ReadGrayscaleFrame()
+		{
+			bool success = ReadFrame();
+			if (success)
+			{
+				Cv2.CvtColor(cvFrame, grayFrame, ColorConversionCodes.RGB2GRAY);
+			}
+
+			return success;
+		}
+
+		public void SaveTimestamps(string fileName)
+		{
+			Num.save(fileName, timeStamps);
+		}
+
+		public void LoadTimestamps(string fileName)
+		{
+			timeStamps = Num.load(fileName);
+			isTimestampParsed = true;
 		}
 	}
 }

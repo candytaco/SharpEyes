@@ -44,6 +44,7 @@ namespace Eyetracking
 
 		private bool isPlaying = false;
 		private DispatcherTimer timer;
+		public double videoScaleFactor { get; private set; }	// scaling fractor from video size to display size
 
 
 		// eyetracking setup related stuff
@@ -92,6 +93,9 @@ namespace Eyetracking
 		public MainWindow()
 		{
 			InitializeComponent();
+
+			Canvas.SetLeft(SearchWindowRectangle, 0);
+			Canvas.SetTop(SearchWindowRectangle, 0);
 		}
 
 		private void OpenFileMenuItem_Click(object sender, RoutedEventArgs e)
@@ -110,7 +114,7 @@ namespace Eyetracking
 
 		private void SaveFileMenuItem_Click(object sender, RoutedEventArgs e)
 		{
-
+			SaveTimestamps();
 		}
 
 		public void SetStatus(string status = null)
@@ -121,12 +125,14 @@ namespace Eyetracking
 		private void LoadFile(string videoFileName)
 		{
 			SetStatus("Loading");
-			pupilFinder = new HoughPupilFinder(videoFileName);
+			pupilFinder = new HoughPupilFinder(videoFileName, progressBar, SetStatus, this.UpdateFrameWithPupil);
 
 			VideoNameStatus.Text = videoFileName;
 			VideoDurationStatus.Text = FramesToDurationString(pupilFinder.frameCount, pupilFinder.fps);
 			VideoSizeStatus.Text = string.Format("{0}x{1}", pupilFinder.width, pupilFinder.height);
 			FPSStatus.Text = string.Format("{0:##} fps", pupilFinder.fps);
+
+			videoScaleFactor = VideoMediaElement.Width / pupilFinder.width;
 
 			MillisecondsPerFrame = 1000 / pupilFinder.fps;
 			timePerFrame = TimeSpan.FromMilliseconds(MillisecondsPerFrame);
@@ -302,7 +308,7 @@ namespace Eyetracking
 
 		private void LoadSavedDataMenuItem_Click(object sender, RoutedEventArgs e)
 		{
-
+			LoadTimestamps();
 		}
 
 		private void MovePupilEllipsedButton_Click(object sender, RoutedEventArgs e)
@@ -313,7 +319,56 @@ namespace Eyetracking
 		private void ReadTimestampButton_Click(object sender, RoutedEventArgs e)
 		{
 			if (pupilFinder != null)
-				pupilFinder.ParseTimeStamps(progressBar, SetStatus);
+				pupilFinder.ParseTimeStamps();
+		}
+
+		private void FindPupilsButton_Click(object sender, RoutedEventArgs e)
+		{
+			double l = Canvas.GetLeft(SearchWindowRectangle);
+			pupilFinder.left = (int)(Canvas.GetLeft(SearchWindowRectangle) / canvas.Width * pupilFinder.width);
+			pupilFinder.right = (int)(SearchWindowRectangle.Width / canvas.Width * pupilFinder.width) + pupilFinder.left;
+			pupilFinder.top = (int)(Canvas.GetTop(SearchWindowRectangle) / canvas.Height * pupilFinder.height);
+			pupilFinder.bottom = (int)(SearchWindowRectangle.Height / canvas.Height * pupilFinder.height) + pupilFinder.top;
+			pupilFinder.FindPupils(100);
+		}
+
+		private void LoadTimestamps()
+		{
+			OpenFileDialog openFileDialog = new OpenFileDialog
+			{
+				Filter = "Numpy file (*.npy)|*.npy"
+			};
+			if (openFileDialog.ShowDialog() == true)
+			{
+				pupilFinder.LoadTimestamps(openFileDialog.FileName);
+			}
+		}
+
+		private void SaveTimestamps()
+		{
+			SaveFileDialog saveFileDialog = new SaveFileDialog
+			{
+				Filter = "Numpy file (*.npy)|*.npy"
+			};
+			if (saveFileDialog.ShowDialog() == true)
+			{
+				pupilFinder.SaveTimestamps(saveFileDialog.FileName);
+			}
+		}
+
+		public void UpdateFrameWithPupil(double time, double X, double Y, double radius)
+		{
+			VideoMediaElement.Position = TimeSpan.FromSeconds(time * VideoMediaElement.NaturalDuration.TimeSpan.TotalSeconds);
+			PupilEllipse.Height = radius * 2 * videoScaleFactor;
+			PupilEllipse.Width = PupilEllipse.Height;
+			Canvas.SetLeft(PupilEllipse, X * videoScaleFactor);
+			Canvas.SetTop(PupilEllipse, Y * videoScaleFactor);
+
+			XPositionText.Text = string.Format("{0:.#}", X);
+			YPositionText.Text = string.Format("{0:.#}", Y);
+			RadiusText.Text = string.Format("{0:.#}", radius);
+
+			UpdateTimeDisplay(null, null);
 		}
 	}
 
