@@ -1,7 +1,12 @@
 ﻿using NumSharp;
 using OpenCvSharp;
+using OpenCvSharp.Extensions;
 using System.ComponentModel;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using Num = NumSharp.np;
@@ -59,6 +64,12 @@ namespace Eyetracking
 		public NDArray pupilLocations { get; protected set; } = null;
 		private NDArray timeStamps = null;
 		protected Mat grayFrame = new Mat();
+		protected Mat filteringFrame = new Mat();	// helper for filtering
+
+		public int bilateralBlurSize = 0;
+		public int medianBlurSize = 0;
+		public double bilateralSigmaColor = 0;
+		public double bilateralSigmaSpace = 0;
 
 		// UI delegates/references
 		protected SetStatus setStatus { get; private set; }
@@ -196,6 +207,41 @@ namespace Eyetracking
 			}
 
 			return success;
+		}
+
+		protected void FilterCurrentFrame()
+		{
+			if (bilateralBlurSize > 0)
+			{
+				filteringFrame = grayFrame.BilateralFilter(bilateralBlurSize, bilateralSigmaColor, bilateralSigmaSpace);
+				filteringFrame.CopyTo(grayFrame);
+				filteringFrame = new Mat();
+			}
+			if (medianBlurSize > 1)
+			{
+				filteringFrame = grayFrame.MedianBlur(medianBlurSize);
+				filteringFrame.CopyTo(grayFrame);
+				filteringFrame = new Mat();
+			}
+		}
+
+		public BitmapImage GetFrameForDisplay()
+		{
+			// read the current frame, but we do not increment the counter
+			int currentFrameNumber = CurrentFrameNumber;
+			ReadGrayscaleFrame();
+			CurrentFrameNumber = currentFrameNumber;
+			FilterCurrentFrame();
+
+			MemoryStream memory = new MemoryStream();
+			grayFrame.ToBitmap().Save(memory, ImageFormat.Bmp);
+			memory.Position = 0;
+			BitmapImage image = new BitmapImage();
+			image.BeginInit();
+			image.StreamSource = memory;
+			image.CacheOption = BitmapCacheOption.OnLoad;
+			image.EndInit();
+			return image;
 		}
 
 		public void SaveTimestamps(string fileName)

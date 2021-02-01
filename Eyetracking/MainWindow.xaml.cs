@@ -329,7 +329,7 @@ namespace Eyetracking
 			pupilFinder.right = (int)(SearchWindowRectangle.Width / canvas.Width * pupilFinder.width) + pupilFinder.left;
 			pupilFinder.top = (int)(Canvas.GetTop(SearchWindowRectangle) / canvas.Height * pupilFinder.height);
 			pupilFinder.bottom = (int)(SearchWindowRectangle.Height / canvas.Height * pupilFinder.height) + pupilFinder.top;
-			pupilFinder.FindPupils(100);
+			pupilFinder.FindPupils(FramesToProcessPicker.Value.Value);
 		}
 
 		private void LoadTimestamps()
@@ -364,11 +364,33 @@ namespace Eyetracking
 			Canvas.SetLeft(PupilEllipse, X * videoScaleFactor);
 			Canvas.SetTop(PupilEllipse, Y * videoScaleFactor);
 
-			XPositionText.Text = string.Format("{0:.#}", X);
-			YPositionText.Text = string.Format("{0:.#}", Y);
-			RadiusText.Text = string.Format("{0:.#}", radius);
+			XPositionText.Text = string.Format("X: {0:.#}", X);
+			YPositionText.Text = string.Format("Y: {0:.#}", Y);
+			RadiusText.Text = string.Format("Radius: {0:.#}", radius);
 
 			UpdateTimeDisplay(null, null);
+		}
+
+		private void ImageFilterValuesChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+		{
+			if (pupilFinder == null) return;
+			pupilFinder.bilateralBlurSize = BilateralBlurSizePicker.Value.Value;
+			pupilFinder.bilateralSigmaColor = BilateralSigmaColorPicker.Value.Value;
+			pupilFinder.bilateralSigmaSpace = BilateralSigmaSpacePicker.Value.Value;
+			pupilFinder.medianBlurSize = MedianBlurSizePicker.Value.Value;
+
+			FilterPreviewImage.Source = pupilFinder.GetFrameForDisplay();
+		}
+
+		private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			if (SettingsTabs.SelectedIndex == 0)
+				FilterPreviewImage.Visibility = Visibility.Hidden;
+			else
+			{
+				FilterPreviewImage.Visibility = Visibility.Visible;
+				ImageFilterValuesChanged(null, null);
+			}
 		}
 	}
 

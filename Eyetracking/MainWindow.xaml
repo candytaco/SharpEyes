@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:local="clr-namespace:Eyetracking"
         mc:Ignorable="d"
         Title="Eyetracking" Height="500" Width="800">
@@ -90,6 +91,9 @@
 		<Canvas Name="canvas" HorizontalAlignment="Left" Margin="4,52,0,0" VerticalAlignment="Top" Width="400" Height="300" Background="Transparent" 
 				MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseMove="Canvas_MouseMove" MouseLeftButtonUp="Canvas_MouseLeftButtonUp">
 			<MediaElement Name="VideoMediaElement" Margin="0,0,0,0" LoadedBehavior="Manual" ScrubbingEnabled="True" UnloadedBehavior="Manual" MediaEnded="VideoMediaElement_MediaEnded" Height="300" Width="400"/>
+			
+			<Image Name="FilterPreviewImage" Margin="0,0,0,0" Width="400" Height="300"/>
+			
 			<Ellipse Name="PupilEllipse" Fill="Transparent" HorizontalAlignment="Left" Height="32" Margin="0" 
 					 Stroke="#FF00BAFF" VerticalAlignment="Top" Width="32" RenderTransformOrigin="0.5,0.5" StrokeThickness="3"/>
 			<Rectangle Name="SearchWindowRectangle" Fill="Transparent" HorizontalAlignment="Left" Height="300" Margin="0" 
@@ -102,22 +106,38 @@
 				MouseDown="VideoSlider_MouseDown" MouseUp="VideoSlider_MouseUp"
 				Thumb.DragCompleted="VideoSlider_DragCompleted" Thumb.DragStarted="VideoSlider_DragStarted"/>
 		<Label Name="VideoTimeLabel" Content="00:00:00;00" HorizontalAlignment="Left" HorizontalContentAlignment="Right" Margin="329,371,0,0" VerticalAlignment="Top" Width="76"/>
-		<TabControl HorizontalAlignment="Left" Height="380" Margin="419,54,0,0" VerticalAlignment="Top" Width="365">
-			<TabItem Header="TabItem">
+		<TabControl Name="SettingsTabs" HorizontalAlignment="Left" Height="380" Margin="419,54,0,0" VerticalAlignment="Top" Width="365" SelectionChanged="TabControl_SelectionChanged">
+			<TabItem Header="Pupil Finding">
 				<Grid Background="#FFE5E5E5">
 					<Button Name="ReadTimestampButton" Content="Read timestamps" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="Auto" Click="ReadTimestampButton_Click"/>
 					<Button Name="FindPupilsButton"  Content="Find Pupils" HorizontalAlignment="Left" Margin="10,34,0,0" VerticalAlignment="Top" Width="Auto" Click="FindPupilsButton_Click"/>
+
+					<GroupBox Header="Pupil finder type" HorizontalAlignment="Left" Height="100" Margin="182,11,0,0" VerticalAlignment="Top" Width="153">
+						<Grid  Margin="0">
+							<RadioButton Content="Template" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+							<RadioButton Content="Hough Circles" HorizontalAlignment="Left" Margin="10,31,0,0" VerticalAlignment="Top"/>
+						</Grid>
+					</GroupBox>
+
+					<xctk:IntegerUpDown Name="FramesToProcessPicker" Value="180" Increment="1" Minimum="1" Height="24" Margin="10,57,263.2,270.2"/>
 				</Grid>
 			</TabItem>
-			<TabItem Header="TabItem">
-				<Grid Background="#FFE5E5E5"/>
+			<TabItem Header="Image Pre-filtering">
+				<Grid Background="#FFE5E5E5">
+					<xctk:IntegerUpDown x:Name="BilateralBlurSizePicker" Value="0" Increment="1" Minimum="0" Maximum="50" Height="24" Margin="104,15,169.2,312.2" ValueChanged="ImageFilterValuesChanged"/>
+					<xctk:IntegerUpDown x:Name="MedianBlurSizePicker" Value="1" Increment="2" Minimum="1" Maximum="51" Height="24" Margin="104,170,169.2,157.2" ValueChanged="ImageFilterValuesChanged"/>
+					<Label Content="Bilateral blur" HorizontalAlignment="Left" Margin="22,15,0,0" VerticalAlignment="Top"/>
+					<Label Content="Median blur" HorizontalAlignment="Left" Margin="25,168,0,0" VerticalAlignment="Top"/>
+					<xctk:IntegerUpDown x:Name="BilateralSigmaColorPicker" Value="100" Increment="1" Minimum="0" Maximum="255" Height="24" Margin="104,46,169.2,281.2" ValueChanged="ImageFilterValuesChanged"/>
+					<Label Content="Sigma Color" HorizontalAlignment="Left" Margin="24,46,0,0" VerticalAlignment="Top"/>
+					<xctk:IntegerUpDown x:Name="BilateralSigmaSpacePicker" Value="75" Increment="1" Minimum="0" Maximum="50" Height="24" Margin="104,77,169.2,250.2" ValueChanged="ImageFilterValuesChanged"/>
+					<Label Content="Sigma Space" HorizontalAlignment="Left" Margin="22,77,0,0" VerticalAlignment="Top"/>
+				</Grid>
 			</TabItem>
 		</TabControl>
-		<Label Content="X" HorizontalAlignment="Left" Margin="10,380,0,0" VerticalAlignment="Top"/>
-		<Label Content="Y" HorizontalAlignment="Left" Margin="33,380,0,0" VerticalAlignment="Top"/>
-		<Label Content="Radius" HorizontalAlignment="Left" Margin="54,380,0,0" VerticalAlignment="Top"/>
-		<TextBlock Name="XPositionText" HorizontalAlignment="Left" Margin="14,406,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" TextAlignment="Center"/>
-		<TextBlock Name="YPositionText" HorizontalAlignment="Left" Margin="38,406,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" TextAlignment="Center"/>
-		<TextBlock Name="RadiusText" HorizontalAlignment="Left" Margin="73,406,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" TextAlignment="Center"/>
+		<TextBlock Name="XPositionText" HorizontalAlignment="Left" Margin="16,393,0,0" TextWrapping="Wrap" Text="X: 0" VerticalAlignment="Top" TextAlignment="Center"/>
+		<TextBlock Name="YPositionText" HorizontalAlignment="Left" Margin="16,409,0,0" TextWrapping="Wrap" Text="Y: 0" VerticalAlignment="Top" TextAlignment="Center"/>
+		<TextBlock Name="RadiusText" HorizontalAlignment="Left" Margin="16,425,0,0" TextWrapping="Wrap" Text="Radius: 0" VerticalAlignment="Top" TextAlignment="Center"/>
+
 	</Grid>
 </Window>
