@@ -217,19 +217,30 @@ namespace Eyetracking
 		private void PreviousFrameButton_Click(object sender, RoutedEventArgs e)
 		{
 			if (VideoMediaElement.Position <= timePerFrame) return;
-
-			VideoMediaElement.Position = VideoMediaElement.Position - timePerFrame;
-			UpdateTimeDisplay(null, null);
-			UpdateDisplayedPupilPosition();
+			UpdateVideoTime(VideoMediaElement.Position - timePerFrame);
 		}
 
 		private void NextFrameButton_Click(object sender, RoutedEventArgs e)
 		{
-			if (VideoMediaElement.Position >= VideoMediaElement.NaturalDuration - timePerFrame) return;
+			Duration newPosition = VideoMediaElement.NaturalDuration - timePerFrame;
+			if (VideoMediaElement.Position >= newPosition) return;
+			UpdateVideoTime(newPosition);
+		}
 
-			VideoMediaElement.Position = VideoMediaElement.Position + timePerFrame;
+		/// <summary>
+		/// Aggregate handle for the multitude of UI controls that scrub through the video
+		/// </summary>
+		/// <param name="time">Duration representing position to set video do</param>
+		private void UpdateVideoTime(TimeSpan time)
+		{
+			VideoMediaElement.Position = time;
 			UpdateTimeDisplay(null, null);
 			UpdateDisplayedPupilPosition();
+			pupilFinder.CurrentFrameNumber = (int)(VideoSlider.Value / VideoSlider.Maximum * pupilFinder.frameCount);
+		}
+		private void UpdateVideoTime(Duration time)
+		{
+			UpdateVideoTime(time.TimeSpan);
 		}
 
 		private void UpdateTimeDisplay(object sender, EventArgs e)
@@ -260,18 +271,12 @@ namespace Eyetracking
 
 		private void VideoSlider_MouseUp(object sender, MouseButtonEventArgs e)
 		{
-			VideoMediaElement.Position = TimeSpan.FromSeconds(VideoSlider.Value / VideoSlider.Maximum * VideoMediaElement.NaturalDuration.TimeSpan.TotalSeconds);
-			pupilFinder.CurrentFrameNumber = (int)(VideoSlider.Value / VideoSlider.Maximum * pupilFinder.frameCount);
-			UpdateTimeDisplay(null, null);
-			UpdateDisplayedPupilPosition();
+			UpdateVideoTime(TimeSpan.FromSeconds(VideoSlider.Value / VideoSlider.Maximum * VideoMediaElement.NaturalDuration.TimeSpan.TotalSeconds));
 		}
 
 		private void VideoSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
 		{
-			VideoMediaElement.Position = TimeSpan.FromSeconds(VideoSlider.Value / VideoSlider.Maximum * VideoMediaElement.NaturalDuration.TimeSpan.TotalSeconds);
-			pupilFinder.CurrentFrameNumber = (int)(VideoSlider.Value / VideoSlider.Maximum * pupilFinder.frameCount);
-			UpdateTimeDisplay(null, null);
-			UpdateDisplayedPupilPosition();
+			UpdateVideoTime(TimeSpan.FromSeconds(VideoSlider.Value / VideoSlider.Maximum * VideoMediaElement.NaturalDuration.TimeSpan.TotalSeconds));
 		}
 
 		private void VideoSlider_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
