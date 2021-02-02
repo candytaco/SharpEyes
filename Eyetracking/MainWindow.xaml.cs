@@ -44,12 +44,11 @@ namespace Eyetracking
 
 		private bool isPlaying = false;
 		private DispatcherTimer timer;
-		public double videoScaleFactor { get; private set; }	// scaling fractor from video size to display size
+		public double videoScaleFactor { get; private set; }    // scaling fractor from video size to display size
 
 
 		// eyetracking setup related stuff
-		private bool drawWindowMode = false;
-		private bool isDrawingWindow = false;
+		private bool isEditingStarted = false;	// generic flag for indicating whether the window/pupil edit has begun with a mouseclick
 		private System.Windows.Point mouseMoveStartPoint;
 		private bool isMovingSearchWindow = false;
 		private bool isMovingPupilEllipse = false;
@@ -259,55 +258,102 @@ namespace Eyetracking
 
 		private void DrawWindowButton_Click(object sender, RoutedEventArgs e)
 		{
-			drawWindowMode = true;
-			drawWindowButton.IsChecked = true;
-			// todo: something to change appearance of button
+			if (editingState == EditingState.DrawingWindow)
+			{
+				editingState = EditingState.None;
+				movePupilEllipseButton.IsChecked = false;
+				drawWindowButton.IsChecked = false;
+				isEditingStarted = false;
+			}
+			else
+			{
+				editingState = EditingState.DrawingWindow;
+				movePupilEllipseButton.IsChecked = false;
+				drawWindowButton.IsChecked = true;
+			}
+		}
+
+		private void MovePupilEllipseButton_Click(object sender, RoutedEventArgs e)
+		{
+			if (editingState == EditingState.MovingPupil)
+			{
+				editingState = EditingState.None;
+				movePupilEllipseButton.IsChecked = false;
+				drawWindowButton.IsChecked = false;
+				isEditingStarted = false;
+			}
+			else
+			{
+				editingState = EditingState.MovingPupil;
+				movePupilEllipseButton.IsChecked = true;
+				drawWindowButton.IsChecked = false;
+			}
 		}
 
 		private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
 		{
 			mouseMoveStartPoint = e.GetPosition(canvas);
-			if (drawWindowMode)
+			switch (editingState)
 			{
-				if (mouseMoveStartPoint.X < 0 || mouseMoveStartPoint.Y < 0 || mouseMoveStartPoint.X > canvas.Width || mouseMoveStartPoint.Y > canvas.Height)
-					return;
+				case EditingState.DrawingWindow:
+					if (mouseMoveStartPoint.X < 0 || mouseMoveStartPoint.Y < 0 || mouseMoveStartPoint.X > canvas.Width || mouseMoveStartPoint.Y > canvas.Height)
+						return;
+					
+					Canvas.SetLeft(SearchWindowRectangle, mouseMoveStartPoint.X);
+					Canvas.SetTop(SearchWindowRectangle, mouseMoveStartPoint.Y);
 
-				isDrawingWindow = true;
-				Canvas.SetLeft(SearchWindowRectangle, mouseMoveStartPoint.X);
-				Canvas.SetTop(SearchWindowRectangle, mouseMoveStartPoint.Y);
-			}
-			else
-			{
-				PupilX = mouseMoveStartPoint.X / videoScaleFactor;
-				PupilY = mouseMoveStartPoint.Y / videoScaleFactor;
-				isMovingPupilEllipse = true;
+					isEditingStarted = true;
+					break;
+				case EditingState.MovingPupil:
+
+					PupilX = mouseMoveStartPoint.X / videoScaleFactor;
+					PupilY = mouseMoveStartPoint.Y / videoScaleFactor;
+					isMovingPupilEllipse = true;
+
+					isEditingStarted = true;
+					break;
+				default:
+					return;
 			}
 		}
 
 		private void Canvas_MouseMove(object sender, MouseEventArgs e)
 		{
-			if (isDrawingWindow)
+			if (!isEditingStarted) return;
+			switch (editingState)
 			{
-				// TODO: allow r->l,b->t movement
-				SearchWindowRectangle.Width = e.GetPosition(canvas).X - mouseMoveStartPoint.X;
-				SearchWindowRectangle.Height = e.GetPosition(canvas).Y - mouseMoveStartPoint.Y;
-			}
-			else if (isMovingPupilEllipse)
-			{
-				PupilX = e.GetPosition(canvas).X / videoScaleFactor;
-				PupilY = e.GetPosition(canvas).Y / videoScaleFactor;
-				UpdatePupilPositions();
+				case EditingState.DrawingWindow:
+					// TODO: allow r->l,b->t movement
+					SearchWindowRectangle.Width = e.GetPosition(canvas).X - mouseMoveStartPoint.X;
+					SearchWindowRectangle.Height = e.GetPosition(canvas).Y - mouseMoveStartPoint.Y;
+					break;
+				case EditingState.MovingPupil:
+					PupilX = e.GetPosition(canvas).X / videoScaleFactor;
+					PupilY = e.GetPosition(canvas).Y / videoScaleFactor;
+					UpdatePupilPositionData();
+					break;
+				default:
+					return;
 			}
 		}
 
 		private void Canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
 		{
-			if (isDrawingWindow) isWindowManuallySet = true;
+			isEditingStarted = false;
+			switch (editingState)
+			{
+				case EditingState.DrawingWindow:
+					isWindowManuallySet = true;
+					drawWindowButton.IsChecked = false;
+					break;
+				case EditingState.MovingPupil:
+					movePupilEllipseButton.IsChecked = false;
+					break;
+				default:
+					return;
+			}
 
-			isDrawingWindow = false;
-			isMovingPupilEllipse = false;
-			drawWindowMode = false;
-			drawWindowButton.IsChecked = false;
+			editingState = EditingState.None;
 		}
 
 		private void SearchWindowRectangle_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -356,11 +402,6 @@ namespace Eyetracking
 		private void LoadSavedDataMenuItem_Click(object sender, RoutedEventArgs e)
 		{
 			LoadTimestamps();
-		}
-
-		private void MovePupilEllipsedButton_Click(object sender, RoutedEventArgs e)
-		{
-
 		}
 
 		private void ReadTimestampButton_Click(object sender, RoutedEventArgs e)
@@ -442,12 +483,22 @@ namespace Eyetracking
 
 		private void Canvas_MouseWheel(object sender, MouseWheelEventArgs e)
 		{
-			double deltaRadius = (e.Delta > 0 ? 1 : -1);
-			double newSize = PupilRadius + deltaRadius;
-			if (((newSize < pupilFinder.minRadius) && e.Delta < 0) || ((newSize > pupilFinder.maxRadius) && e.Delta > 0))
-				return;
-			PupilRadius = newSize;
-			UpdatePupilPositions();
+			if (editingState == EditingState.MovingPupil)
+			{
+				double deltaRadius = (e.Delta > 0 ? 1 : -1);
+				double newSize = PupilRadius + deltaRadius;
+				if (((newSize < pupilFinder.minRadius) && e.Delta < 0) || ((newSize > pupilFinder.maxRadius) && e.Delta > 0))
+					return;
+				PupilRadius = newSize;
+				UpdatePupilPositionData();
+			}
+			else
+			{
+				if (e.Delta > 0)
+					NextFrameButton_Click(null, null);
+				else
+					PreviousFrameButton_Click(null, null);
+			}
 		}
 
 		private void RadiusPickerValuesChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -462,7 +513,7 @@ namespace Eyetracking
 		/// <summary>
 		/// Update found pupil positions after the values are manually adjusted
 		/// </summary>
-		private void UpdatePupilPositions()
+		private void UpdatePupilPositionData()
 		{
 			// TODO: send values to pupil finder and update
 		}

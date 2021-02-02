@@ -44,7 +44,7 @@
 			<ToggleButton Height="21.3333333333333" VerticalAlignment="Top" Width="Auto" Name="drawWindowButton" Click="DrawWindowButton_Click">Draw window
 				<ToggleButton.ToolTip>Draw search window.</ToggleButton.ToolTip>
 			</ToggleButton>
-			<ToggleButton Height="21.3333333333333" VerticalAlignment="Top" Width="Auto" Name="movePupilEllipsedButton" Click="MovePupilEllipsedButton_Click">Move pupil
+			<ToggleButton Height="21.3333333333333" VerticalAlignment="Top" Width="Auto" Name="movePupilEllipseButton" Click="MovePupilEllipseButton_Click">Move pupil
 				<ToggleButton.ToolTip>Move found pupil location.</ToggleButton.ToolTip>
 			</ToggleButton>
 		</ToolBar>
