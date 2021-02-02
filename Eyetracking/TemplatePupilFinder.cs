@@ -16,7 +16,7 @@ namespace Eyetracking
 		/// </summary>
 		private Mat[] templates;
 		private Mat[] matchResults;
-		private double bestCorrelationOnThisFrame;
+		private double bestCorrelationOnThisFrame = -1;
 
 		/// <summary>
 		/// Because there is an option to use a part of a frame as a template,
@@ -28,8 +28,8 @@ namespace Eyetracking
 		private Nullable<double> storedPupilSize = null;
 
 		public TemplatePupilFinder(string videoFileName, System.Windows.Controls.ProgressBar progressBar,
-								   SetStatus setStatus, FrameProcessed updateFrame)
-			: base(videoFileName, progressBar, setStatus, updateFrame)
+								   SetStatus setStatus, FrameProcessed updateFrame, FramesProcessed framesProcessed)
+			: base(videoFileName, progressBar, setStatus, updateFrame, framesProcessed)
 		{
 			MakeTemplates();
 		}
@@ -49,14 +49,23 @@ namespace Eyetracking
 
 		public void UseImageSegmentAsTemplate(int top, int bottom, int left, int right, double radius)
 		{
-			templates[0] = new Mat(bottom - top + 1, right - left + 1, MatType.CV_8UC1);
+			if (grayFrame.Width < 1)
+			{
+				int currentFrame = CurrentFrameNumber;
+				ReadGrayscaleFrame();
+				CurrentFrameNumber = currentFrame;
+			}
+			templates[0] = new Mat(bottom - top, right - left, MatType.CV_8UC1);
+			matchResults[0] = new Mat();
 			grayFrame[top, bottom, left, right].CopyTo(templates[0]);
+			templates[0].SaveImage("debug template.png");
 			storedPupilSize = radius;
 		}
 
 		public override void FindPupils(int Frames)
 		{
 			base.FindPupils(Frames);
+			DateTime start = DateTime.Now;
 			setStatus("Finding pupils 0/100%");
 			BackgroundWorker worker = new BackgroundWorker
 			{
@@ -69,23 +78,38 @@ namespace Eyetracking
 				for (int f = 0; f < Frames; f++)
 				{
 					ReadGrayscaleFrame();
-					Parallel.For(0, templates.Length, i =>
+					if (storedPupilSize == null)
 					{
-						Cv2.MatchTemplate(grayFrame[top, bottom, left, right], templates[i], matchResults[i], TemplateMatchModes.CCoeffNormed);
+						Parallel.For(0, templates.Length, i =>
+						{
+							Cv2.MatchTemplate(grayFrame[top, bottom, left, right], templates[i], matchResults[i], TemplateMatchModes.CCoeffNormed);
+							double minVal, maxVal;
+							Point minLocation, maxLocation;
+							matchResults[i].MinMaxLoc(out minVal, out maxVal, out minLocation, out maxLocation);
+							lock (templateLock)
+							{
+								if (maxVal > bestCorrelationOnThisFrame)
+								{
+									pupilLocations[CurrentFrameNumber, 0] = maxLocation.X + left + maxRadius;
+									pupilLocations[CurrentFrameNumber, 1] = maxLocation.Y + top + maxRadius;
+									pupilLocations[CurrentFrameNumber, 2] = i + minRadius;
+									bestCorrelationOnThisFrame = maxVal;
+								}
+							}
+						});
+
+						bestCorrelationOnThisFrame = -1;
+					}
+					else
+					{
+						Cv2.MatchTemplate(grayFrame[top, bottom, left, right], templates[0], matchResults[0], TemplateMatchModes.CCoeffNormed);
 						double minVal, maxVal;
 						Point minLocation, maxLocation;
-						matchResults[i].MinMaxLoc(out minVal, out maxVal, out minLocation, out maxLocation);
-						lock(templateLock)
-						{
-							if (maxVal > bestCorrelationOnThisFrame)
-							{
-								pupilLocations[CurrentFrameNumber, 0] = maxLocation.X + maxRadius + left;
-								pupilLocations[CurrentFrameNumber, 1] = maxLocation.Y + maxRadius + top;
-								pupilLocations[CurrentFrameNumber, 2] = i + minRadius;
-								bestCorrelationOnThisFrame = maxVal;
-							}
-						}
-					});
+						matchResults[0].MinMaxLoc(out minVal, out maxVal, out minLocation, out maxLocation);
+						pupilLocations[CurrentFrameNumber, 0] = maxLocation.X + left + templates[0].Width / 2;
+						pupilLocations[CurrentFrameNumber, 1] = maxLocation.Y + top + templates[0].Height / 2;
+						pupilLocations[CurrentFrameNumber, 2] = storedPupilSize;
+					}
 
 					this.Dispatcher.Invoke(() =>
 					{
@@ -107,7 +131,8 @@ namespace Eyetracking
 			worker.RunWorkerCompleted += delegate (object sender, RunWorkerCompletedEventArgs e)
 			{
 				progressBar.Value = 0;
-				setStatus();
+				setStatus(string.Format("Idle. {0} frames processed in {1:c}", Frames, DateTime.Now - start));
+				this.Dispatcher.Invoke(onFramesProcessed);
 			};
 
 			worker.RunWorkerAsync();

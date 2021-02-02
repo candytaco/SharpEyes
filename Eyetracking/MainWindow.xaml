@@ -6,7 +6,7 @@
 		xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:local="clr-namespace:Eyetracking"
         mc:Ignorable="d"
-        Title="Eyetracking" Height="500" Width="800">
+        Title="SharpEyes" Height="500" Width="800">
 	<Window.CommandBindings>
 		<CommandBinding x:Name="OpenEyetrackingDataCommand" Command="local:EyetrackerCommands.OpenEyetrackingData" Executed="OpenEyetrackingDataCommand_Executed"/>
 		<CommandBinding x:Name="OpenVideoCommand" Command="Open" Executed="OpenVideoCommand_Executed"/>
@@ -30,7 +30,9 @@
 			</MenuItem>
 			<MenuItem Header="_Edit" Name="editMenu">
 			</MenuItem>
-			<MenuItem Header="_Tools" Name="toolsMenu"></MenuItem>
+			<MenuItem Header="_Tools" Name="toolsMenu">
+				<MenuItem Header="_Load Debug Data" Name="loadDebugDataMenuItem" Click="LoadDebugDataMenuItem_Click"/>
+			</MenuItem>
 			<MenuItem Header="_Help" Name="helpMenu">
 			</MenuItem>
 		</Menu>
@@ -89,11 +91,11 @@
 			</StatusBarItem>
 		</StatusBar>
 		<Canvas Name="canvas" HorizontalAlignment="Left" Margin="4,52,0,0" VerticalAlignment="Top" Width="400" Height="300" Background="Transparent" 
-				MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseMove="Canvas_MouseMove" MouseLeftButtonUp="Canvas_MouseLeftButtonUp">
+				MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseMove="Canvas_MouseMove" MouseLeftButtonUp="Canvas_MouseLeftButtonUp" MouseWheel="Canvas_MouseWheel">
 			<MediaElement Name="VideoMediaElement" Margin="0,0,0,0" LoadedBehavior="Manual" ScrubbingEnabled="True" UnloadedBehavior="Manual" MediaEnded="VideoMediaElement_MediaEnded" Height="300" Width="400"/>
-			
+
 			<Image Name="FilterPreviewImage" Margin="0,0,0,0" Width="400" Height="300"/>
-			
+
 			<Ellipse Name="PupilEllipse" Fill="Transparent" HorizontalAlignment="Left" Height="32" Margin="0" 
 					 Stroke="#FF00BAFF" VerticalAlignment="Top" Width="32" RenderTransformOrigin="0.5,0.5" StrokeThickness="3"/>
 			<Rectangle Name="SearchWindowRectangle" Fill="Transparent" HorizontalAlignment="Left" Height="300" Margin="0" 
@@ -109,17 +111,47 @@
 		<TabControl Name="SettingsTabs" HorizontalAlignment="Left" Height="380" Margin="419,54,0,0" VerticalAlignment="Top" Width="365" SelectionChanged="TabControl_SelectionChanged">
 			<TabItem Header="Pupil Finding">
 				<Grid Background="#FFE5E5E5">
-					<Button Name="ReadTimestampButton" Content="Read timestamps" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="Auto" Click="ReadTimestampButton_Click"/>
-					<Button Name="FindPupilsButton"  Content="Find Pupils" HorizontalAlignment="Left" Margin="10,34,0,0" VerticalAlignment="Top" Width="Auto" Click="FindPupilsButton_Click"/>
+					<Button Name="ReadTimestampButton" Content="Read timestamps" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="Auto" Click="ReadTimestampButton_Click" IsEnabled="False"/>
+					<Button Name="FindPupilsButton"  Content="Find Pupils" HorizontalAlignment="Left" Margin="10,64,0,0" VerticalAlignment="Top" Width="Auto" Click="FindPupilsButton_Click" IsEnabled="False"/>
 
 					<GroupBox Header="Pupil finder type" HorizontalAlignment="Left" Height="100" Margin="182,11,0,0" VerticalAlignment="Top" Width="153">
 						<Grid  Margin="0">
-							<RadioButton Content="Template" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
-							<RadioButton Content="Hough Circles" HorizontalAlignment="Left" Margin="10,31,0,0" VerticalAlignment="Top"/>
+							<RadioButton Name="TemplatePupilFindingRadioButton" Content="Template" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" GroupName="PupilFinderTypeGroup" IsChecked="True"/>
+							<RadioButton Name="HoughCirclesRadioButton" Content="Hough Circles" HorizontalAlignment="Left" Margin="10,31,0,0" VerticalAlignment="Top" GroupName="PupilFinderTypeGroup"/>
 						</Grid>
 					</GroupBox>
 
-					<xctk:IntegerUpDown Name="FramesToProcessPicker" Value="180" Increment="1" Minimum="1" Height="24" Margin="10,57,263.2,270.2"/>
+					<xctk:IntegerUpDown Name="FramesToProcessPicker" Value="180" Increment="1" Minimum="1" Height="24" Margin="10,87,263.2,240.2"/>
+					<Button x:Name="LoadSavedTimeStampsButton" Content="Load timestamps" HorizontalAlignment="Left" Margin="10,34,0,0" VerticalAlignment="Top" Width="Auto" Click="LoadSavedDataMenuItem_Click" IsEnabled="False"/>
+					<TabControl HorizontalAlignment="Left" Height="176" Margin="10,165,0,0" VerticalAlignment="Top" Width="339" BorderThickness="0">
+						<TabControl.Resources>
+							<Style TargetType="TabItem">
+								<Setter Property="Template">
+									<Setter.Value>
+										<ControlTemplate TargetType="TabItem">
+
+										</ControlTemplate>
+									</Setter.Value>
+								</Setter>
+							</Style>
+						</TabControl.Resources>
+						<TabItem Header="TabItem">
+							<Grid Background="#FFE5E5E5">
+								<Label Content="Template pupil finding options" />
+								<Button Name="UseImageAsTemplateButton" Content="Use current as template" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="auto" Click="UseImageAsTemplateButton_Click"/>
+								<Button Name="ResetTemplatesButton" Content="Reset to default tempaltes" HorizontalAlignment="Left" Margin="10,51,0,0" VerticalAlignment="Top" Width="auto" Click="ResetTemplatesButton_Click"/>
+							</Grid>
+						</TabItem>
+						<TabItem Header="TabItem">
+							<Grid Background="#FFE5E5E5">
+								<Label Content="Hough circles options" />
+							</Grid>
+						</TabItem>
+					</TabControl>
+					<xctk:IntegerUpDown x:Name="MinRadiusPicker" Value="10" Increment="1" Minimum="1" Maximum="25" Height="24" Margin="91,128,182.2,199.2" ValueChanged="RadiusPickerValuesChanged"/>
+					<Label Content="Min radius" HorizontalAlignment="Left" Margin="20,126,0,0" VerticalAlignment="Top"/>
+					<xctk:IntegerUpDown x:Name="MaxRadiusPicker" Value="25" Increment="1" Minimum="10" Maximum="50" Height="24" Margin="254,128,19.2,199.2" ValueChanged="RadiusPickerValuesChanged"/>
+					<Label Content="Max radius" HorizontalAlignment="Left" Margin="182,126,0,0" VerticalAlignment="Top"/>
 				</Grid>
 			</TabItem>
 			<TabItem Header="Image Pre-filtering">
@@ -128,9 +160,9 @@
 					<xctk:IntegerUpDown x:Name="MedianBlurSizePicker" Value="1" Increment="2" Minimum="1" Maximum="51" Height="24" Margin="104,170,169.2,157.2" ValueChanged="ImageFilterValuesChanged"/>
 					<Label Content="Bilateral blur" HorizontalAlignment="Left" Margin="22,15,0,0" VerticalAlignment="Top"/>
 					<Label Content="Median blur" HorizontalAlignment="Left" Margin="25,168,0,0" VerticalAlignment="Top"/>
-					<xctk:IntegerUpDown x:Name="BilateralSigmaColorPicker" Value="100" Increment="1" Minimum="0" Maximum="255" Height="24" Margin="104,46,169.2,281.2" ValueChanged="ImageFilterValuesChanged"/>
+					<xctk:IntegerUpDown x:Name="BilateralSigmaColorPicker" Value="30" Increment="1" Minimum="0" Maximum="255" Height="24" Margin="104,46,169.2,281.2" ValueChanged="ImageFilterValuesChanged"/>
 					<Label Content="Sigma Color" HorizontalAlignment="Left" Margin="24,46,0,0" VerticalAlignment="Top"/>
-					<xctk:IntegerUpDown x:Name="BilateralSigmaSpacePicker" Value="75" Increment="1" Minimum="0" Maximum="50" Height="24" Margin="104,77,169.2,250.2" ValueChanged="ImageFilterValuesChanged"/>
+					<xctk:IntegerUpDown x:Name="BilateralSigmaSpacePicker" Value="10" Increment="1" Minimum="0" Maximum="320" Height="24" Margin="104,77,169.2,250.2" ValueChanged="ImageFilterValuesChanged"/>
 					<Label Content="Sigma Space" HorizontalAlignment="Left" Margin="22,77,0,0" VerticalAlignment="Top"/>
 				</Grid>
 			</TabItem>

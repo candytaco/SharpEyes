@@ -28,6 +28,13 @@ namespace Eyetracking
 	/// <param name="radius">Pupil radius</param>
 	public delegate void FrameProcessed(double time, double X, double Y, double radius);
 
+	/// <summary>
+	/// Delegate for things to do when a chunk of frames is processed.
+	/// FramesProcessed is called on every frame. This is called only once
+	/// per click of the Find Frames button.
+	/// </summary>
+	public delegate void FramesProcessed();
+
 	internal abstract class PupilFinder : DispatcherObject
 	{
 		// video information
@@ -75,14 +82,16 @@ namespace Eyetracking
 		protected SetStatus setStatus { get; private set; }
 		protected System.Windows.Controls.ProgressBar progressBar;
 		protected FrameProcessed updateFrame;
+		protected FramesProcessed onFramesProcessed;
 
 		public PupilFinder(string videoFileName, System.Windows.Controls.ProgressBar progressBar, 
-						   SetStatus setStatus, FrameProcessed updateFrame)
+						   SetStatus setStatus, FrameProcessed updateFrame, FramesProcessed framesProcessed)
 		{
 			this.videoFileName = videoFileName;
 			this.progressBar = progressBar;
 			this.setStatus = setStatus;
 			this.updateFrame = updateFrame;
+			this.onFramesProcessed = framesProcessed;
 			videoSource = new VideoCapture(videoFileName);
 			width = (int)videoSource.Get(VideoCaptureProperties.FrameWidth);
 			height = (int)videoSource.Get(VideoCaptureProperties.FrameHeight);
@@ -196,6 +205,7 @@ namespace Eyetracking
 
 		/// <summary>
 		/// Reads the next frame and makes it grayscale
+		/// Also does any needed filtering
 		/// </summary>
 		/// <returns></returns>
 		protected bool ReadGrayscaleFrame()
@@ -204,6 +214,7 @@ namespace Eyetracking
 			if (success)
 			{
 				Cv2.CvtColor(cvFrame, grayFrame, ColorConversionCodes.RGB2GRAY);
+				FilterCurrentFrame();
 			}
 
 			return success;
@@ -231,7 +242,6 @@ namespace Eyetracking
 			int currentFrameNumber = CurrentFrameNumber;
 			ReadGrayscaleFrame();
 			CurrentFrameNumber = currentFrameNumber;
-			FilterCurrentFrame();
 
 			MemoryStream memory = new MemoryStream();
 			grayFrame.ToBitmap().Save(memory, ImageFormat.Bmp);

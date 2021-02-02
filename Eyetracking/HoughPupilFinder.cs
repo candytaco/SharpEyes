@@ -16,8 +16,8 @@ namespace Eyetracking
 		public double param2 = 20;
 
 		public HoughPupilFinder(string videoFileName, System.Windows.Controls.ProgressBar progressBar, 
-								SetStatus setStatus, FrameProcessed updateFrame)
-			: base(videoFileName, progressBar, setStatus, updateFrame)
+								SetStatus setStatus, FrameProcessed updateFrame, FramesProcessed framesProcessed)
+			: base(videoFileName, progressBar, setStatus, updateFrame, framesProcessed)
 		{
 			
 		}
@@ -58,6 +58,7 @@ namespace Eyetracking
 			{
 				progressBar.Value = 0;
 				setStatus();
+				this.Dispatcher.Invoke(onFramesProcessed);
 			};
 
 			worker.RunWorkerAsync();
