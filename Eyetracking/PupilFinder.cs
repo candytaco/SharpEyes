@@ -4,10 +4,8 @@ using OpenCvSharp.Extensions;
 using System.ComponentModel;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Windows.Controls;
-using System.Windows.Media;
+using System;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 using Num = NumSharp.np;
 
@@ -34,6 +32,15 @@ namespace Eyetracking
 	/// per click of the Find Frames button.
 	/// </summary>
 	public delegate void FramesProcessed();
+
+	/// <summary>
+	/// How should values be updated using manual adjustments?
+	/// </summary>
+	public enum ManualUpdateMode
+	{
+		Linear,			// fade linearly
+		Exponential,	// fade exponentially
+	}
 
 	internal abstract class PupilFinder : DispatcherObject
 	{
@@ -68,6 +75,12 @@ namespace Eyetracking
 		public int minRadius = 6;               // min/max pupil sizes
 		public int maxRadius = 24;
 		public int nThreads = 1;
+		/// <summary>
+		/// pupilLocations is a time x 4 array in which the columns are [X, Y, Radius, Confidence.]
+		/// Confidence is correlation value from the template finder and whatever that value is
+		/// from Hough circle. If set to 2, then this indicates that it is a frame in which a manual
+		/// adjustment was made.
+		/// </summary>
 		public NDArray pupilLocations { get; protected set; } = null;
 		private NDArray timeStamps = null;
 		protected Mat grayFrame = new Mat();
@@ -99,7 +112,7 @@ namespace Eyetracking
 			frameCount = (int)videoSource.Get(VideoCaptureProperties.FrameCount);
 			duration = frameCount / fps;
 
-			pupilLocations = Num.zeros((frameCount, 3), NPTypeCode.Double);
+			pupilLocations = Num.zeros((frameCount, 4), NPTypeCode.Double);
 			timeStamps = Num.zeros((frameCount, 4), NPTypeCode.Int32);
 
 			cvFrame = new Mat();
@@ -263,6 +276,39 @@ namespace Eyetracking
 		{
 			timeStamps = Num.load(fileName);
 			isTimestampParsed = true;
+		}
+
+		/// <summary>
+		/// Uses manual adjusts on the found pupil locations. Can either use a linear fade or an exponential decay.
+		/// If linear, then <paramref name="frameDecay"/> specifies the number of frames over which to fade the delta.
+		/// If exponential, then <paramref name="frameDecay"/> is the time constant of decay, and the 2D delta will
+		/// be added until it is less than 1 pixel, or until the end of the video, whichever is earlier.
+		/// </summary>
+		/// <param name="startFrame">frame number at which the manual update was made</param>
+		/// <param name="X">new X position of pupil</param>
+		/// <param name="Y">new Y position of pupil</param>
+		/// <param name="radius">new radius of pupil</param>
+		/// <param name="frameDecay">number of frames over which to linearly fade the difference, or time constant of exponential decay</param>
+		public void ManuallyUpdatePupilLocations(int startFrame, double X, double Y, double radius, int frameDecay, ManualUpdateMode updateMode)
+		{
+			double dX = X - pupilLocations[startFrame, 0];
+			double dY = Y - pupilLocations[startFrame, 1];
+			double dR = radius - pupilLocations[startFrame, 2];
+			pupilLocations[startFrame, 3] = 2;  // mark manual adjustment
+			double fade;
+			int numFramesToUpdate = frameDecay;
+			if (updateMode == ManualUpdateMode.Exponential)
+			{
+				double dD = dX * dX + dY * dY;
+				numFramesToUpdate = (int)(frameDecay / Math.Log(dD));
+			}
+			for (int i = 0; i < numFramesToUpdate; i++)
+			{
+				fade = (double)(frameDecay - i) / frameDecay;
+				pupilLocations[i + startFrame, 0] += fade * dX;
+				pupilLocations[i + startFrame, 1] += fade * dY;
+				pupilLocations[i + startFrame, 2] += fade * dR;
+			}
 		}
 	}
 }

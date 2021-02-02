@@ -166,6 +166,45 @@
 					<Label Content="Sigma Space" HorizontalAlignment="Left" Margin="22,77,0,0" VerticalAlignment="Top"/>
 				</Grid>
 			</TabItem>
+			<TabItem Header="Manual adjustments">
+				<Grid Background="#FFE5E5E5">
+					<GroupBox Header="Adjustment mode" HorizontalAlignment="Left" Height="72" Margin="10,10,0,0" VerticalAlignment="Top" Width="223">
+						<Grid>
+							<RadioButton Content="Linear decay" HorizontalAlignment="Left" Margin="10,6,0,0" VerticalAlignment="Top" GroupName="DecayModeGroup" IsChecked="True"/>
+							<RadioButton Content="Exponential decay" HorizontalAlignment="Left" Margin="10,26,0,0" VerticalAlignment="Top" GroupName="DecayModeGroup" IsChecked="False"/>
+
+						</Grid>
+					</GroupBox>
+					<TabControl HorizontalAlignment="Left" Height="176" Margin="10,87,0,0" VerticalAlignment="Top" Width="339" BorderThickness="0">
+						<TabControl.Resources>
+							<Style TargetType="TabItem">
+								<Setter Property="Template">
+									<Setter.Value>
+										<ControlTemplate TargetType="TabItem">
+
+										</ControlTemplate>
+									</Setter.Value>
+								</Setter>
+							</Style>
+						</TabControl.Resources>
+						<TabItem Header="TabItem">
+							<Grid Background="#FFE5E5E5">
+								<Label Content="Linear decay options" HorizontalAlignment="Left" VerticalAlignment="Top" />
+								<Label Content="Fade frames" Margin="0,21,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+								<xctk:IntegerUpDown Name="LinearFadeFramesPicker" Value="180" Increment="1" Minimum="1" Height="24" Margin="74,23,199.2,123.4"/>
+							</Grid>
+						</TabItem>
+						<TabItem Header="TabItem">
+							<Grid Background="#FFE5E5E5">
+								<Label Content="Exponential decay options" />
+								<Label Content="Fade time constant" Margin="0,21,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+								<xctk:IntegerUpDown Name="ExponentialFadeFramePicker" Value="60" Increment="1" Minimum="1" Height="24" Margin="115,21,158.2,125.4" ValueChanged="ExponentialFadeFramePicker_ValueChanged"/>
+								<Label Name="ExponentialTotalFadeFrameLabel" Content="N frames" Margin="115,52,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+							</Grid>
+						</TabItem>
+					</TabControl>
+				</Grid>
+			</TabItem>
 		</TabControl>
 		<TextBlock Name="XPositionText" HorizontalAlignment="Left" Margin="16,393,0,0" TextWrapping="Wrap" Text="X: 0" VerticalAlignment="Top" TextAlignment="Center"/>
 		<TextBlock Name="YPositionText" HorizontalAlignment="Left" Margin="16,409,0,0" TextWrapping="Wrap" Text="Y: 0" VerticalAlignment="Top" TextAlignment="Center"/>

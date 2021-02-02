@@ -84,6 +84,8 @@ namespace Eyetracking
 			get { return PupilEllipse.Height / 2 / videoScaleFactor; }
 			set
 			{
+				if (value < pupilFinder.minRadius) // pupil hasn't been found yet so we just break
+					return;
 				double X = PupilX;
 				double Y = PupilY;
 				PupilEllipse.Width = PupilEllipse.Height = value * 2 * videoScaleFactor;
@@ -214,6 +216,7 @@ namespace Eyetracking
 
 			VideoMediaElement.Position = VideoMediaElement.Position - timePerFrame;
 			UpdateTimeDisplay(null, null);
+			UpdateDisplayedPupilPosition();
 		}
 
 		private void NextFrameButton_Click(object sender, RoutedEventArgs e)
@@ -222,6 +225,7 @@ namespace Eyetracking
 
 			VideoMediaElement.Position = VideoMediaElement.Position + timePerFrame;
 			UpdateTimeDisplay(null, null);
+			UpdateDisplayedPupilPosition();
 		}
 
 		private void UpdateTimeDisplay(object sender, EventArgs e)
@@ -232,6 +236,17 @@ namespace Eyetracking
 													VideoMediaElement.Position.Seconds,
 													VideoMediaElement.Position.Milliseconds);
 			VideoSlider.Value = (VideoMediaElement.Position.TotalMilliseconds / VideoMediaElement.NaturalDuration.TimeSpan.TotalMilliseconds) * 100;
+		}
+
+		/// <summary>
+		/// Updates the displayed pupil after seeking through the video
+		/// </summary>
+		private void UpdateDisplayedPupilPosition()
+		{
+			int frameIndex = (int)((VideoMediaElement.Position.TotalMilliseconds / VideoMediaElement.NaturalDuration.TimeSpan.TotalMilliseconds) * pupilFinder.frameCount);
+			PupilX = pupilFinder.pupilLocations[frameIndex, 0];
+			PupilY = pupilFinder.pupilLocations[frameIndex, 1];
+			PupilRadius = pupilFinder.pupilLocations[frameIndex, 2];
 		}
 
 		private void VideoSlider_MouseDown(object sender, MouseButtonEventArgs e)
@@ -529,7 +544,7 @@ namespace Eyetracking
 
 		private void ResetTemplatesButton_Click(object sender, RoutedEventArgs e)
 		{
-
+			((TemplatePupilFinder)pupilFinder).MakeTemplates();
 		}
 
 		private void LoadDebugDataMenuItem_Click(object sender, RoutedEventArgs e)
@@ -545,6 +560,11 @@ namespace Eyetracking
 		public void OnFramesProcessed()
 		{
 			FindPupilsButton.IsEnabled = true;
+		}
+
+		private void ExponentialFadeFramePicker_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+		{
+			ExponentialTotalFadeFrameLabel.Content = String.Format("{0} frames total", );
 		}
 	}
 

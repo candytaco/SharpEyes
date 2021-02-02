@@ -97,7 +97,7 @@ namespace Eyetracking
 								}
 							}
 						});
-
+						pupilLocations[CurrentFrameNumber, 3] = bestCorrelationOnThisFrame;
 						bestCorrelationOnThisFrame = -1;
 					}
 					else
@@ -109,6 +109,7 @@ namespace Eyetracking
 						pupilLocations[CurrentFrameNumber, 0] = maxLocation.X + left + templates[0].Width / 2;
 						pupilLocations[CurrentFrameNumber, 1] = maxLocation.Y + top + templates[0].Height / 2;
 						pupilLocations[CurrentFrameNumber, 2] = storedPupilSize;
+						pupilLocations[CurrentFrameNumber, 3] = maxVal;
 					}
 
 					this.Dispatcher.Invoke(() =>
