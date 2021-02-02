@@ -15,7 +15,7 @@ namespace Eyetracking
 	/// Delegate for SetStatus from the main window
 	/// </summary>
 	/// <param name="status"></param>
-	public delegate void SetStatus(string status = null);
+	public delegate void SetStatusDelegate(string status = null);
 
 	/// <summary>
 	/// Delegate for things to do when a the pupil is found on a frame
@@ -24,14 +24,19 @@ namespace Eyetracking
 	/// <param name="X">X center of pupil</param>
 	/// <param name="Y">Y center of pupil</param>
 	/// <param name="radius">Pupil radius</param>
-	public delegate void FrameProcessed(double time, double X, double Y, double radius);
+	public delegate void FrameProcessedDelegate(double time, double X, double Y, double radius);
 
 	/// <summary>
 	/// Delegate for things to do when a chunk of frames is processed.
 	/// FramesProcessed is called on every frame. This is called only once
 	/// per click of the Find Frames button.
 	/// </summary>
-	public delegate void FramesProcessed();
+	public delegate void FramesProcessedDelegate();
+	
+	/// <summary>
+	/// Delegate to be called for cancelling pupil finding
+	/// </summary>
+	public delegate void CancelPupilFindingDelegate();
 
 	/// <summary>
 	/// How should values be updated using manual adjustments?
@@ -55,14 +60,17 @@ namespace Eyetracking
 		public double duration { get; private set; } = -1.0;
 
 		// parsing video stuff
-		private int _currentFrameNumber = 0;
+		/// <summary>
+		/// The frame number after calling <see cref="ReadFrame"/> or <see cref="ReadGrayscaleFrame"/>.
+		/// </summary>
+		private int _currentFrameNumber = -1;
 		public int CurrentFrameNumber
 		{
 			get { return _currentFrameNumber; }
-			protected set
+			set
 			{
 				_currentFrameNumber = value;
-				videoSource.Set(VideoCaptureProperties.PosFrames, value);
+				videoSource.Set(VideoCaptureProperties.PosFrames, value - 1);
 			}
 		}
 		public Mat cvFrame { get; protected set; } = null;
@@ -84,7 +92,17 @@ namespace Eyetracking
 		public NDArray pupilLocations { get; protected set; } = null;
 		private NDArray timeStamps = null;
 		protected Mat grayFrame = new Mat();
-		protected Mat filteringFrame = new Mat();	// helper for filtering
+		protected Mat filteringFrame = new Mat();   // helper for filtering
+		protected bool[] isFrameProcessed;			// has each frame been processed?
+		public bool AreAllFramesProcessed			// has all frames been processed?
+		{
+			get
+			{
+				for (int i = 0; i < frameCount; i++)
+					if (!isFrameProcessed[i]) return false;
+				return true;
+			}
+		}
 
 		public int bilateralBlurSize = 0;
 		public int medianBlurSize = 0;
@@ -92,19 +110,20 @@ namespace Eyetracking
 		public double bilateralSigmaSpace = 0;
 
 		// UI delegates/references
-		protected SetStatus setStatus { get; private set; }
+		protected SetStatusDelegate SetStatus { get; private set; }
 		protected System.Windows.Controls.ProgressBar progressBar;
-		protected FrameProcessed updateFrame;
-		protected FramesProcessed onFramesProcessed;
+		protected FrameProcessedDelegate UpdateFrame;
+		protected FramesProcessedDelegate OnFramesProcessed;
+		public CancelPupilFindingDelegate CancelPupilFinding;
 
 		public PupilFinder(string videoFileName, System.Windows.Controls.ProgressBar progressBar, 
-						   SetStatus setStatus, FrameProcessed updateFrame, FramesProcessed framesProcessed)
+						   SetStatusDelegate setStatus, FrameProcessedDelegate updateFrame, FramesProcessedDelegate framesProcessed)
 		{
 			this.videoFileName = videoFileName;
 			this.progressBar = progressBar;
-			this.setStatus = setStatus;
-			this.updateFrame = updateFrame;
-			this.onFramesProcessed = framesProcessed;
+			this.SetStatus = setStatus;
+			this.UpdateFrame = updateFrame;
+			this.OnFramesProcessed = framesProcessed;
 			videoSource = new VideoCapture(videoFileName);
 			width = (int)videoSource.Get(VideoCaptureProperties.FrameWidth);
 			height = (int)videoSource.Get(VideoCaptureProperties.FrameHeight);
@@ -127,6 +146,10 @@ namespace Eyetracking
 			left = 0;
 			right = width;
 			bottom = height;
+
+			isFrameProcessed = new bool[frameCount];
+			for (int i = 0; i < frameCount; i++)
+				isFrameProcessed[i] = false;
 		}
 
 		/// <summary>
@@ -145,7 +168,7 @@ namespace Eyetracking
 		/// </summary>
 		public void ParseTimeStamps()
 		{
-			setStatus("Parsing timestamps 0/100%");
+			SetStatus("Parsing timestamps 0/100%");
 			BackgroundWorker worker = new BackgroundWorker
 			{
 				WorkerReportsProgress = true
@@ -183,14 +206,14 @@ namespace Eyetracking
 
 			worker.ProgressChanged += delegate (object sender, ProgressChangedEventArgs e)
 			{
-				setStatus(string.Format("Parsing timestamps {0}/100%", e.ProgressPercentage));
+				SetStatus(string.Format("Parsing timestamps {0}/100%", e.ProgressPercentage));
 				progressBar.Value = e.ProgressPercentage;
 			};
 
 			worker.RunWorkerCompleted += delegate (object sender, RunWorkerCompletedEventArgs e)
 			{
 				progressBar.Value = 0;
-				setStatus();
+				SetStatus();
 				// seek to beginning
 				CurrentFrameNumber = 0;
 				isTimestampParsed = true;
@@ -272,10 +295,20 @@ namespace Eyetracking
 			Num.save(fileName, timeStamps);
 		}
 
+		public void SavePupilLocations(string fileName)
+		{
+			Num.save(fileName, pupilLocations);
+		}
+
 		public void LoadTimestamps(string fileName)
 		{
 			timeStamps = Num.load(fileName);
 			isTimestampParsed = true;
+		}
+
+		public void LoadPupilLocations(string fileName)
+		{
+			pupilLocations = Num.load(fileName);
 		}
 
 		/// <summary>
@@ -296,15 +329,11 @@ namespace Eyetracking
 			double dR = radius - pupilLocations[startFrame, 2];
 			pupilLocations[startFrame, 3] = 2;  // mark manual adjustment
 			double fade;
-			int numFramesToUpdate = frameDecay;
-			if (updateMode == ManualUpdateMode.Exponential)
-			{
-				double dD = dX * dX + dY * dY;
-				numFramesToUpdate = (int)(frameDecay / Math.Log(dD));
-			}
+			double dD = Math.Sqrt(dX * dX + dY * dY);
+			int numFramesToUpdate = (updateMode == ManualUpdateMode.Exponential) ? frameDecay : (int)(frameDecay / Math.Log(dD));
 			for (int i = 0; i < numFramesToUpdate; i++)
 			{
-				fade = (double)(frameDecay - i) / frameDecay;
+				fade = (updateMode == ManualUpdateMode.Exponential) ? dD * Math.Exp(i / frameDecay) : (double)(frameDecay - i) / frameDecay;
 				pupilLocations[i + startFrame, 0] += fade * dX;
 				pupilLocations[i + startFrame, 1] += fade * dY;
 				pupilLocations[i + startFrame, 2] += fade * dR;

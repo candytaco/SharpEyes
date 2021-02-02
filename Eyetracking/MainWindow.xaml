@@ -6,7 +6,7 @@
 		xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:local="clr-namespace:Eyetracking"
         mc:Ignorable="d"
-        Title="SharpEyes" Height="500" Width="800">
+        Title="SharpEyes" Height="500" Width="800" Icon="icons8-iris-scan-96.ico">
 	<Window.CommandBindings>
 		<CommandBinding x:Name="OpenEyetrackingDataCommand" Command="local:EyetrackerCommands.OpenEyetrackingData" Executed="OpenEyetrackingDataCommand_Executed"/>
 		<CommandBinding x:Name="OpenVideoCommand" Command="Open" Executed="OpenVideoCommand_Executed"/>
@@ -24,8 +24,11 @@
 		<Menu Height="23" VerticalAlignment="Top" IsMainMenu="True" Margin="0,0,0,0">
 			<MenuItem Header="_File" Name="fileMenu">
 				<MenuItem Header="_Open Video" Name="openFileMenuItem" Click="OpenFileMenuItem_Click"></MenuItem>
-				<MenuItem Header="_Load saved data" Name="loadSavedDataMenuItem" Click="LoadSavedDataMenuItem_Click"></MenuItem>
-				<MenuItem Header="_Save Eyetracking" Name="saveFileMenuItem" Click="SaveFileMenuItem_Click"></MenuItem>
+				<MenuItem Header="Load _Timestamps" Name="loadSavedDataMenuItem" Click="LoadSavedDataMenuItem_Click"></MenuItem>
+				<MenuItem Header="Load Eyetracking" Name="loadSavedEyetrackingMenuItem" Click="LoadSavedEyetrackingMenuItem_Click" />
+				<Separator/>
+				<MenuItem Header="_Save Timestamps" Name="saveTimestampsMenuItem" Click="SaveTimeStampsMenuItemClick"></MenuItem>
+				<MenuItem Header="_Save Eyetracking" Name="saveEyetrackingMenuItem" Click="SaveEyetrackingMenuItem_Click" IsEnabled="False"></MenuItem>
 				<Separator></Separator>
 			</MenuItem>
 			<MenuItem Header="_Edit" Name="editMenu">
@@ -34,6 +37,7 @@
 				<MenuItem Header="_Load Debug Data" Name="loadDebugDataMenuItem" Click="LoadDebugDataMenuItem_Click"/>
 			</MenuItem>
 			<MenuItem Header="_Help" Name="helpMenu">
+				<MenuItem Header="_About" Name="AboutMenuItem" Click="AboutMenuItem_Click" />
 			</MenuItem>
 		</Menu>
 
@@ -112,9 +116,9 @@
 			<TabItem Header="Pupil Finding">
 				<Grid Background="#FFE5E5E5">
 					<Button Name="ReadTimestampButton" Content="Read timestamps" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="Auto" Click="ReadTimestampButton_Click" IsEnabled="False"/>
-					<Button Name="FindPupilsButton"  Content="Find Pupils" HorizontalAlignment="Left" Margin="10,64,0,0" VerticalAlignment="Top" Width="Auto" Click="FindPupilsButton_Click" IsEnabled="False"/>
+					<Button Name="FindPupilsButton"  Content="Find Pupils" HorizontalAlignment="Left" Margin="10,63,0,0" VerticalAlignment="Top" Width="Auto" Click="FindPupilsButton_Click" IsEnabled="False" IsEnabledChanged="FindPupilsButton_IsEnabledChanged"/>
 
-					<GroupBox Header="Pupil finder type" HorizontalAlignment="Left" Height="100" Margin="182,11,0,0" VerticalAlignment="Top" Width="153">
+					<GroupBox Header="Pupil finder type" HorizontalAlignment="Left" Height="100" Margin="213,10,0,0" VerticalAlignment="Top" Width="136">
 						<Grid  Margin="0">
 							<RadioButton Name="TemplatePupilFindingRadioButton" Content="Template" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" GroupName="PupilFinderTypeGroup" IsChecked="True"/>
 							<RadioButton Name="HoughCirclesRadioButton" Content="Hough Circles" HorizontalAlignment="Left" Margin="10,31,0,0" VerticalAlignment="Top" GroupName="PupilFinderTypeGroup"/>
@@ -137,9 +141,12 @@
 						</TabControl.Resources>
 						<TabItem Header="TabItem">
 							<Grid Background="#FFE5E5E5">
-								<Label Content="Template pupil finding options" />
+								<Label Content="Template pupil finding options" HorizontalAlignment="Left" VerticalAlignment="Top" />
 								<Button Name="UseImageAsTemplateButton" Content="Use current as template" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="auto" Click="UseImageAsTemplateButton_Click"/>
-								<Button Name="ResetTemplatesButton" Content="Reset to default tempaltes" HorizontalAlignment="Left" Margin="10,51,0,0" VerticalAlignment="Top" Width="auto" Click="ResetTemplatesButton_Click"/>
+								<Button Name="ResetTemplatesButton" Content="Reset to default templates" HorizontalAlignment="Left" Margin="10,51,0,0" VerticalAlignment="Top" Width="auto" Click="ResetTemplatesButton_Click"/>
+								<GroupBox Header="Template Preview" HorizontalAlignment="Left" Height="133" Margin="188,4,0,0" VerticalAlignment="Top" Width="127">
+									<Image Name="TemplatePreviewImage"  Margin="0,0,0,0" Stretch="UniformToFill"/>
+								</GroupBox>
 							</Grid>
 						</TabItem>
 						<TabItem Header="TabItem">
@@ -152,6 +159,8 @@
 					<Label Content="Min radius" HorizontalAlignment="Left" Margin="20,126,0,0" VerticalAlignment="Top"/>
 					<xctk:IntegerUpDown x:Name="MaxRadiusPicker" Value="25" Increment="1" Minimum="10" Maximum="50" Height="24" Margin="254,128,19.2,199.2" ValueChanged="RadiusPickerValuesChanged"/>
 					<Label Content="Max radius" HorizontalAlignment="Left" Margin="182,126,0,0" VerticalAlignment="Top"/>
+					<Button x:Name="FindPupilsAllFramesButton" Content="Find Pupils All Frames" HorizontalAlignment="Left" Margin="76,63,0,0" VerticalAlignment="Top" Width="Auto" Click="FindPupilsAllFrames_Click" IsEnabled="False"/>
+					<Button Name="CancelPupilFindingButton" Content="Cancel" HorizontalAlignment="Left" Margin="119,92,0,0" VerticalAlignment="Top" Width="75" Visibility="Hidden" Click="CancelPupilFindingButton_Click"/>
 				</Grid>
 			</TabItem>
 			<TabItem Header="Image Pre-filtering">
@@ -170,12 +179,13 @@
 				<Grid Background="#FFE5E5E5">
 					<GroupBox Header="Adjustment mode" HorizontalAlignment="Left" Height="72" Margin="10,10,0,0" VerticalAlignment="Top" Width="223">
 						<Grid>
-							<RadioButton Content="Linear decay" HorizontalAlignment="Left" Margin="10,6,0,0" VerticalAlignment="Top" GroupName="DecayModeGroup" IsChecked="True"/>
-							<RadioButton Content="Exponential decay" HorizontalAlignment="Left" Margin="10,26,0,0" VerticalAlignment="Top" GroupName="DecayModeGroup" IsChecked="False"/>
+							<RadioButton Name="LinearDecayRadioButton" Content="Linear decay" HorizontalAlignment="Left" Margin="10,6,0,0" VerticalAlignment="Top" GroupName="DecayModeGroup" IsChecked="True" Checked="AdjustmentModeSelected"/>
+							<RadioButton Name="ExponentialDecayRadioButton" Content="Exponential decay" HorizontalAlignment="Left" Margin="10,26,0,0" VerticalAlignment="Top" GroupName="DecayModeGroup" IsChecked="False" Checked="AdjustmentModeSelected"/>
 
 						</Grid>
 					</GroupBox>
-					<TabControl HorizontalAlignment="Left" Height="176" Margin="10,87,0,0" VerticalAlignment="Top" Width="339" BorderThickness="0">
+					<TabControl Name="ManualAdjustmentDecayOptionsTabs" HorizontalAlignment="Left" Height="176" Margin="10,87,0,0" VerticalAlignment="Top" Width="339" 
+								BorderThickness="0" SelectionChanged="TabControl_SelectionChanged_1" SelectedIndex="0">
 						<TabControl.Resources>
 							<Style TargetType="TabItem">
 								<Setter Property="Template">

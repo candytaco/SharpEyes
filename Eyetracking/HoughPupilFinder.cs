@@ -16,7 +16,7 @@ namespace Eyetracking
 		public double param2 = 20;
 
 		public HoughPupilFinder(string videoFileName, System.Windows.Controls.ProgressBar progressBar, 
-								SetStatus setStatus, FrameProcessed updateFrame, FramesProcessed framesProcessed)
+								SetStatusDelegate setStatus, FrameProcessedDelegate updateFrame, FramesProcessedDelegate framesProcessed)
 			: base(videoFileName, progressBar, setStatus, updateFrame, framesProcessed)
 		{
 			
@@ -25,10 +25,12 @@ namespace Eyetracking
 		public override void FindPupils(int Frames)
 		{
 			base.FindPupils(Frames);
-			setStatus("Finding pupils 0/100%");
+			DateTime start = DateTime.Now;
+			SetStatus("Finding pupils 0/100%");
 			BackgroundWorker worker = new BackgroundWorker
 			{
-				WorkerReportsProgress = true
+				WorkerReportsProgress = true,
+				WorkerSupportsCancellation = true
 			};
 			worker.DoWork += delegate (object sender, DoWorkEventArgs args)
 			{
@@ -40,27 +42,39 @@ namespace Eyetracking
 					pupilLocations[CurrentFrameNumber, 1] = circle.Center.Y + top;
 					pupilLocations[CurrentFrameNumber, 2] = circle.Radius;
 
+					isFrameProcessed[CurrentFrameNumber] = true;
+
 					this.Dispatcher.Invoke(() =>
 					{
-						updateFrame((double)CurrentFrameNumber / (double)frameCount, circle.Center.X + left, circle.Center.Y + top, circle.Radius);
+						UpdateFrame((double)CurrentFrameNumber / (double)frameCount, circle.Center.X + left, circle.Center.Y + top, circle.Radius);
 					});
 					((BackgroundWorker)sender).ReportProgress((i + 1) * 100 / Frames);
+					if (worker.CancellationPending)
+					{
+						args.Cancel = true;
+						break;
+					}
 				}
 			};
 
 			worker.ProgressChanged += delegate (object sender, ProgressChangedEventArgs e)
 			{
-				setStatus(string.Format("Finding pupils {0}/100%", e.ProgressPercentage));
+				SetStatus(string.Format("Finding pupils {0}/100%", e.ProgressPercentage));
 				progressBar.Value = e.ProgressPercentage;
 			};
 
 			worker.RunWorkerCompleted += delegate (object sender, RunWorkerCompletedEventArgs e)
 			{
 				progressBar.Value = 0;
-				setStatus();
-				this.Dispatcher.Invoke(onFramesProcessed);
+				if (e.Cancelled)
+					SetStatus(string.Format("Idle. Pupil finding was cancelled."));
+				else
+					SetStatus(string.Format("Idle. {0} frames processed in {1:c}", Frames, DateTime.Now - start));
+				this.Dispatcher.Invoke(OnFramesProcessed);
+				CancelPupilFinding -= worker.CancelAsync;
 			};
 
+			CancelPupilFinding += worker.CancelAsync;
 			worker.RunWorkerAsync();
 		}
 	}

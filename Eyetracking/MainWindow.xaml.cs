@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -48,7 +49,7 @@ namespace Eyetracking
 
 
 		// eyetracking setup related stuff
-		private bool isEditingStarted = false;	// generic flag for indicating whether the window/pupil edit has begun with a mouseclick
+		private bool isEditingStarted = false;  // generic flag for indicating whether the window/pupil edit has begun with a mouseclick
 		private System.Windows.Point mouseMoveStartPoint;
 		private bool isMovingSearchWindow = false;
 		private bool isMovingPupilEllipse = false;
@@ -149,7 +150,7 @@ namespace Eyetracking
 			}
 		}
 
-		private void SaveFileMenuItem_Click(object sender, RoutedEventArgs e)
+		private void SaveTimeStampsMenuItemClick(object sender, RoutedEventArgs e)
 		{
 			SaveTimestamps();
 		}
@@ -189,12 +190,15 @@ namespace Eyetracking
 			FindPupilsButton.IsEnabled = false;
 			ReadTimestampButton.IsEnabled = true;
 			LoadSavedTimeStampsButton.IsEnabled = true;
+			saveEyetrackingMenuItem.IsEnabled = true;
 
 			// force update displays because
 			PupilX = PupilX;
 			PupilY = PupilY;
 			PupilRadius = PupilRadius;
 			SetStatus();
+			if (pupilFinder is TemplatePupilFinder templatePupilFinder)
+				SetTemplatePreviewImage();
 		}
 
 		private void PlayPauseButton_Click(object sender, RoutedEventArgs e)
@@ -257,13 +261,17 @@ namespace Eyetracking
 		private void VideoSlider_MouseUp(object sender, MouseButtonEventArgs e)
 		{
 			VideoMediaElement.Position = TimeSpan.FromSeconds(VideoSlider.Value / VideoSlider.Maximum * VideoMediaElement.NaturalDuration.TimeSpan.TotalSeconds);
+			pupilFinder.CurrentFrameNumber = (int)(VideoSlider.Value / VideoSlider.Maximum * pupilFinder.frameCount);
 			UpdateTimeDisplay(null, null);
+			UpdateDisplayedPupilPosition();
 		}
 
 		private void VideoSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
 		{
 			VideoMediaElement.Position = TimeSpan.FromSeconds(VideoSlider.Value / VideoSlider.Maximum * VideoMediaElement.NaturalDuration.TimeSpan.TotalSeconds);
+			pupilFinder.CurrentFrameNumber = (int)(VideoSlider.Value / VideoSlider.Maximum * pupilFinder.frameCount);
 			UpdateTimeDisplay(null, null);
+			UpdateDisplayedPupilPosition();
 		}
 
 		private void VideoSlider_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
@@ -313,7 +321,7 @@ namespace Eyetracking
 				case EditingState.DrawingWindow:
 					if (mouseMoveStartPoint.X < 0 || mouseMoveStartPoint.Y < 0 || mouseMoveStartPoint.X > canvas.Width || mouseMoveStartPoint.Y > canvas.Height)
 						return;
-					
+
 					Canvas.SetLeft(SearchWindowRectangle, mouseMoveStartPoint.X);
 					Canvas.SetTop(SearchWindowRectangle, mouseMoveStartPoint.Y);
 
@@ -323,7 +331,6 @@ namespace Eyetracking
 
 					PupilX = mouseMoveStartPoint.X / videoScaleFactor;
 					PupilY = mouseMoveStartPoint.Y / videoScaleFactor;
-					isMovingPupilEllipse = true;
 
 					isEditingStarted = true;
 					break;
@@ -360,15 +367,15 @@ namespace Eyetracking
 				case EditingState.DrawingWindow:
 					isWindowManuallySet = true;
 					drawWindowButton.IsChecked = false;
+					editingState = EditingState.None;
 					break;
-				case EditingState.MovingPupil:
-					movePupilEllipseButton.IsChecked = false;
+				case EditingState.MovingPupil:  // do not auto turn off pupil editing
+					UpdatePupilPositionData();
 					break;
-				default:
+				default:	// EditingState.None
 					return;
 			}
 
-			editingState = EditingState.None;
 		}
 
 		private void SearchWindowRectangle_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -428,7 +435,7 @@ namespace Eyetracking
 			}
 		}
 
-		private void FindPupilsButton_Click(object sender, RoutedEventArgs e)
+		private void FindPupils(int frames)
 		{
 			double l = Canvas.GetLeft(SearchWindowRectangle);
 			pupilFinder.left = (int)(Canvas.GetLeft(SearchWindowRectangle) / canvas.Width * pupilFinder.width);
@@ -436,7 +443,18 @@ namespace Eyetracking
 			pupilFinder.top = (int)(Canvas.GetTop(SearchWindowRectangle) / canvas.Height * pupilFinder.height);
 			pupilFinder.bottom = (int)(SearchWindowRectangle.Height / canvas.Height * pupilFinder.height) + pupilFinder.top;
 			FindPupilsButton.IsEnabled = false;
-			pupilFinder.FindPupils(FramesToProcessPicker.Value.Value);
+			CancelPupilFindingButton.Visibility = Visibility.Visible;
+			pupilFinder.FindPupils(frames);
+		}
+
+		private void FindPupilsButton_Click(object sender, RoutedEventArgs e)
+		{
+			FindPupils(FramesToProcessPicker.Value.Value);
+		}
+
+		private void FindPupilsAllFrames_Click(object sender, RoutedEventArgs e)
+		{
+			FindPupils(pupilFinder.frameCount - pupilFinder.CurrentFrameNumber);
 		}
 
 		private void LoadTimestamps()
@@ -509,7 +527,7 @@ namespace Eyetracking
 			}
 			else
 			{
-				if (e.Delta > 0)
+				if (e.Delta < 0)
 					NextFrameButton_Click(null, null);
 				else
 					PreviousFrameButton_Click(null, null);
@@ -530,28 +548,58 @@ namespace Eyetracking
 		/// </summary>
 		private void UpdatePupilPositionData()
 		{
-			// TODO: send values to pupil finder and update
+			if (pupilFinder != null)
+			{
+				int frameDecay;
+				ManualUpdateMode mode;
+				if (LinearDecayRadioButton.IsChecked.Value)
+				{
+					frameDecay = LinearFadeFramesPicker.Value.Value;
+					mode = ManualUpdateMode.Linear;
+				}
+				else
+				{
+					frameDecay = ExponentialFadeFramePicker.Value.Value;
+					mode = ManualUpdateMode.Exponential;
+				}
+				pupilFinder.ManuallyUpdatePupilLocations(pupilFinder.CurrentFrameNumber, PupilX, PupilY, PupilRadius, frameDecay, mode);
+			}
+		}
+
+		private void SetTemplatePreviewImage()
+		{
+			if (pupilFinder is TemplatePupilFinder templatePupilFinder)
+				TemplatePreviewImage.Source = templatePupilFinder.GetTemplateImage();
 		}
 
 		private void UseImageAsTemplateButton_Click(object sender, RoutedEventArgs e)
 		{
-			int top = (int)(PupilY - (double)PupilRadius * 1.25);
-			int bottom = (int)(PupilY + (double)PupilRadius * 1.25);
-			int left = (int)(PupilX - (double)PupilRadius * 1.25);
-			int right = (int)(PupilX + (double)PupilRadius * 1.25);
+			int top = (int)(PupilY - (double)PupilRadius * 1.5);
+			int bottom = (int)(PupilY + (double)PupilRadius * 1.5 + 2);
+			int left = (int)(PupilX - (double)PupilRadius * 1.5);
+			int right = (int)(PupilX + (double)PupilRadius * 1.5 + 2);
 			((TemplatePupilFinder)pupilFinder).UseImageSegmentAsTemplate(top, bottom, left, right, PupilRadius);
+			SetTemplatePreviewImage();
 		}
 
 		private void ResetTemplatesButton_Click(object sender, RoutedEventArgs e)
 		{
 			((TemplatePupilFinder)pupilFinder).MakeTemplates();
+			SetTemplatePreviewImage();
 		}
 
 		private void LoadDebugDataMenuItem_Click(object sender, RoutedEventArgs e)
 		{
-			LoadFile("D:\\run01.avi");
-			pupilFinder.LoadTimestamps("D:\\test timestamps.npy");
-			FindPupilsButton.IsEnabled = true;
+			try
+			{
+				LoadFile("D:\\run01.avi");
+				pupilFinder.LoadTimestamps("D:\\test timestamps.npy");
+				FindPupilsButton.IsEnabled = true;
+			}
+			catch (Exception)
+			{
+				MessageBox.Show("Debug files only exist on tz's computer and this is hard coded\nThis basically loads a video and saved timestamps in one go.", "Debug data load failed", MessageBoxButton.OK, MessageBoxImage.Error);
+			}
 		}
 
 		/// <summary>
@@ -560,15 +608,74 @@ namespace Eyetracking
 		public void OnFramesProcessed()
 		{
 			FindPupilsButton.IsEnabled = true;
+			CancelPupilFindingButton.Visibility = Visibility.Hidden;
 		}
 
 		private void ExponentialFadeFramePicker_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
 		{
-			ExponentialTotalFadeFrameLabel.Content = String.Format("{0} frames total", );
+			if (pupilFinder == null) return;
+			double oldX = pupilFinder.pupilLocations[pupilFinder.CurrentFrameNumber, 0];
+			double oldY = pupilFinder.pupilLocations[pupilFinder.CurrentFrameNumber, 1];
+			double dD = Math.Sqrt((oldX - PupilX) * (oldX - PupilX) + (oldY - PupilY) * (oldY - PupilY));
+			int frames = (int)(ExponentialFadeFramePicker.Value.Value / Math.Log(dD));
+			ExponentialTotalFadeFrameLabel.Content = String.Format("{0} frames total", frames);
+		}
+
+		private void AboutMenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			Version version = Assembly.GetEntryAssembly().GetName().Version;
+			Assembly assembly = Assembly.GetExecutingAssembly();
+			string build = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly.Location).FileVersion;
+			MessageBox.Show(String.Format("SharpEyes\nVersion {0}\nBuild version {1}\nIcon from Icons8\nt.zhang\nThis is a work in progress and a lot of things don't work.", version, build), 
+							"About SharpEyes", MessageBoxButton.OK, MessageBoxImage.Information);
+		}
+
+		private void TabControl_SelectionChanged_1(object sender, SelectionChangedEventArgs e)
+		{
+			if (ManualAdjustmentDecayOptionsTabs.SelectedIndex == 1)
+				ExponentialFadeFramePicker_ValueChanged(null, null);
+		}
+
+		private void AdjustmentModeSelected(object sender, RoutedEventArgs e)
+		{
+			if (ManualAdjustmentDecayOptionsTabs == null) return;	// preconstruction references not set
+			if (LinearDecayRadioButton.IsChecked.Value)
+				ManualAdjustmentDecayOptionsTabs.SelectedIndex = 0;
+			else
+				ManualAdjustmentDecayOptionsTabs.SelectedIndex = 1;
+		}
+
+		private void SaveEyetrackingMenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			if (!pupilFinder.AreAllFramesProcessed)
+				if (MessageBox.Show("Not all frames processed. Save data?", "Incomplete processing", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
+
+			SaveFileDialog saveFileDialog = new SaveFileDialog
+			{
+				Filter = "Numpy file (*.npy)|*.npy"
+			};
+			if (saveFileDialog.ShowDialog() == true)
+			{
+				pupilFinder.SaveTimestamps(saveFileDialog.FileName);
+			}
+		}
+
+		private void LoadSavedEyetrackingMenuItem_Click(object sender, RoutedEventArgs e)
+		{
+
+		}
+
+		private void FindPupilsButton_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+		{
+			if(FindPupilsAllFramesButton != null)
+				FindPupilsAllFramesButton.IsEnabled = FindPupilsButton.IsEnabled;
+		}
+
+		private void CancelPupilFindingButton_Click(object sender, RoutedEventArgs e)
+		{
+			pupilFinder.CancelPupilFinding();
 		}
 	}
-
-
 	// Commands
 	public static class EyetrackerCommands
 	{

@@ -1,14 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Threading.Tasks;
-
+using System.Windows.Media.Imaging;
 using OpenCvSharp;
+using OpenCvSharp.Extensions;
 
 namespace Eyetracking
 {
+
 	class TemplatePupilFinder : PupilFinder
 	{
 		/// <summary>
@@ -28,7 +29,7 @@ namespace Eyetracking
 		private Nullable<double> storedPupilSize = null;
 
 		public TemplatePupilFinder(string videoFileName, System.Windows.Controls.ProgressBar progressBar,
-								   SetStatus setStatus, FrameProcessed updateFrame, FramesProcessed framesProcessed)
+								   SetStatusDelegate setStatus, FrameProcessedDelegate updateFrame, FramesProcessedDelegate framesProcessed)
 			: base(videoFileName, progressBar, setStatus, updateFrame, framesProcessed)
 		{
 			MakeTemplates();
@@ -62,14 +63,32 @@ namespace Eyetracking
 			storedPupilSize = radius;
 		}
 
+		/// <summary>
+		/// Gets a bitmap of the template for display
+		/// </summary>
+		/// <returns>The first template, if using automated templates, or the template image picked from the video</returns>
+		public BitmapImage GetTemplateImage()
+		{
+			MemoryStream memory = new MemoryStream();
+			templates[0].ToBitmap().Save(memory, ImageFormat.Bmp);
+			memory.Position = 0;
+			BitmapImage image = new BitmapImage();
+			image.BeginInit();
+			image.StreamSource = memory;
+			image.CacheOption = BitmapCacheOption.OnLoad;
+			image.EndInit();
+			return image;
+		}
+
 		public override void FindPupils(int Frames)
 		{
 			base.FindPupils(Frames);
 			DateTime start = DateTime.Now;
-			setStatus("Finding pupils 0/100%");
+			SetStatus("Finding pupils 0/100%");
 			BackgroundWorker worker = new BackgroundWorker
 			{
-				WorkerReportsProgress = true
+				WorkerReportsProgress = true,
+				WorkerSupportsCancellation = true
 			};
 			worker.DoWork += delegate (object sender, DoWorkEventArgs args)
 			{
@@ -112,30 +131,42 @@ namespace Eyetracking
 						pupilLocations[CurrentFrameNumber, 3] = maxVal;
 					}
 
+					isFrameProcessed[CurrentFrameNumber] = true;
+
 					this.Dispatcher.Invoke(() =>
 					{
-						updateFrame((double)CurrentFrameNumber / (double)frameCount, 
+						UpdateFrame((double)CurrentFrameNumber / (double)frameCount, 
 									pupilLocations[CurrentFrameNumber, 0], 
 									pupilLocations[CurrentFrameNumber, 1], 
 									pupilLocations[CurrentFrameNumber, 2]);
 					});
 					((BackgroundWorker)sender).ReportProgress((f + 1) * 100 / Frames);
+					if (worker.CancellationPending)
+					{
+						args.Cancel = true;
+						break;
+					}
 				}
 			};
 
 			worker.ProgressChanged += delegate (object sender, ProgressChangedEventArgs e)
 			{
-				setStatus(string.Format("Finding pupils {0}/100%", e.ProgressPercentage));
+				SetStatus(string.Format("Finding pupils in {0} frames {1}/100%", Frames, e.ProgressPercentage));
 				progressBar.Value = e.ProgressPercentage;
 			};
 
 			worker.RunWorkerCompleted += delegate (object sender, RunWorkerCompletedEventArgs e)
 			{
 				progressBar.Value = 0;
-				setStatus(string.Format("Idle. {0} frames processed in {1:c}", Frames, DateTime.Now - start));
-				this.Dispatcher.Invoke(onFramesProcessed);
+				if (e.Cancelled)
+					SetStatus(string.Format("Idle. Pupil finding was cancelled."));
+				else
+					SetStatus(string.Format("Idle. {0} frames processed in {1:c}", Frames, DateTime.Now - start));
+				this.Dispatcher.Invoke(OnFramesProcessed);
+				CancelPupilFinding -= worker.CancelAsync;
 			};
 
+			CancelPupilFinding += worker.CancelAsync;
 			worker.RunWorkerAsync();
 		}
 	}
