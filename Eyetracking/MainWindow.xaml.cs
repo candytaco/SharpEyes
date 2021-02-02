@@ -626,7 +626,7 @@ namespace Eyetracking
 			Version version = Assembly.GetEntryAssembly().GetName().Version;
 			Assembly assembly = Assembly.GetExecutingAssembly();
 			string build = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly.Location).FileVersion;
-			MessageBox.Show(String.Format("SharpEyes\nVersion {0}\nBuild version {1}\nIcon from Icons8\nt.zhang\nThis is a work in progress and a lot of things don't work.", version, build), 
+			MessageBox.Show(String.Format("SharpEyes\nVersion {0}\nBuild version {1}\nIcon from Icons8\nLibraries: Numsharp Lite & OpenCVSharp\nt.zhang\nThis is a work in progress and a lot of things don't work.", version, build), 
 							"About SharpEyes", MessageBoxButton.OK, MessageBoxImage.Information);
 		}
 
