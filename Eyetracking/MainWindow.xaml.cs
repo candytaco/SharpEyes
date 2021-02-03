@@ -235,7 +235,6 @@ namespace Eyetracking
 		{
 			VideoMediaElement.Position = time;
 			UpdateTimeDisplay(null, null);
-			UpdateDisplayedPupilPosition();
 			pupilFinder.CurrentFrameNumber = (int)(VideoSlider.Value / VideoSlider.Maximum * pupilFinder.frameCount);
 		}
 		private void UpdateVideoTime(Duration time)
@@ -245,12 +244,15 @@ namespace Eyetracking
 
 		private void UpdateTimeDisplay(object sender, EventArgs e)
 		{
+			// TODO: this handler is normally called when the VideoMediaElement, i.e. WPF UI plays the video
+			// this needs to be updated to draw the pupil ellipse correctly
 			VideoTimeLabel.Content = String.Format("{0:00}:{1:00}:{2:00}.{3:000}",
 													VideoMediaElement.Position.Hours,
 													VideoMediaElement.Position.Minutes,
 													VideoMediaElement.Position.Seconds,
 													VideoMediaElement.Position.Milliseconds);
 			VideoSlider.Value = (VideoMediaElement.Position.TotalMilliseconds / VideoMediaElement.NaturalDuration.TimeSpan.TotalMilliseconds) * 100;
+			UpdateDisplayedPupilPosition();
 		}
 
 		/// <summary>
@@ -661,13 +663,21 @@ namespace Eyetracking
 			};
 			if (saveFileDialog.ShowDialog() == true)
 			{
-				pupilFinder.SaveTimestamps(saveFileDialog.FileName);
+				pupilFinder.SavePupilLocations(saveFileDialog.FileName);
 			}
 		}
 
 		private void LoadSavedEyetrackingMenuItem_Click(object sender, RoutedEventArgs e)
 		{
-
+			OpenFileDialog openFileDialog = new OpenFileDialog
+			{
+				Filter = "Numpy file (*.npy)|*.npy"
+			};
+			if (openFileDialog.ShowDialog() == true)
+			{
+				pupilFinder.LoadPupilLocations(openFileDialog.FileName);
+				FindPupilsButton.IsEnabled = true;
+			}
 		}
 
 		private void FindPupilsButton_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
