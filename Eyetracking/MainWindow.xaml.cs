@@ -46,6 +46,17 @@ namespace Eyetracking
 		private bool isPlaying = false;
 		private DispatcherTimer timer;
 		public double videoScaleFactor { get; private set; }    // scaling fractor from video size to display size
+		/// <summary>
+		/// Index of the frame currently displayed. This is 1 behind <see cref="PupilFinder.CurrentFrameNumber"/>, since that is the frame index _after_ reading in a frame
+		/// </summary>
+		int CurrentDisplayedFrameIndex
+		{ get
+			{
+				if (!VideoMediaElement.IsLoaded || (pupilFinder == null))
+					return -1;
+				return (int)((VideoMediaElement.Position.TotalMilliseconds / VideoMediaElement.NaturalDuration.TimeSpan.TotalMilliseconds) * pupilFinder.frameCount);
+			}
+		}
 
 
 		// eyetracking setup related stuff
@@ -109,6 +120,27 @@ namespace Eyetracking
 				else if (transparency > 1)
 					transparency = 1;
 				PupilEllipse.Stroke.Opacity = transparency;
+			}
+		}
+
+		private int _templatePreviewIndex = -1;
+		/// <summary>
+		/// Template preview
+		/// </summary>
+		private int TemplatePreviewIndex
+		{
+			get
+			{ return _templatePreviewIndex; }
+			set
+			{
+				if (pupilFinder is TemplatePupilFinder templatePupilFinder)
+				{
+					_templatePreviewIndex = value;
+					if (_templatePreviewIndex < 0) _templatePreviewIndex = 0;
+					else if (_templatePreviewIndex >= templatePupilFinder.NumTemplates) _templatePreviewIndex = templatePupilFinder.NumTemplates - 1;
+					TemplatePreviewNumberLabel.Content = String.Format("{0}/{1}", _templatePreviewIndex + 1, templatePupilFinder.NumTemplates);
+					TemplatePreviewImage.Source = templatePupilFinder.GetTemplateImage(_templatePreviewIndex);
+				}
 			}
 		}
 
@@ -214,7 +246,7 @@ namespace Eyetracking
 			PupilRadius = PupilRadius;
 			SetStatus();
 			if (pupilFinder is TemplatePupilFinder templatePupilFinder)
-				SetTemplatePreviewImage();
+				TemplatePreviewIndex = 0;
 		}
 
 		private void PlayPauseButton_Click(object sender, RoutedEventArgs e)
@@ -251,7 +283,6 @@ namespace Eyetracking
 		{
 			VideoMediaElement.Position = time;
 			UpdateTimeDisplay(null, null);
-			pupilFinder.CurrentFrameNumber = (int)(VideoSlider.Value / VideoSlider.Maximum * pupilFinder.frameCount);
 		}
 		private void UpdateVideoTime(Duration time)
 		{
@@ -275,12 +306,11 @@ namespace Eyetracking
 		/// Updates the displayed pupil after seeking through the video
 		/// </summary>
 		private void UpdateDisplayedPupilPosition()
-		{
-			int frameIndex = (int)((VideoMediaElement.Position.TotalMilliseconds / VideoMediaElement.NaturalDuration.TimeSpan.TotalMilliseconds) * pupilFinder.frameCount);
-			PupilX = pupilFinder.pupilLocations[frameIndex, 0];
-			PupilY = pupilFinder.pupilLocations[frameIndex, 1];
-			PupilRadius = pupilFinder.pupilLocations[frameIndex, 2];
-			PupilConfidence = pupilFinder.pupilLocations[frameIndex, 3];
+		{			
+			PupilX = pupilFinder.pupilLocations[CurrentDisplayedFrameIndex, 0];
+			PupilY = pupilFinder.pupilLocations[CurrentDisplayedFrameIndex, 1];
+			PupilRadius = pupilFinder.pupilLocations[CurrentDisplayedFrameIndex, 2];
+			PupilConfidence = pupilFinder.pupilLocations[CurrentDisplayedFrameIndex, 3];
 		}
 
 		private void VideoSlider_MouseDown(object sender, MouseButtonEventArgs e)
@@ -399,7 +429,6 @@ namespace Eyetracking
 				default:	// EditingState.None
 					return;
 			}
-
 		}
 
 		private void SearchWindowRectangle_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -602,7 +631,9 @@ namespace Eyetracking
 		private void SetTemplatePreviewImage()
 		{
 			if (pupilFinder is TemplatePupilFinder templatePupilFinder)
+			{
 				TemplatePreviewImage.Source = templatePupilFinder.GetTemplateImage();
+			}
 		}
 
 		private void UseImageAsTemplateButton_Click(object sender, RoutedEventArgs e)
@@ -611,14 +642,14 @@ namespace Eyetracking
 			int bottom = (int)(PupilY + (double)PupilRadius * 1.5 + 2);
 			int left = (int)(PupilX - (double)PupilRadius * 1.5);
 			int right = (int)(PupilX + (double)PupilRadius * 1.5 + 2);
-			((TemplatePupilFinder)pupilFinder).UseImageSegmentAsTemplate(top, bottom, left, right, PupilRadius);
-			SetTemplatePreviewImage();
+			((TemplatePupilFinder)pupilFinder).AddImageSegmentAsTemplate(top, bottom, left, right, PupilRadius);
+			TemplatePreviewIndex = ((TemplatePupilFinder)pupilFinder).NumTemplates;
 		}
 
 		private void ResetTemplatesButton_Click(object sender, RoutedEventArgs e)
 		{
 			((TemplatePupilFinder)pupilFinder).MakeTemplates();
-			SetTemplatePreviewImage();
+			TemplatePreviewIndex = 0;
 		}
 
 		private void LoadDebugDataMenuItem_Click(object sender, RoutedEventArgs e)
@@ -647,11 +678,18 @@ namespace Eyetracking
 		private void ExponentialFadeFramePicker_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
 		{
 			if (pupilFinder == null) return;
-			double oldX = pupilFinder.pupilLocations[pupilFinder.CurrentFrameNumber, 0];
-			double oldY = pupilFinder.pupilLocations[pupilFinder.CurrentFrameNumber, 1];
+			double oldX = pupilFinder.pupilLocations[CurrentDisplayedFrameIndex, 0];
+			double oldY = pupilFinder.pupilLocations[CurrentDisplayedFrameIndex, 1];
 			double dD = Math.Sqrt((oldX - PupilX) * (oldX - PupilX) + (oldY - PupilY) * (oldY - PupilY));
-			int frames = (int)(ExponentialFadeFramePicker.Value.Value / Math.Log(dD));
-			ExponentialTotalFadeFrameLabel.Content = String.Format("{0} frames total", frames);
+			if (dD < 1)
+			{
+				ExponentialTotalFadeFrameLabel.Content = String.Format("Position unchanged");
+			}
+			else
+			{
+				int frames = (int)(ExponentialFadeFramePicker.Value.Value * Math.Log(dD));
+				ExponentialTotalFadeFrameLabel.Content = String.Format("{0} frames total", frames);
+			}
 		}
 
 		private void AboutMenuItem_Click(object sender, RoutedEventArgs e)
@@ -716,6 +754,16 @@ namespace Eyetracking
 		private void CancelPupilFindingButton_Click(object sender, RoutedEventArgs e)
 		{
 			pupilFinder.CancelPupilFinding();
+		}
+
+		private void PreviousTemplateButton_Click(object sender, RoutedEventArgs e)
+		{
+			TemplatePreviewIndex--;
+		}
+
+		private void NextTemplateButton_Click(object sender, RoutedEventArgs e)
+		{
+			TemplatePreviewIndex++;
 		}
 	}
 	// Commands

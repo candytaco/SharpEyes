@@ -142,11 +142,14 @@
 						<TabItem Header="TabItem">
 							<Grid Background="#FFE5E5E5">
 								<Label Content="Template pupil finding options" HorizontalAlignment="Left" VerticalAlignment="Top" />
-								<Button Name="UseImageAsTemplateButton" Content="Use current as template" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="auto" Click="UseImageAsTemplateButton_Click"/>
-								<Button Name="ResetTemplatesButton" Content="Reset to default templates" HorizontalAlignment="Left" Margin="10,51,0,0" VerticalAlignment="Top" Width="auto" Click="ResetTemplatesButton_Click"/>
-								<GroupBox Header="Template Preview" HorizontalAlignment="Left" Height="133" Margin="188,4,0,0" VerticalAlignment="Top" Width="127">
-									<Image Name="TemplatePreviewImage"  Margin="0,0,0,0" Stretch="UniformToFill"/>
+								<Button Name="UseImageAsTemplateButton" Content="Add current as template" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="auto" Click="UseImageAsTemplateButton_Click"/>
+								<Button Name="ResetTemplatesButton" Content="Reset to default templates" HorizontalAlignment="Left" Margin="10,99,0,0" VerticalAlignment="Top" Width="auto" Click="ResetTemplatesButton_Click"/>
+								<GroupBox Header="Template Preview" HorizontalAlignment="Left" Height="133" Margin="176,4,0,0" VerticalAlignment="Top" Width="149">
+									<Image Name="TemplatePreviewImage"  Margin="0,0,0,0" Stretch="Uniform"/>
 								</GroupBox>
+								<Button Name="PreviousTemplateButton" Content="Prev" HorizontalAlignment="Left" Margin="176,142,0,0" VerticalAlignment="Top" Width="42" Click="PreviousTemplateButton_Click"/>
+								<Button Name="NextTemplateButton" Content="Next" HorizontalAlignment="Left" Margin="283,142,0,0" VerticalAlignment="Top" Width="42" Click="NextTemplateButton_Click"/>
+								<Label Name="TemplatePreviewNumberLabel" Content="0/0" HorizontalAlignment="Center" Margin="223,139,57.2,0" VerticalAlignment="Top" Width="Auto" Height="28" />
 							</Grid>
 						</TabItem>
 						<TabItem Header="TabItem">
@@ -208,7 +211,7 @@
 							<Grid Background="#FFE5E5E5">
 								<Label Content="Exponential decay options" />
 								<Label Content="Fade time constant" Margin="0,21,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-								<xctk:IntegerUpDown Name="ExponentialFadeFramePicker" Value="60" Increment="1" Minimum="1" Height="24" Margin="115,21,158.2,125.4" ValueChanged="ExponentialFadeFramePicker_ValueChanged"/>
+								<xctk:IntegerUpDown Name="ExponentialFadeFramePicker" Value="30" Increment="1" Minimum="1" Height="24" Margin="115,21,158.2,125.4" ValueChanged="ExponentialFadeFramePicker_ValueChanged"/>
 								<Label Name="ExponentialTotalFadeFrameLabel" Content="N frames" Margin="115,52,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
 							</Grid>
 						</TabItem>

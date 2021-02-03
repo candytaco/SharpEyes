@@ -61,10 +61,11 @@ namespace Eyetracking
 		public double duration { get; private set; } = -1.0;
 
 		// parsing video stuff
+		
+		private int _currentFrameNumber = -1;
 		/// <summary>
 		/// The frame number after calling <see cref="ReadFrame"/> or <see cref="ReadGrayscaleFrame"/>.
 		/// </summary>
-		private int _currentFrameNumber = -1;
 		public int CurrentFrameNumber
 		{
 			get { return _currentFrameNumber; }
