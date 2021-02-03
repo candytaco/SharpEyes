@@ -3,6 +3,8 @@ A companion to (and eventual replacement for) the [Eyetracking](https://github.c
 SharpEyes offers a UI for finding pupils in eyetracking videos, and the ability to edit the pupil locations manually, 
 which is way better than the Eyetracking package way of setting values and hoping for the best.
 
+![](screenshot.png)
+
 As of Feb 2, 2021, this is extremely an work in progress, and only the most basic functionalities are supported. These are:
 * Loading a video
 * Parsing timestamps

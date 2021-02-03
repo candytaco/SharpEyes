@@ -537,7 +537,7 @@ namespace Eyetracking
 
 		private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			if (SettingsTabs.SelectedIndex == 0)
+			if (SettingsTabs.SelectedIndex != 1)
 				FilterPreviewImage.Visibility = Visibility.Hidden;
 			else
 			{
