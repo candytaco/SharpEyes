@@ -24,7 +24,8 @@ namespace Eyetracking
 	/// <param name="X">X center of pupil</param>
 	/// <param name="Y">Y center of pupil</param>
 	/// <param name="radius">Pupil radius</param>
-	public delegate void FrameProcessedDelegate(double time, double X, double Y, double radius);
+	/// <param name="confidence">Confidence of the algorithm's match</param>
+	public delegate void FrameProcessedDelegate(double time, double X, double Y, double radius, double confidence);
 
 	/// <summary>
 	/// Delegate for things to do when a chunk of frames is processed.

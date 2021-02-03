@@ -95,6 +95,22 @@ namespace Eyetracking
 				RadiusText.Text = string.Format("Radius: {0:####.#}", value);
 			}
 		}
+		private double _pupilConfidence = 1;
+		private double PupilConfidence
+		{
+			get { return _pupilConfidence; }
+			set
+			{
+				_pupilConfidence = value;
+				ConfidenceText.Text = String.Format("Confidence: {0:#.####}", value);
+				double transparency = value;
+				if (transparency < 0.2)
+					transparency = 0.2;
+				else if (transparency > 1)
+					transparency = 1;
+				PupilEllipse.Stroke.Opacity = transparency;
+			}
+		}
 
 		public bool IsPlaying
 		{
@@ -222,9 +238,9 @@ namespace Eyetracking
 
 		private void NextFrameButton_Click(object sender, RoutedEventArgs e)
 		{
-			Duration newPosition = VideoMediaElement.NaturalDuration - timePerFrame;
-			if (VideoMediaElement.Position >= newPosition) return;
-			UpdateVideoTime(newPosition);
+			Duration last = VideoMediaElement.NaturalDuration - timePerFrame;
+			if (VideoMediaElement.Position >= last) return;
+			UpdateVideoTime(VideoMediaElement.Position + timePerFrame);
 		}
 
 		/// <summary>
@@ -264,6 +280,7 @@ namespace Eyetracking
 			PupilX = pupilFinder.pupilLocations[frameIndex, 0];
 			PupilY = pupilFinder.pupilLocations[frameIndex, 1];
 			PupilRadius = pupilFinder.pupilLocations[frameIndex, 2];
+			PupilConfidence = pupilFinder.pupilLocations[frameIndex, 3];
 		}
 
 		private void VideoSlider_MouseDown(object sender, MouseButtonEventArgs e)
@@ -489,7 +506,15 @@ namespace Eyetracking
 			}
 		}
 
-		public void UpdateFrameWithPupil(double time, double X, double Y, double radius)
+		/// <summary>
+		/// Callback for the pupil finder after processing a frame to update the display
+		/// </summary>
+		/// <param name="time">time for the frame that is processed as a fraction of total time</param>
+		/// <param name="X">X position of pupil</param>
+		/// <param name="Y">Y position of pupil</param>
+		/// <param name="radius">radius of pupil</param>
+		/// <param name="confidence">confidence of pupil</param>
+		public void UpdateFrameWithPupil(double time, double X, double Y, double radius, double confidence)
 		{
 			VideoMediaElement.Position = TimeSpan.FromSeconds(time * VideoMediaElement.NaturalDuration.TimeSpan.TotalSeconds);
 			PupilRadius = radius;
@@ -557,6 +582,7 @@ namespace Eyetracking
 		{
 			if (pupilFinder != null)
 			{
+				PupilConfidence = 1;
 				int frameDecay;
 				ManualUpdateMode mode;
 				if (LinearDecayRadioButton.IsChecked.Value)
@@ -677,6 +703,7 @@ namespace Eyetracking
 			{
 				pupilFinder.LoadPupilLocations(openFileDialog.FileName);
 				FindPupilsButton.IsEnabled = true;
+				UpdateDisplayedPupilPosition();
 			}
 		}
 

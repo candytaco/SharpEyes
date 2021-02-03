@@ -216,9 +216,10 @@
 				</Grid>
 			</TabItem>
 		</TabControl>
-		<TextBlock Name="XPositionText" HorizontalAlignment="Left" Margin="16,393,0,0" TextWrapping="Wrap" Text="X: 0" VerticalAlignment="Top" TextAlignment="Center"/>
-		<TextBlock Name="YPositionText" HorizontalAlignment="Left" Margin="16,409,0,0" TextWrapping="Wrap" Text="Y: 0" VerticalAlignment="Top" TextAlignment="Center"/>
-		<TextBlock Name="RadiusText" HorizontalAlignment="Left" Margin="16,425,0,0" TextWrapping="Wrap" Text="Radius: 0" VerticalAlignment="Top" TextAlignment="Center"/>
+		<TextBlock Name="XPositionText" HorizontalAlignment="Left" Margin="14,380,0,0" TextWrapping="Wrap" Text="X: 0" VerticalAlignment="Top" TextAlignment="Center"/>
+		<TextBlock Name="YPositionText" HorizontalAlignment="Left" Margin="14,396,0,0" TextWrapping="Wrap" Text="Y: 0" VerticalAlignment="Top" TextAlignment="Center"/>
+		<TextBlock Name="RadiusText" HorizontalAlignment="Left" Margin="14,412,0,0" TextWrapping="Wrap" Text="Radius: 0" VerticalAlignment="Top" TextAlignment="Center"/>
+		<TextBlock Name="ConfidenceText" HorizontalAlignment="Left" Margin="14,428,0,0" TextWrapping="Wrap" Text="Confidence: 0" VerticalAlignment="Top" TextAlignment="Center"/>
 
 	</Grid>
 </Window>
