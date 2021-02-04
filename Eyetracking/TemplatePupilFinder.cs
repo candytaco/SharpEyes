@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing.Imaging;
 using System.IO;
+using System.IO.Compression;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Eyetracking
 {
@@ -30,7 +32,7 @@ namespace Eyetracking
 		/// </summary>
 		private List<double> storedPupilSize = null;
 
-		public bool IsUsingCustomTemplates { get { return storedPupilSize == null; } }
+		public bool IsUsingCustomTemplates { get { return storedPupilSize != null; } }
 
 		public TemplatePupilFinder(string videoFileName, System.Windows.Controls.ProgressBar progressBar,
 								   SetStatusDelegate setStatus, FrameProcessedDelegate updateFrame, FramesProcessedDelegate framesProcessed)
@@ -209,6 +211,51 @@ namespace Eyetracking
 
 			CancelPupilFinding += worker.CancelAsync;
 			worker.RunWorkerAsync();
+		}
+
+		public void SaveTemplates(string fileName)
+		{
+			using (FileStream fileStream = new FileStream(fileName, FileMode.Create))
+			using (ZipArchive dataFile = new ZipArchive(fileStream, ZipArchiveMode.Create, true))
+			{
+				BinaryFormatter formatter = new BinaryFormatter();
+				ZipArchiveEntry pupilLocationEntry = dataFile.CreateEntry("storeedPupilSizes.list");
+				using (Stream stream = pupilLocationEntry.Open())
+					formatter.Serialize(stream, storedPupilSize);
+				for (int i = 0; i < NumTemplates; i++)
+				{
+					ZipArchiveEntry templateEntry = dataFile.CreateEntry(string.Format("template{0}.png", i));
+					using (Stream stream = templateEntry.Open())
+						templates[i].WriteToStream(stream);
+				}
+			}
+		}
+
+		public void LoadTemplates(string fileName)
+		{
+			using (FileStream fileStream = new FileStream(fileName, FileMode.Open))
+			using (ZipArchive dataFile = new ZipArchive(fileStream, ZipArchiveMode.Read, true))
+			{
+				BinaryFormatter formatter = new BinaryFormatter();
+				ZipArchiveEntry pupilLocationEntry = dataFile.GetEntry("storeedPupilSizes.list");
+				using (Stream stream = pupilLocationEntry.Open())
+					storedPupilSize = (List<double>)formatter.Deserialize(stream);
+				NumTemplates = storedPupilSize.Count;
+				templates = new List<Mat>(NumTemplates);
+				matchResults = new List<Mat>(NumTemplates);
+				for (int i = 0; i < NumTemplates; i++)
+				{
+					ZipArchiveEntry templateEntry = dataFile.GetEntry(string.Format("template{0}.png", i));
+					using (Stream stream = templateEntry.Open())
+					{
+						MemoryStream decompressed = new MemoryStream();
+						stream.CopyTo(decompressed);
+						decompressed.Position = 0;
+						templates.Add(Mat.FromStream(decompressed, ImreadModes.Grayscale));
+					}
+					matchResults.Add(new Mat());
+				}
+			}
 		}
 	}
 }

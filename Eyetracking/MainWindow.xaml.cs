@@ -501,6 +501,8 @@ namespace Eyetracking
 			pupilFinder.bottom = (int)(SearchWindowRectangle.Height / canvas.Height * pupilFinder.height) + pupilFinder.top;
 			FindPupilsButton.IsEnabled = false;
 			CancelPupilFindingButton.Visibility = Visibility.Visible;
+			if (frames + pupilFinder.CurrentFrameNumber >= pupilFinder.frameCount)
+				frames = pupilFinder.frameCount - pupilFinder.CurrentFrameNumber - 1;
 			pupilFinder.FindPupils(frames);
 		}
 
@@ -752,6 +754,47 @@ namespace Eyetracking
 		private void PreviousTemplateButton_Click(object sender, RoutedEventArgs e)
 		{
 			TemplatePreviewIndex--;
+		}
+
+		private void LoadSavedTemplatesMenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			if (pupilFinder is TemplatePupilFinder templatePupilFinder)
+			{
+				OpenFileDialog openFileDialog = new OpenFileDialog
+				{
+					Filter = "Data file (*.dat)|*.dat"
+				};
+				if (openFileDialog.ShowDialog() == true)
+				{
+					templatePupilFinder.LoadTemplates(openFileDialog.FileName);
+					TemplatePreviewIndex = templatePupilFinder.NumTemplates;
+					SetStatus(String.Format("Idla; Loaded {0} templates", templatePupilFinder.NumTemplates));
+				}
+			}
+		}
+
+		private void SaveTemplatesMenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			if (pupilFinder is TemplatePupilFinder templatePupilFinder)
+			{
+				if (!templatePupilFinder.IsUsingCustomTemplates)
+				{
+					MessageBox.Show("Pupil finder not using custom templates", "No templates to save", MessageBoxButton.OK, MessageBoxImage.Error);
+					return;
+				}
+				SaveFileDialog saveFileDialog = new SaveFileDialog
+				{
+					Filter = "Data file (*.dat)|*.dat"
+				};
+				if (saveFileDialog.ShowDialog() == true)
+				{
+					templatePupilFinder.SaveTemplates(saveFileDialog.FileName);
+				}
+			}
+			else
+			{
+				MessageBox.Show("Not a template pupil finder", "Wrong pupil finder", MessageBoxButton.OK, MessageBoxImage.Error);
+			}
 		}
 
 		private void NextTemplateButton_Click(object sender, RoutedEventArgs e)

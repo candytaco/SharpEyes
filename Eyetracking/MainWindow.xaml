@@ -26,9 +26,11 @@
 				<MenuItem Header="_Open Video" Name="openFileMenuItem" Click="OpenFileMenuItem_Click"></MenuItem>
 				<MenuItem Header="Load _Timestamps" Name="loadSavedDataMenuItem" Click="LoadSavedDataMenuItem_Click"></MenuItem>
 				<MenuItem Header="Load Eyetracking" Name="loadSavedEyetrackingMenuItem" Click="LoadSavedEyetrackingMenuItem_Click" />
+				<MenuItem Header="Load Templates" Name="loadSavedTemplatesMenuItem" Click="LoadSavedTemplatesMenuItem_Click"/>
 				<Separator/>
 				<MenuItem Header="_Save Timestamps" Name="saveTimestampsMenuItem" Click="SaveTimeStampsMenuItemClick"></MenuItem>
 				<MenuItem Header="_Save Eyetracking" Name="saveEyetrackingMenuItem" Click="SaveEyetrackingMenuItem_Click" IsEnabled="False"></MenuItem>
+				<MenuItem Header="Save Templates" Name="saveTemplatesMenuItem" Click="SaveTemplatesMenuItem_Click"/>
 				<Separator></Separator>
 			</MenuItem>
 			<MenuItem Header="_Edit" Name="editMenu">
