@@ -42,7 +42,6 @@ namespace Eyetracking
 
 		// video play related stuff
 		private PupilFinder pupilFinder = null;
-
 		private bool isPlaying = false;
 		private DispatcherTimer timer;
 		public double videoScaleFactor { get; private set; }    // scaling fractor from video size to display size
@@ -58,6 +57,7 @@ namespace Eyetracking
 
 		// data related stuff
 		private EditingState editingState = EditingState.None;
+		private bool isPupilManullySetOnThisFrame = false;
 
 		// Pupil X and Y set the _center_ of the ellipse
 		// The outward-facing values, both returned and in the text lables,
@@ -295,6 +295,8 @@ namespace Eyetracking
 				PupilY = pupilFinder.pupilLocations[pupilFinder.CurrentFrameNumber, 1];
 				PupilRadius = pupilFinder.pupilLocations[pupilFinder.CurrentFrameNumber, 2];
 				PupilConfidence = pupilFinder.pupilLocations[pupilFinder.CurrentFrameNumber, 3];
+
+				isPupilManullySetOnThisFrame = false;
 			}
 			catch (Exception e)
 			{
@@ -479,7 +481,20 @@ namespace Eyetracking
 
 		private void FindPupils(int frames)
 		{
-			double l = Canvas.GetLeft(SearchWindowRectangle);
+			// disable pupil editing if needed
+			if (editingState == EditingState.MovingPupil)
+			{
+				editingState = EditingState.None;
+				movePupilEllipseButton.IsChecked = false;
+				drawWindowButton.IsChecked = false;
+				isEditingStarted = false;
+			}
+
+			if (AutoAddCustomTemplateCheckBox.IsChecked.Value && isPupilManullySetOnThisFrame)
+				UseImageAsTemplateButton_Click(null, null);
+
+
+			double l = Canvas.GetLeft(SearchWindowRectangle);			
 			pupilFinder.left = (int)(Canvas.GetLeft(SearchWindowRectangle) / canvas.Width * pupilFinder.width);
 			pupilFinder.right = (int)(SearchWindowRectangle.Width / canvas.Width * pupilFinder.width) + pupilFinder.left;
 			pupilFinder.top = (int)(Canvas.GetTop(SearchWindowRectangle) / canvas.Height * pupilFinder.height);
@@ -598,6 +613,7 @@ namespace Eyetracking
 				}
 				pupilFinder.ManuallyUpdatePupilLocations(pupilFinder.CurrentFrameNumber, PupilX, PupilY, PupilRadius, frameDecay, mode);
 			}
+			isPupilManullySetOnThisFrame = true;
 		}
 
 		private void SetTemplatePreviewImage()

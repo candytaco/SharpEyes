@@ -132,7 +132,7 @@ namespace Eyetracking
 				for (int f = 0; f < Frames; f++)
 				{
 					ReadGrayscaleFrame();
-					if (storedPupilSize == null || NumTemplates > 1)
+					if (NumTemplates > 1)
 					{
 						Parallel.For(0, templates.Count, i =>
 						{
@@ -144,9 +144,18 @@ namespace Eyetracking
 							{
 								if (maxVal > bestCorrelationOnThisFrame)
 								{
-									pupilLocations[CurrentFrameNumber, 0] = maxLocation.X + left + maxRadius;
-									pupilLocations[CurrentFrameNumber, 1] = maxLocation.Y + top + maxRadius;
-									pupilLocations[CurrentFrameNumber, 2] = i + minRadius;
+									if (storedPupilSize == null)	// case auto-generated templates
+									{
+										pupilLocations[CurrentFrameNumber, 0] = maxLocation.X + left + maxRadius;
+										pupilLocations[CurrentFrameNumber, 1] = maxLocation.Y + top + maxRadius;
+										pupilLocations[CurrentFrameNumber, 2] = i + minRadius;
+									}
+									else	// custom templates that may have different sizes. I was going to use ternary ops because slick but it would make three of the same comparisons
+									{
+										pupilLocations[CurrentFrameNumber, 0] = maxLocation.X + left + templates[i].Width / 2;
+										pupilLocations[CurrentFrameNumber, 1] = maxLocation.Y + top + templates[i].Height / 2;
+										pupilLocations[CurrentFrameNumber, 2] = storedPupilSize[i];
+									}
 									bestCorrelationOnThisFrame = maxVal;
 								}
 							}
