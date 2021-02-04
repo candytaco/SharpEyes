@@ -233,7 +233,10 @@ namespace Eyetracking
 			PupilRadius = PupilRadius;
 			SetStatus();
 			if (pupilFinder is TemplatePupilFinder templatePupilFinder)
+			{
 				TemplatePreviewIndex = 0;
+				loadSavedTemplatesMenuItem.IsEnabled = true;
+			}
 			pupilFinder.ReadFrame();
 			UpdateDisplays();
 			pupilFinder.Seek(0);
@@ -476,6 +479,7 @@ namespace Eyetracking
 			{
 				pupilFinder.ParseTimeStamps();
 				FindPupilsButton.IsEnabled = true;
+				saveTimestampsMenuItem.IsEnabled = true;
 			}
 		}
 
@@ -634,12 +638,19 @@ namespace Eyetracking
 			int right = (int)(PupilX + (double)PupilRadius * 1.5 + 2);
 			((TemplatePupilFinder)pupilFinder).AddImageSegmentAsTemplate(top, bottom, left, right, PupilRadius);
 			TemplatePreviewIndex = ((TemplatePupilFinder)pupilFinder).NumTemplates;
+			if (!saveTemplatesMenuItem.IsEnabled)
+			{
+				saveTemplatesMenuItem.IsEnabled = true;
+				ResetTemplatesButton.IsEnabled = true;
+			}
 		}
 
 		private void ResetTemplatesButton_Click(object sender, RoutedEventArgs e)
 		{
 			((TemplatePupilFinder)pupilFinder).MakeTemplates();
 			TemplatePreviewIndex = 0;
+			saveTemplatesMenuItem.IsEnabled = false;
+			ResetTemplatesButton.IsEnabled = false;
 		}
 
 		private void LoadDebugDataMenuItem_Click(object sender, RoutedEventArgs e)

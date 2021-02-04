@@ -26,11 +26,11 @@
 				<MenuItem Header="_Open Video" Name="openFileMenuItem" Click="OpenFileMenuItem_Click"></MenuItem>
 				<MenuItem Header="Load _Timestamps" Name="loadSavedDataMenuItem" Click="LoadSavedDataMenuItem_Click"></MenuItem>
 				<MenuItem Header="Load Eyetracking" Name="loadSavedEyetrackingMenuItem" Click="LoadSavedEyetrackingMenuItem_Click" />
-				<MenuItem Header="Load Templates" Name="loadSavedTemplatesMenuItem" Click="LoadSavedTemplatesMenuItem_Click"/>
+				<MenuItem Header="Load Templates" Name="loadSavedTemplatesMenuItem" Click="LoadSavedTemplatesMenuItem_Click" IsEnabled="False"/>
 				<Separator/>
-				<MenuItem Header="_Save Timestamps" Name="saveTimestampsMenuItem" Click="SaveTimeStampsMenuItemClick"></MenuItem>
+				<MenuItem Header="_Save Timestamps" Name="saveTimestampsMenuItem" Click="SaveTimeStampsMenuItemClick" IsEnabled="False"></MenuItem>
 				<MenuItem Header="_Save Eyetracking" Name="saveEyetrackingMenuItem" Click="SaveEyetrackingMenuItem_Click" IsEnabled="False"></MenuItem>
-				<MenuItem Header="Save Templates" Name="saveTemplatesMenuItem" Click="SaveTemplatesMenuItem_Click"/>
+				<MenuItem Header="Save Templates" Name="saveTemplatesMenuItem" Click="SaveTemplatesMenuItem_Click" IsEnabled="False"/>
 				<Separator></Separator>
 			</MenuItem>
 			<MenuItem Header="_Edit" Name="editMenu">
@@ -143,7 +143,7 @@
 							<Grid Background="#FFE5E5E5">
 								<Label Content="Template pupil finding options" HorizontalAlignment="Left" VerticalAlignment="Top" />
 								<Button Name="UseImageAsTemplateButton" Content="Add current as template" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="auto" Click="UseImageAsTemplateButton_Click"/>
-								<Button Name="ResetTemplatesButton" Content="Reset to default templates" HorizontalAlignment="Left" Margin="10,99,0,0" VerticalAlignment="Top" Width="auto" Click="ResetTemplatesButton_Click"/>
+								<Button Name="ResetTemplatesButton" Content="Reset to default templates" HorizontalAlignment="Left" Margin="10,99,0,0" VerticalAlignment="Top" Width="auto" Click="ResetTemplatesButton_Click" IsEnabled="False"/>
 								<GroupBox Header="Template Preview" HorizontalAlignment="Left" Height="133" Margin="176,4,0,0" VerticalAlignment="Top" Width="149">
 									<Image Name="TemplatePreviewImage"  Margin="0,0,0,0" Stretch="Uniform"/>
 								</GroupBox>
