@@ -46,17 +46,6 @@ namespace Eyetracking
 		private bool isPlaying = false;
 		private DispatcherTimer timer;
 		public double videoScaleFactor { get; private set; }    // scaling fractor from video size to display size
-		/// <summary>
-		/// Index of the frame currently displayed. This is 1 behind <see cref="PupilFinder.CurrentFrameNumber"/>, since that is the frame index _after_ reading in a frame
-		/// </summary>
-		int CurrentDisplayedFrameIndex
-		{ get
-			{
-				if (!VideoMediaElement.IsLoaded || (pupilFinder == null))
-					return -1;
-				return (int)((VideoMediaElement.Position.TotalMilliseconds / VideoMediaElement.NaturalDuration.TimeSpan.TotalMilliseconds) * pupilFinder.frameCount);
-			}
-		}
 
 
 		// eyetracking setup related stuff
@@ -153,19 +142,17 @@ namespace Eyetracking
 				if (value)
 				{
 					PlayPauseButton.Content = "Pause";
-					VideoMediaElement.Play();
 					timer.Start();
 				}
 				else
 				{
 					PlayPauseButton.Content = "Play";
-					VideoMediaElement.Pause();
 					timer.Stop();
 				}
 			}
 		}
 
-		public int MillisecondsPerFrame { get; private set; } = 0;
+		public double MillisecondsPerFrame { get; private set; } = 0;
 		private TimeSpan timePerFrame;
 
 		public bool HasFile
@@ -220,20 +207,17 @@ namespace Eyetracking
 			VideoSizeStatus.Text = string.Format("{0}x{1}", pupilFinder.width, pupilFinder.height);
 			FPSStatus.Text = string.Format("{0:##} fps", pupilFinder.fps);
 
-			videoScaleFactor = VideoMediaElement.Width / pupilFinder.width;
+			videoScaleFactor = VideoFrameImage.Width / pupilFinder.width;
 
-			MillisecondsPerFrame = 1000 / pupilFinder.fps;
+			MillisecondsPerFrame = 1000.0 / (double)pupilFinder.fps;
 			timePerFrame = TimeSpan.FromMilliseconds(MillisecondsPerFrame);
+
+			VideoSlider.Maximum = pupilFinder.frameCount - 1;
 
 			timer = new DispatcherTimer();
 			timer.Interval = timePerFrame;
-			timer.Tick += UpdateTimeDisplay;
+			timer.Tick += VideoPlayTimerTick;
 
-			VideoMediaElement.Source = new Uri(videoFileName);
-			VideoMediaElement.LoadedBehavior = MediaState.Manual;
-			VideoMediaElement.Play();
-			VideoMediaElement.Position = TimeSpan.Zero;
-			VideoMediaElement.Pause();
 			isPlaying = false;
 			FindPupilsButton.IsEnabled = false;
 			ReadTimestampButton.IsEnabled = true;
@@ -247,70 +231,65 @@ namespace Eyetracking
 			SetStatus();
 			if (pupilFinder is TemplatePupilFinder templatePupilFinder)
 				TemplatePreviewIndex = 0;
+			pupilFinder.ReadFrame();
+			UpdateDisplays();
+			pupilFinder.Seek(0);
 		}
 
 		private void PlayPauseButton_Click(object sender, RoutedEventArgs e)
 		{
-			if (VideoMediaElement.Source == null)
-				return;
 			IsPlaying = !IsPlaying;
-		}
-
-		private void VideoMediaElement_MediaEnded(object sender, RoutedEventArgs e)
-		{
-			VideoMediaElement.Position = TimeSpan.Zero;
-			IsPlaying = false;
 		}
 
 		private void PreviousFrameButton_Click(object sender, RoutedEventArgs e)
 		{
-			if (VideoMediaElement.Position <= timePerFrame) return;
-			UpdateVideoTime(VideoMediaElement.Position - timePerFrame);
+			if (pupilFinder.CurrentFrameNumber <= 0) return;
+			UpdateVideoTime(pupilFinder.CurrentFrameNumber - 1);
 		}
 
 		private void NextFrameButton_Click(object sender, RoutedEventArgs e)
 		{
-			Duration last = VideoMediaElement.NaturalDuration - timePerFrame;
-			if (VideoMediaElement.Position >= last) return;
-			UpdateVideoTime(VideoMediaElement.Position + timePerFrame);
+			if (pupilFinder.CurrentFrameNumber >= pupilFinder.frameCount - 1) return;
+			UpdateVideoTime(pupilFinder.CurrentFrameNumber + 1);
 		}
 
 		/// <summary>
 		/// Aggregate handle for the multitude of UI controls that scrub through the video
 		/// </summary>
-		/// <param name="time">Duration representing position to set video do</param>
-		private void UpdateVideoTime(TimeSpan time)
+		/// <param name="frame">Frame to set the video to</param>
+		private void UpdateVideoTime(int frame)
 		{
-			VideoMediaElement.Position = time;
-			UpdateTimeDisplay(null, null);
-		}
-		private void UpdateVideoTime(Duration time)
-		{
-			UpdateVideoTime(time.TimeSpan);
+			pupilFinder.CurrentFrameNumber = frame;
+			UpdateDisplays();
 		}
 
-		private void UpdateTimeDisplay(object sender, EventArgs e)
+		private void VideoPlayTimerTick(object sender, EventArgs e)
 		{
-			// TODO: this handler is normally called when the VideoMediaElement, i.e. WPF UI plays the video
-			// this needs to be updated to draw the pupil ellipse correctly
-			VideoTimeLabel.Content = String.Format("{0:00}:{1:00}:{2:00}.{3:000}",
-													VideoMediaElement.Position.Hours,
-													VideoMediaElement.Position.Minutes,
-													VideoMediaElement.Position.Seconds,
-													VideoMediaElement.Position.Milliseconds);
-			VideoSlider.Value = (VideoMediaElement.Position.TotalMilliseconds / VideoMediaElement.NaturalDuration.TimeSpan.TotalMilliseconds) * 100;
-			UpdateDisplayedPupilPosition();
+			pupilFinder.CurrentFrameNumber++;
+			UpdateDisplays();
 		}
 
 		/// <summary>
 		/// Updates the displayed pupil after seeking through the video
 		/// </summary>
-		private void UpdateDisplayedPupilPosition()
-		{			
-			PupilX = pupilFinder.pupilLocations[CurrentDisplayedFrameIndex, 0];
-			PupilY = pupilFinder.pupilLocations[CurrentDisplayedFrameIndex, 1];
-			PupilRadius = pupilFinder.pupilLocations[CurrentDisplayedFrameIndex, 2];
-			PupilConfidence = pupilFinder.pupilLocations[CurrentDisplayedFrameIndex, 3];
+		private void UpdateDisplays()
+		{
+			int frames = pupilFinder.CurrentFrameNumber;
+			VideoSlider.Value = frames;
+
+			int hours = frames / (pupilFinder.fps * 60 * 60);
+			frames -= hours;
+			int minutes = frames / (pupilFinder.fps * 60);
+			frames -= minutes;
+			int seconds = frames / (pupilFinder.fps);
+			frames -= seconds;
+			VideoTimeLabel.Content = String.Format("{0:00}:{1:00}:{2:00};{3:#00}", hours, minutes, seconds, frames);
+			VideoFrameImage.Source = pupilFinder.GetFrameForDisplay(false);
+
+			PupilX = pupilFinder.pupilLocations[pupilFinder.CurrentFrameNumber, 0];
+			PupilY = pupilFinder.pupilLocations[pupilFinder.CurrentFrameNumber, 1];
+			PupilRadius = pupilFinder.pupilLocations[pupilFinder.CurrentFrameNumber, 2];
+			PupilConfidence = pupilFinder.pupilLocations[pupilFinder.CurrentFrameNumber, 3];
 		}
 
 		private void VideoSlider_MouseDown(object sender, MouseButtonEventArgs e)
@@ -320,12 +299,12 @@ namespace Eyetracking
 
 		private void VideoSlider_MouseUp(object sender, MouseButtonEventArgs e)
 		{
-			UpdateVideoTime(TimeSpan.FromSeconds(VideoSlider.Value / VideoSlider.Maximum * VideoMediaElement.NaturalDuration.TimeSpan.TotalSeconds));
+			UpdateVideoTime((int)VideoSlider.Value);
 		}
 
 		private void VideoSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
 		{
-			UpdateVideoTime(TimeSpan.FromSeconds(VideoSlider.Value / VideoSlider.Maximum * VideoMediaElement.NaturalDuration.TimeSpan.TotalSeconds));
+			UpdateVideoTime((int)VideoSlider.Value);
 		}
 
 		private void VideoSlider_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
@@ -545,12 +524,12 @@ namespace Eyetracking
 		/// <param name="confidence">confidence of pupil</param>
 		public void UpdateFrameWithPupil(double time, double X, double Y, double radius, double confidence)
 		{
-			VideoMediaElement.Position = TimeSpan.FromSeconds(time * VideoMediaElement.NaturalDuration.TimeSpan.TotalSeconds);
 			PupilRadius = radius;
 			PupilX = X;
 			PupilY = Y;
+			PupilConfidence = confidence;
 
-			UpdateTimeDisplay(null, null);
+			VideoPlayTimerTick(null, null);
 		}
 
 		private void ImageFilterValuesChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -561,18 +540,19 @@ namespace Eyetracking
 			pupilFinder.bilateralSigmaSpace = BilateralSigmaSpacePicker.Value.Value;
 			pupilFinder.medianBlurSize = MedianBlurSizePicker.Value.Value;
 
-			FilterPreviewImage.Source = pupilFinder.GetFrameForDisplay();
+			VideoFrameImage.Source = pupilFinder.GetFrameForDisplay(true);
 		}
 
 		private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			if (SettingsTabs.SelectedIndex != 1)
-				FilterPreviewImage.Visibility = Visibility.Hidden;
-			else
-			{
-				FilterPreviewImage.Visibility = Visibility.Visible;
+			if (SettingsTabs.SelectedIndex == 1)
 				ImageFilterValuesChanged(null, null);
-			}
+			else
+				try
+				{
+					VideoFrameImage.Source = pupilFinder.GetFrameForDisplay(false);
+				}
+				catch (Exception) { }; // null reference during initialization
 		}
 
 		private void Canvas_MouseWheel(object sender, MouseWheelEventArgs e)
@@ -659,6 +639,7 @@ namespace Eyetracking
 				LoadFile("D:\\run01.avi");
 				pupilFinder.LoadTimestamps("D:\\test timestamps.npy");
 				FindPupilsButton.IsEnabled = true;
+				pupilFinder.LoadPupilLocations("D:\\test eyetracking.npy");
 			}
 			catch (Exception)
 			{
@@ -678,8 +659,8 @@ namespace Eyetracking
 		private void ExponentialFadeFramePicker_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
 		{
 			if (pupilFinder == null) return;
-			double oldX = pupilFinder.pupilLocations[CurrentDisplayedFrameIndex, 0];
-			double oldY = pupilFinder.pupilLocations[CurrentDisplayedFrameIndex, 1];
+			double oldX = pupilFinder.pupilLocations[pupilFinder.CurrentFrameNumber, 0];
+			double oldY = pupilFinder.pupilLocations[pupilFinder.CurrentFrameNumber, 1];
 			double dD = Math.Sqrt((oldX - PupilX) * (oldX - PupilX) + (oldY - PupilY) * (oldY - PupilY));
 			if (dD < 1)
 			{
@@ -741,7 +722,7 @@ namespace Eyetracking
 			{
 				pupilFinder.LoadPupilLocations(openFileDialog.FileName);
 				FindPupilsButton.IsEnabled = true;
-				UpdateDisplayedPupilPosition();
+				UpdateDisplays();
 			}
 		}
 

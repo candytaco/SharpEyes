@@ -72,9 +72,8 @@ namespace Eyetracking
 			}
 			if (grayFrame.Width < 1)
 			{
-				int currentFrame = CurrentFrameNumber;
+				_currentFrameNumber--;
 				ReadGrayscaleFrame();
-				CurrentFrameNumber = currentFrame;
 			}
 			templates.Add(new Mat(bottom - top, right - left, MatType.CV_8UC1));
 			storedPupilSize.Add(radius);

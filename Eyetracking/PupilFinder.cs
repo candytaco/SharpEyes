@@ -60,11 +60,10 @@ namespace Eyetracking
 		public int frameCount { get; private set; } = -1;
 		public double duration { get; private set; } = -1.0;
 
-		// parsing video stuff
-		
-		private int _currentFrameNumber = -1;
+		// parsing video stuff		
+		protected int _currentFrameNumber = -1;
 		/// <summary>
-		/// The frame number after calling <see cref="ReadFrame"/> or <see cref="ReadGrayscaleFrame"/>.
+		/// The current frame number that has been read in
 		/// </summary>
 		public int CurrentFrameNumber
 		{
@@ -73,12 +72,23 @@ namespace Eyetracking
 			{
 				_currentFrameNumber = value;
 				videoSource.Set(VideoCaptureProperties.PosFrames, value - 1);
+				ReadGrayscaleFrame();
 			}
 		}
 		public Mat cvFrame { get; protected set; } = null;
 		protected Mat[] colorChannels = new Mat[3];
 		protected Mat red;
 		public bool isTimestampParsed { get; private set; } = false;
+		/// <summary>
+		/// Used for converting a Cv2 Mat to a displayable bitmap
+		/// </summary>
+		private MemoryStream BMPConvertMemeory = new MemoryStream();
+		/// <summary>
+		/// Lazy flag in case for some reason we need to get the same frame twice
+		/// </summary>
+		private bool isCVFrameConverted = false;
+		private bool isBitmapFrameGrayscale = false;
+		private BitmapImage bitmapFrame = null;
 
 		// pupil finding stuff
 		public int left, right, top, bottom;    // window within which to look for pupil
@@ -155,7 +165,7 @@ namespace Eyetracking
 		}
 
 		/// <summary>
-		/// Find pupils in some set of frames
+		/// Find pupils in some set of frames. Must be overridden in child classes.
 		/// </summary>
 		/// <param name="Frames"> number of frames from current to find pupils for </param>
 		public virtual void FindPupils(int Frames)
@@ -229,7 +239,7 @@ namespace Eyetracking
 		/// Read the next frame and increment the internal counter
 		/// </summary>
 		/// <returns></returns>
-		protected bool ReadFrame()
+		public bool ReadFrame()
 		{
 			bool success = videoSource.Read(cvFrame);
 			if (!success)
@@ -238,6 +248,7 @@ namespace Eyetracking
 			}
 
 			_currentFrameNumber++;
+			isCVFrameConverted = false;
 			return success;
 		}
 
@@ -246,7 +257,7 @@ namespace Eyetracking
 		/// Also does any needed filtering
 		/// </summary>
 		/// <returns></returns>
-		protected bool ReadGrayscaleFrame()
+		public bool ReadGrayscaleFrame()
 		{
 			bool success = ReadFrame();
 			if (success)
@@ -274,22 +285,41 @@ namespace Eyetracking
 			}
 		}
 
-		public BitmapImage GetFrameForDisplay()
+		/// <summary>
+		/// Gets the current frame that has been read in for display
+		/// </summary>
+		/// <param name="grayScale">get the grayscale frame instead of the RGB frame.</param>
+		/// <returns></returns>
+		public BitmapImage GetFrameForDisplay(bool grayScale)
 		{
-			// read the current frame, but we do not increment the counter
-			int currentFrameNumber = CurrentFrameNumber;
-			ReadGrayscaleFrame();
-			CurrentFrameNumber = currentFrameNumber;
+			if (cvFrame == null) return null;
 
-			MemoryStream memory = new MemoryStream();
-			grayFrame.ToBitmap().Save(memory, ImageFormat.Bmp);
-			memory.Position = 0;
-			BitmapImage image = new BitmapImage();
-			image.BeginInit();
-			image.StreamSource = memory;
-			image.CacheOption = BitmapCacheOption.OnLoad;
-			image.EndInit();
-			return image;
+			if ((grayScale == isBitmapFrameGrayscale) && isCVFrameConverted)
+				return bitmapFrame;
+
+			isBitmapFrameGrayscale = grayScale;
+			isCVFrameConverted = true;
+			if (grayScale)
+				grayFrame.ToBitmap().Save(BMPConvertMemeory, ImageFormat.Bmp);
+			else
+				cvFrame.ToBitmap().Save(BMPConvertMemeory, ImageFormat.Bmp);
+			BMPConvertMemeory.Position = 0;
+			bitmapFrame = new BitmapImage();
+			bitmapFrame.BeginInit();
+			bitmapFrame.StreamSource = BMPConvertMemeory;
+			bitmapFrame.CacheOption = BitmapCacheOption.OnLoad;
+			bitmapFrame.EndInit();
+			return bitmapFrame;
+		}
+
+		/// <summary>
+		/// Seek to a frame such that when <see cref="ReadFrame"/> or <see cref="ReadGrayscaleFrame"/> is called,
+		/// this frame is read in.
+		/// </summary>
+		/// <param name="frame">frame to go to</param>
+		public void Seek(int frame)
+		{
+			_currentFrameNumber = frame - 1;
 		}
 
 		public void SaveTimestamps(string fileName)

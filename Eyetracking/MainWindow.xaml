@@ -96,9 +96,7 @@
 		</StatusBar>
 		<Canvas Name="canvas" HorizontalAlignment="Left" Margin="4,52,0,0" VerticalAlignment="Top" Width="400" Height="300" Background="Transparent" 
 				MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseMove="Canvas_MouseMove" MouseLeftButtonUp="Canvas_MouseLeftButtonUp" MouseWheel="Canvas_MouseWheel">
-			<MediaElement Name="VideoMediaElement" Margin="0,0,0,0" LoadedBehavior="Manual" ScrubbingEnabled="True" UnloadedBehavior="Manual" MediaEnded="VideoMediaElement_MediaEnded" Height="300" Width="400"/>
-
-			<Image Name="FilterPreviewImage" Margin="0,0,0,0" Width="400" Height="300"/>
+			<Image x:Name="VideoFrameImage" Margin="0,0,0,0" Width="400" Height="300"/>
 
 			<Ellipse Name="PupilEllipse" Fill="Transparent" HorizontalAlignment="Left" Height="32" Margin="0" 
 					 Stroke="#FF00BAFF" VerticalAlignment="Top" Width="32" RenderTransformOrigin="0.5,0.5" StrokeThickness="3"/>
