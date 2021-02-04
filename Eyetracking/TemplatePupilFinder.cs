@@ -170,11 +170,7 @@ namespace Eyetracking
 
 					this.Dispatcher.Invoke(() =>
 					{
-						UpdateFrame((double)CurrentFrameNumber / (double)frameCount, 
-									pupilLocations[CurrentFrameNumber, 0], 
-									pupilLocations[CurrentFrameNumber, 1], 
-									pupilLocations[CurrentFrameNumber, 2],
-									pupilLocations[CurrentFrameNumber, 3]);
+						UpdateFrame();
 					});
 					((BackgroundWorker)sender).ReportProgress((f + 1) * 100 / Frames);
 					if (worker.CancellationPending)

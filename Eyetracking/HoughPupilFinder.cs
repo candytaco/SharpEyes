@@ -46,7 +46,7 @@ namespace Eyetracking
 
 					this.Dispatcher.Invoke(() =>
 					{
-						UpdateFrame((double)CurrentFrameNumber / (double)frameCount, circle.Center.X + left, circle.Center.Y + top, circle.Radius, 1);
+						UpdateFrame();
 					});
 					((BackgroundWorker)sender).ReportProgress((i + 1) * 100 / Frames);
 					if (worker.CancellationPending)
