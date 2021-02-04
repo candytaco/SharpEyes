@@ -106,7 +106,7 @@
 		<Button Name="PlayPauseButton" Content="Play" HorizontalAlignment="Left" Margin="179,377,0,0" VerticalAlignment="Top" Width="45" Click="PlayPauseButton_Click"/>
 		<Button Name="PreviousFrameButton" Content="&lt;" HorizontalAlignment="Left" Margin="154,377,0,0" VerticalAlignment="Top" Width="20" Click="PreviousFrameButton_Click"/>
 		<Button Name="NextFrameButton" Content="&gt;" HorizontalAlignment="Left" Margin="229,377,0,0" VerticalAlignment="Top" Width="20" Click="NextFrameButton_Click"/>
-		<Slider Name="VideoSlider" HorizontalAlignment="Left" Margin="4,357,0,0" VerticalAlignment="Top" Width="400" Maximum="100" LargeChange="10" 
+		<Slider Name="VideoSlider" HorizontalAlignment="Left" Margin="4,357,0,0" VerticalAlignment="Top" Width="400" Minimum="0" Maximum="100" LargeChange="10" 
 				MouseDown="VideoSlider_MouseDown" MouseUp="VideoSlider_MouseUp"
 				Thumb.DragCompleted="VideoSlider_DragCompleted" Thumb.DragStarted="VideoSlider_DragStarted"/>
 		<Label Name="VideoTimeLabel" Content="00:00:00;00" HorizontalAlignment="Left" HorizontalContentAlignment="Right" Margin="329,371,0,0" VerticalAlignment="Top" Width="76"/>

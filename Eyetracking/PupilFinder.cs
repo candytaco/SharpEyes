@@ -58,14 +58,15 @@ namespace Eyetracking
 		// parsing video stuff		
 		protected int _currentFrameNumber = -1;
 		/// <summary>
-		/// The current frame number that has been read in
+		/// The current frame number that has been read in. When set, will read that frame!
+		/// Use <see cref="Seek"/> if we do not want to go the frame reading.
 		/// </summary>
 		public int CurrentFrameNumber
 		{
 			get { return _currentFrameNumber; }
 			set
 			{
-				_currentFrameNumber = value;
+				_currentFrameNumber = value - 1;
 				videoSource.Set(VideoCaptureProperties.PosFrames, value - 1);
 				ReadGrayscaleFrame();
 			}

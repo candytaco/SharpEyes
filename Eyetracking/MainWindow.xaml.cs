@@ -35,7 +35,7 @@ namespace Eyetracking
 			int hours = (int)(seconds / 3600);
 			seconds -= hours * 3600;
 			int minutes = (int)(seconds / 60);
-			seconds -= minutes;
+			seconds -= minutes * 60;
 			int frames = frameCount % fps;
 			return String.Format("{0:00}:{1:00}:{2:00};{3:00}", hours, minutes, seconds, frames);
 		}
@@ -277,22 +277,29 @@ namespace Eyetracking
 		/// </summary>
 		private void UpdateDisplays()
 		{
-			int frames = pupilFinder.CurrentFrameNumber;
-			VideoSlider.Value = frames;
+			try
+			{
+				int frames = pupilFinder.CurrentFrameNumber;
+				VideoSlider.Value = frames;
 
-			int hours = frames / framesPerHour;
-			frames -= hours * framesPerHour;
-			int minutes = frames / framesPerMinute;
-			frames -= minutes * framesPerMinute;
-			int seconds = frames / pupilFinder.fps;
-			frames -= seconds * pupilFinder.fps;
-			VideoTimeLabel.Content = String.Format("{0:00}:{1:00}:{2:00};{3:#00}", hours, minutes, seconds, frames);
-			VideoFrameImage.Source = pupilFinder.GetFrameForDisplay(false);
+				int hours = frames / framesPerHour;
+				frames -= hours * framesPerHour;
+				int minutes = frames / framesPerMinute;
+				frames -= minutes * framesPerMinute;
+				int seconds = frames / pupilFinder.fps;
+				frames -= seconds * pupilFinder.fps;
+				VideoTimeLabel.Content = String.Format("{0:00}:{1:00}:{2:00};{3:#00}", hours, minutes, seconds, frames + 1);
+				VideoFrameImage.Source = pupilFinder.GetFrameForDisplay(false);
 
-			PupilX = pupilFinder.pupilLocations[pupilFinder.CurrentFrameNumber, 0];
-			PupilY = pupilFinder.pupilLocations[pupilFinder.CurrentFrameNumber, 1];
-			PupilRadius = pupilFinder.pupilLocations[pupilFinder.CurrentFrameNumber, 2];
-			PupilConfidence = pupilFinder.pupilLocations[pupilFinder.CurrentFrameNumber, 3];
+				PupilX = pupilFinder.pupilLocations[pupilFinder.CurrentFrameNumber, 0];
+				PupilY = pupilFinder.pupilLocations[pupilFinder.CurrentFrameNumber, 1];
+				PupilRadius = pupilFinder.pupilLocations[pupilFinder.CurrentFrameNumber, 2];
+				PupilConfidence = pupilFinder.pupilLocations[pupilFinder.CurrentFrameNumber, 3];
+			}
+			catch (Exception e)
+			{
+				MessageBox.Show(e.ToString(), "Exception", MessageBoxButton.OK, MessageBoxImage.Error);
+			}
 		}
 
 		private void VideoSlider_MouseDown(object sender, MouseButtonEventArgs e)
