@@ -37,6 +37,7 @@
 				<MenuItem Header="_Save Timestamps" Name="saveTimestampsMenuItem" Click="SaveTimeStampsMenuItemClick" IsEnabled="False"></MenuItem>
 				<MenuItem Header="_Save Eyetracking" Name="saveEyetrackingMenuItem" Click="SaveEyetrackingMenuItem_Click" IsEnabled="False"></MenuItem>
 				<MenuItem Header="Save Templates" Name="saveTemplatesMenuItem" Click="SaveTemplatesMenuItem_Click" IsEnabled="False"/>
+				<MenuItem Header="Save All" Name="saveAllMenuItem" Click="SaveAllMenuItem_Click" IsEnabled="False"/>
 				<Separator></Separator>
 			</MenuItem>
 			<MenuItem Header="_Edit" Name="editMenu">

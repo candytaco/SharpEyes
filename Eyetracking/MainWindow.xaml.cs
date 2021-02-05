@@ -291,6 +291,7 @@ namespace Eyetracking
 			pupilFinder.ReadFrame();
 			UpdateDisplays();
 			pupilFinder.Seek(0);
+			saveAllMenuItem.IsEnabled = true;
 		}
 
 		private void PlayPauseButton_Click(object sender, RoutedEventArgs e)
@@ -880,6 +881,25 @@ namespace Eyetracking
 		private void PlayPauseCommand_Executed(object sender, ExecutedRoutedEventArgs e)
 		{
 			IsPlaying = !IsPlaying;
+		}
+
+		private void SaveAllMenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			SaveFileDialog saveFileDialog = new SaveFileDialog
+			{
+				Filter = "Directory | directory",
+				Title = "Save all into folder...",
+			};
+			if (saveFileDialog.ShowDialog() == true)
+			{
+				pupilFinder.SaveTimestamps(Path.Combine(Path.GetDirectoryName(saveFileDialog.FileName),
+														String.Format("{0} timestamps.npy", Path.GetFileNameWithoutExtension(pupilFinder.videoFileName))));
+				pupilFinder.SavePupilLocations(Path.Combine(Path.GetDirectoryName(saveFileDialog.FileName),
+															String.Format("{0} pupils.npy", Path.GetFileNameWithoutExtension(pupilFinder.videoFileName))));
+				if (pupilFinder is TemplatePupilFinder templatePupilFinder)
+					templatePupilFinder.SaveTemplates(Path.Combine(Path.GetDirectoryName(saveFileDialog.FileName),
+																   String.Format("{0} templates.dat", Path.GetFileNameWithoutExtension(pupilFinder.videoFileName))));
+			}
 		}
 
 		private void NextTemplateButton_Click(object sender, RoutedEventArgs e)
