@@ -1,10 +1,10 @@
 ﻿using NumSharp;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
+using System;
 using System.ComponentModel;
 using System.Drawing.Imaging;
 using System.IO;
-using System;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Num = NumSharp.np;
@@ -28,7 +28,7 @@ namespace Eyetracking
 	/// per click of the Find Frames button.
 	/// </summary>
 	public delegate void FramesProcessedDelegate();
-	
+
 	/// <summary>
 	/// Delegate to be called for cancelling pupil finding
 	/// </summary>
@@ -39,14 +39,32 @@ namespace Eyetracking
 	/// </summary>
 	public enum ManualUpdateMode
 	{
-		Linear,			// fade linearly
-		Exponential,	// fade exponentially
+		Linear,         // fade linearly
+		Exponential,    // fade exponentially
 	}
 
 	internal abstract class PupilFinder : DispatcherObject
 	{
 		// video information
 		public string videoFileName { get; private set; }
+		public string autoTimestampFileName
+		{
+			get
+			{
+				if (videoFileName == null) return null;
+				return Path.Combine(Path.GetDirectoryName(videoFileName),
+									String.Format("{0} timestamps.npy", Path.GetFileNameWithoutExtension(videoFileName)));
+			}
+		}
+		public string autoPupilsFileName
+		{
+			get
+			{
+				if (videoFileName == null) return null;
+				return Path.Combine(Path.GetDirectoryName(videoFileName),
+									String.Format("{0} pupils.npy", Path.GetFileNameWithoutExtension(videoFileName)));
+			}
+		}
 		protected VideoCapture videoSource = null;
 
 		public int width { get; private set; } = -1;
@@ -67,8 +85,15 @@ namespace Eyetracking
 			set
 			{
 				int desired = value;
-				if (desired < 0) desired = 0;
-				else if (desired > frameCount - 1) desired = frameCount - 1;
+				if (desired < 0)
+				{
+					desired = 0;
+				}
+				else if (desired > frameCount - 1)
+				{
+					desired = frameCount - 1;
+				}
+
 				_currentFrameNumber = desired - 1;
 				videoSource.Set(VideoCaptureProperties.PosFrames, desired);
 				ReadGrayscaleFrame();
@@ -108,13 +133,19 @@ namespace Eyetracking
 		private NDArray timeStamps = null;
 		protected Mat grayFrame = new Mat();
 		protected Mat filteringFrame = new Mat();   // helper for filtering
-		protected bool[] isFrameProcessed;			// has each frame been processed?
-		public bool AreAllFramesProcessed			// has all frames been processed?
+		protected bool[] isFrameProcessed;          // has each frame been processed?
+		public bool AreAllFramesProcessed           // has all frames been processed?
 		{
 			get
 			{
 				for (int i = 0; i < frameCount; i++)
-					if (!isFrameProcessed[i]) return false;
+				{
+					if (!isFrameProcessed[i])
+					{
+						return false;
+					}
+				}
+
 				return true;
 			}
 		}
@@ -141,9 +172,9 @@ namespace Eyetracking
 		{
 			this.videoFileName = videoFileName;
 			this.progressBar = progressBar;
-			this.SetStatus = setStatus;
-			this.UpdateFrame = updateFrame;
-			this.OnFramesProcessed = framesProcessed;
+			SetStatus = setStatus;
+			UpdateFrame = updateFrame;
+			OnFramesProcessed = framesProcessed;
 			this.taskbar = taskbar;
 			videoSource = new VideoCapture(videoFileName);
 			width = (int)videoSource.Get(VideoCaptureProperties.FrameWidth);
@@ -152,8 +183,19 @@ namespace Eyetracking
 			frameCount = (int)videoSource.Get(VideoCaptureProperties.FrameCount);
 			duration = frameCount / fps;
 
-			pupilLocations = Num.zeros((frameCount, 4), NPTypeCode.Double);
-			timeStamps = Num.zeros((frameCount, 4), NPTypeCode.Int32);
+			// try to auto load stuff if they exist
+			if (File.Exists(autoTimestampFileName))
+			{
+				LoadTimestamps(autoTimestampFileName);
+				isTimestampParsed = true;
+			}
+			else
+				timeStamps = Num.zeros((frameCount, 4), NPTypeCode.Int32);
+
+			if (File.Exists(autoPupilsFileName))
+				LoadPupilLocations(autoPupilsFileName);
+			else
+				pupilLocations = Num.zeros((frameCount, 4), NPTypeCode.Double);
 
 			cvFrame = new Mat();
 			for (int i = 0; i < 3; i++)
@@ -170,7 +212,9 @@ namespace Eyetracking
 
 			isFrameProcessed = new bool[frameCount];
 			for (int i = 0; i < frameCount; i++)
+			{
 				isFrameProcessed[i] = false;
+			}
 		}
 
 		/// <summary>
@@ -180,7 +224,9 @@ namespace Eyetracking
 		public virtual void FindPupils(int Frames)
 		{
 			if (!isTimestampParsed)
+			{
 				ParseTimeStamps();
+			}
 		}
 
 
@@ -228,7 +274,7 @@ namespace Eyetracking
 			worker.ProgressChanged += delegate (object sender, ProgressChangedEventArgs e)
 			{
 				SetStatus(string.Format("Parsing timestamps {0}/100%", e.ProgressPercentage));
-				taskbar.ProgressValue = (double)e.ProgressPercentage / 100.0;
+				taskbar.ProgressValue = e.ProgressPercentage / 100.0;
 				progressBar.Value = e.ProgressPercentage;
 			};
 
@@ -304,17 +350,27 @@ namespace Eyetracking
 		/// <returns></returns>
 		public BitmapImage GetFrameForDisplay(bool grayScale)
 		{
-			if (cvFrame == null) return null;
+			if (cvFrame == null)
+			{
+				return null;
+			}
 
 			if ((grayScale == isBitmapFrameGrayscale) && isCVFrameConverted)
+			{
 				return bitmapFrame;
+			}
 
 			isBitmapFrameGrayscale = grayScale;
 			isCVFrameConverted = true;
 			if (grayScale)
+			{
 				grayFrame.ToBitmap().Save(BMPConvertMemeory, ImageFormat.Bmp);
+			}
 			else
+			{
 				cvFrame.ToBitmap().Save(BMPConvertMemeory, ImageFormat.Bmp);
+			}
+
 			BMPConvertMemeory.Position = 0;
 			bitmapFrame = new BitmapImage();
 			bitmapFrame.BeginInit();
@@ -331,8 +387,15 @@ namespace Eyetracking
 		/// <param name="frame">frame to go to</param>
 		public void Seek(int frame)
 		{
-			if (frame < 0) frame = 0;
-			else if (frame > frameCount - 1) frame = frameCount - 1;
+			if (frame < 0)
+			{
+				frame = 0;
+			}
+			else if (frame > frameCount - 1)
+			{
+				frame = frameCount - 1;
+			}
+
 			_currentFrameNumber = frame - 1;
 			videoSource.Set(VideoCaptureProperties.PosFrames, frame);
 		}

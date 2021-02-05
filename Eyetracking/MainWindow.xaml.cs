@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
@@ -14,6 +16,22 @@ namespace Eyetracking
 		DrawingWindow,
 		MovingPupil
 	}
+
+	// Commands
+	public static class EyetrackerCommands
+	{
+		public static readonly RoutedUICommand OpenEyetrackingData = new RoutedUICommand("Open Eyetracking Data", "Open Eyetracking data", typeof(EyetrackerCommands),
+																						new InputGestureCollection() { new KeyGesture(Key.L, ModifierKeys.Control)});
+
+		public static readonly RoutedUICommand NextFrame = new RoutedUICommand("Next Frame", "Next Frame", typeof(EyetrackerCommands),
+																			   new InputGestureCollection() { new KeyGesture(Key.Right)});
+
+		public static readonly RoutedUICommand PrevFrame = new RoutedUICommand("Prev Frame", "Prev Frame", typeof(EyetrackerCommands),
+																			   new InputGestureCollection() { new KeyGesture(Key.Left)});
+
+		public static readonly RoutedUICommand PlayPause = new RoutedUICommand("Play/Pause", "Play/Pause", typeof(EyetrackerCommands),
+																			   new InputGestureCollection() { new KeyGesture(Key.Space) });
+	};
 
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
@@ -231,12 +249,45 @@ namespace Eyetracking
 			PupilX = PupilX;
 			PupilY = PupilY;
 			PupilRadius = PupilRadius;
-			SetStatus();
+
+			// if the pupil finder found auto save files
+			// we immediately enable pupil finding
+			List<string> autoloads = new List<string>(); ;
+			if (pupilFinder.isTimestampParsed)
+			{
+				FindPupilsButton.IsEnabled = true;
+				autoloads.Add("timestamps");
+			}
+
 			if (pupilFinder is TemplatePupilFinder templatePupilFinder)
 			{
 				TemplatePreviewIndex = 0;
 				loadSavedTemplatesMenuItem.IsEnabled = true;
+				if (templatePupilFinder.IsUsingCustomTemplates)
+				{
+					saveTemplatesMenuItem.IsEnabled = true;
+					ResetTemplatesButton.IsEnabled = true;
+					autoloads.Add("templates");
+				}
 			}
+
+			if (pupilFinder.pupilLocations.sum() > 0) autoloads.Add("pupils");
+			switch (autoloads.Count)
+			{
+				case 1:
+					SetStatus(String.Format("Autoloaded {0}", autoloads[0]));
+					break;
+				case 2:
+					SetStatus(String.Format("Autoloaded {0} & {1}", autoloads[0], autoloads[1]));
+					break;
+				case 3:
+					SetStatus("Autoloaded timestamps, templates, & pupils");
+					break;
+				default:
+					SetStatus();
+					break;
+			}
+
 			pupilFinder.ReadFrame();
 			UpdateDisplays();
 			pupilFinder.Seek(0);
@@ -450,7 +501,7 @@ namespace Eyetracking
 
 		private void OpenEyetrackingDataCommand_Executed(object sender, ExecutedRoutedEventArgs e)
 		{
-
+			LoadSavedDataMenuItem_Click(null, null);
 		}
 
 		private void NewFileCommand_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -523,7 +574,8 @@ namespace Eyetracking
 		{
 			OpenFileDialog openFileDialog = new OpenFileDialog
 			{
-				Filter = "Numpy file (*.npy)|*.npy"
+				Filter = "Numpy file (*.npy)|*.npy",
+				Title = "Load timestamps..."
 			};
 			if (openFileDialog.ShowDialog() == true)
 			{
@@ -536,7 +588,9 @@ namespace Eyetracking
 		{
 			SaveFileDialog saveFileDialog = new SaveFileDialog
 			{
-				Filter = "Numpy file (*.npy)|*.npy"
+				Filter = "Numpy file (*.npy)|*.npy",
+				Title = "Save timestamps...",
+				FileName = pupilFinder.autoTimestampFileName
 			};
 			if (saveFileDialog.ShowDialog() == true)
 			{
@@ -728,7 +782,9 @@ namespace Eyetracking
 
 			SaveFileDialog saveFileDialog = new SaveFileDialog
 			{
-				Filter = "Numpy file (*.npy)|*.npy"
+				Filter = "Numpy file (*.npy)|*.npy",
+				Title = "Save pupils...",
+				FileName = pupilFinder.autoPupilsFileName
 			};
 			if (saveFileDialog.ShowDialog() == true)
 			{
@@ -740,7 +796,8 @@ namespace Eyetracking
 		{
 			OpenFileDialog openFileDialog = new OpenFileDialog
 			{
-				Filter = "Numpy file (*.npy)|*.npy"
+				Filter = "Numpy file (*.npy)|*.npy",
+				Title = "Load pupils..."
 			};
 			if (openFileDialog.ShowDialog() == true)
 			{
@@ -772,7 +829,8 @@ namespace Eyetracking
 			{
 				OpenFileDialog openFileDialog = new OpenFileDialog
 				{
-					Filter = "Data file (*.dat)|*.dat"
+					Filter = "Data file (*.dat)|*.dat",
+					Title = "Load templates..."
 				};
 				if (openFileDialog.ShowDialog() == true)
 				{
@@ -794,7 +852,9 @@ namespace Eyetracking
 				}
 				SaveFileDialog saveFileDialog = new SaveFileDialog
 				{
-					Filter = "Data file (*.dat)|*.dat"
+					Filter = "Data file (*.dat)|*.dat",
+					Title = "Save templates...",
+					FileName = templatePupilFinder.autoTemplatesFileName
 				};
 				if (saveFileDialog.ShowDialog() == true)
 				{
@@ -807,15 +867,24 @@ namespace Eyetracking
 			}
 		}
 
+		private void NextFrameCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			NextFrameButton_Click(null, null);
+		}
+
+		private void PrevFrameCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			PreviousFrameButton_Click(null, null);
+		}
+
+		private void PlayPauseCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			IsPlaying = !IsPlaying;
+		}
+
 		private void NextTemplateButton_Click(object sender, RoutedEventArgs e)
 		{
 			TemplatePreviewIndex++;
 		}
-	}
-	// Commands
-	public static class EyetrackerCommands
-	{
-		public static readonly RoutedUICommand OpenEyetrackingData = new RoutedUICommand("Open Eyetracking Data", "Open Eyetracking data", typeof(EyetrackerCommands),
-																						new InputGestureCollection() { new KeyGesture(Key.L, ModifierKeys.Control) });
 	}
 }

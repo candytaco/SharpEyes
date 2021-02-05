@@ -23,6 +23,16 @@ namespace Eyetracking
 		private double bestCorrelationOnThisFrame = -1;
 		public int NumTemplates { get; private set; } = 0;
 
+		public string autoTemplatesFileName
+		{
+			get
+			{
+				if (videoFileName == null) return null;
+				return Path.Combine(Path.GetDirectoryName(videoFileName),
+									String.Format("{0} templates.npy", Path.GetFileNameWithoutExtension(videoFileName)));
+			}
+		}
+
 		/// <summary>
 		/// Because there is an option to use a part of a frame as a template,
 		/// there is no good way to determine pupil size if that is the case. So we store
@@ -38,7 +48,10 @@ namespace Eyetracking
 								   SetStatusDelegate setStatus, FrameProcessedDelegate updateFrame, FramesProcessedDelegate framesProcessed)
 			: base(videoFileName, progressBar, taskbar, setStatus, updateFrame, framesProcessed)
 		{
-			MakeTemplates();
+			if (File.Exists(autoTemplatesFileName))
+				LoadTemplates(autoTemplatesFileName);
+			else
+				MakeTemplates();
 		}
 
 		public void MakeTemplates()

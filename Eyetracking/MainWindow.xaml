@@ -9,6 +9,9 @@
         Title="SharpEyes" Height="500" Width="800" Icon="icons8-iris-scan-96.ico">
 	<Window.CommandBindings>
 		<CommandBinding x:Name="OpenEyetrackingDataCommand" Command="local:EyetrackerCommands.OpenEyetrackingData" Executed="OpenEyetrackingDataCommand_Executed"/>
+		<CommandBinding x:Name="NextFrameCommand" Command="local:EyetrackerCommands.NextFrame" Executed="NextFrameCommand_Executed"/>
+		<CommandBinding x:Name="PrevFrameCommand" Command="local:EyetrackerCommands.PrevFrame" Executed="PrevFrameCommand_Executed"/>
+		<CommandBinding x:Name="PlayPauseCommand" Command="local:EyetrackerCommands.PlayPause" Executed="PlayPauseCommand_Executed"/>
 		<CommandBinding x:Name="OpenVideoCommand" Command="Open" Executed="OpenVideoCommand_Executed"/>
 		<CommandBinding x:Name="NewFileCommand" Command="New" Executed="NewFileCommand_Executed"/>
 		<CommandBinding x:Name="SaveFileCommand" Command="Save" Executed="SaveFileCommand_Executed"/>
