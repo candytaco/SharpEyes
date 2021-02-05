@@ -307,6 +307,12 @@ namespace Eyetracking
 			PupilY = PupilY;
 			PupilRadius = PupilRadius;
 
+			// enable scrubbing buttongs
+			PreviousFrameButton.IsEnabled = true;
+			PlayPauseButton.IsEnabled = true;
+			NextFrameButton.IsEnabled = true;
+			StepBackButton.IsEnabled = true;
+
 			// if the pupil finder found auto save files
 			// we immediately enable pupil finding
 			List<string> autoloads = new List<string>(); ;

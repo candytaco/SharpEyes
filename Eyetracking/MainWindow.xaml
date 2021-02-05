@@ -118,9 +118,9 @@
 			<Rectangle Name="SearchWindowRectangle" Fill="Transparent" HorizontalAlignment="Left" Height="300" Margin="0" 
 					   Stroke="#FF87CA00" VerticalAlignment="Top" Width="400" StrokeThickness="3" RenderTransformOrigin="0.5,0.5"/>
 		</Canvas>
-		<Button Name="PlayPauseButton" Content="Play" HorizontalAlignment="Left" Margin="179,377,0,0" VerticalAlignment="Top" Width="45" Click="PlayPauseButton_Click"/>
-		<Button Name="PreviousFrameButton" Content="&lt;" HorizontalAlignment="Left" Margin="154,377,0,0" VerticalAlignment="Top" Width="20" Click="PreviousFrameButton_Click"/>
-		<Button Name="NextFrameButton" Content="&gt;" HorizontalAlignment="Left" Margin="229,377,0,0" VerticalAlignment="Top" Width="20" Click="NextFrameButton_Click"/>
+		<Button Name="PlayPauseButton" Content="Play" HorizontalAlignment="Left" Margin="179,377,0,0" VerticalAlignment="Top" Width="45" Click="PlayPauseButton_Click" IsEnabled="False"/>
+		<Button Name="PreviousFrameButton" Content="&lt;" HorizontalAlignment="Left" Margin="154,377,0,0" VerticalAlignment="Top" Width="20" Click="PreviousFrameButton_Click" IsEnabled="False"/>
+		<Button Name="NextFrameButton" Content="&gt;" HorizontalAlignment="Left" Margin="229,377,0,0" VerticalAlignment="Top" Width="20" Click="NextFrameButton_Click" IsEnabled="False"/>
 		<Slider Name="VideoSlider" HorizontalAlignment="Left" Margin="4,357,0,0" VerticalAlignment="Top" Width="400" Minimum="0" Maximum="100" LargeChange="10" 
 				MouseDown="VideoSlider_MouseDown" MouseUp="VideoSlider_MouseUp"
 				Thumb.DragCompleted="VideoSlider_DragCompleted" Thumb.DragStarted="VideoSlider_DragStarted"/>
@@ -179,7 +179,7 @@
 					<Label Content="Max radius" HorizontalAlignment="Left" Margin="182,126,0,0" VerticalAlignment="Top"/>
 					<Button Name="CancelPupilFindingButton" Content="Cancel" HorizontalAlignment="Left" Margin="119,92,0,0" VerticalAlignment="Top" Width="75" Visibility="Hidden" Click="CancelPupilFindingButton_Click"/>
 					<CheckBox Name="FindPupilsAllFramesCheckBox" Content="All Frames" HorizontalAlignment="Left" Margin="91,65,0,0" VerticalAlignment="Top" IsChecked="False" Checked="FindPupilsAllFramesCheckBox_Checked" Unchecked="FindPupilsAllFramesCheckBox_Checked"/>
-					<Button Name="StepBackButton" Content="Step back" HorizontalAlignment="Left" Margin="102,87,0,0" VerticalAlignment="Top" Width="75" Click="StepBackButton_Click"/>
+					<Button Name="StepBackButton" Content="Step back" HorizontalAlignment="Left" Margin="102,87,0,0" VerticalAlignment="Top" Width="75" Click="StepBackButton_Click" IsEnabled="False"/>
 				</Grid>
 			</TabItem>
 			<TabItem Header="Image Pre-filtering">
