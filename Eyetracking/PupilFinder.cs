@@ -149,6 +149,7 @@ namespace Eyetracking
 				return true;
 			}
 		}
+		public bool isAnyFrameProcessed { get; protected set; } = false;
 
 		public int bilateralBlurSize = 0;
 		public int medianBlurSize = 0;
@@ -419,6 +420,7 @@ namespace Eyetracking
 		public void LoadPupilLocations(string fileName)
 		{
 			pupilLocations = Num.load(fileName);
+			isAnyFrameProcessed = true;
 		}
 
 		/// <summary>

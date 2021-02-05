@@ -41,6 +41,7 @@ namespace Eyetracking
 					pupilLocations[CurrentFrameNumber, 0] = circle.Center.X + left;
 					pupilLocations[CurrentFrameNumber, 1] = circle.Center.Y + top;
 					pupilLocations[CurrentFrameNumber, 2] = circle.Radius;
+					isAnyFrameProcessed = true;
 
 					isFrameProcessed[CurrentFrameNumber] = true;
 

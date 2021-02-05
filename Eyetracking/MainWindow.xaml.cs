@@ -271,7 +271,7 @@ namespace Eyetracking
 				}
 			}
 
-			if (pupilFinder.pupilLocations.sum() > 0) autoloads.Add("pupils");
+			if (pupilFinder.isAnyFrameProcessed) autoloads.Add("pupils");
 			switch (autoloads.Count)
 			{
 				case 1:
