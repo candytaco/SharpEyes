@@ -199,8 +199,8 @@ namespace Eyetracking
 		private void LoadFile(string videoFileName)
 		{
 			SetStatus("Loading");
-			pupilFinder = TemplatePupilFindingRadioButton.IsChecked.Value ? (PupilFinder)new TemplatePupilFinder(videoFileName, progressBar, SetStatus, this.UpdateDisplays, this.OnFramesProcessed)
-																		  : (PupilFinder)new HoughPupilFinder(videoFileName, progressBar, SetStatus, this.UpdateDisplays, this.OnFramesProcessed);
+			pupilFinder = TemplatePupilFindingRadioButton.IsChecked.Value ? (PupilFinder)new TemplatePupilFinder(videoFileName, progressBar, taskbarItemInfo, SetStatus, this.UpdateDisplays, this.OnFramesProcessed)
+																		  : (PupilFinder)new HoughPupilFinder(videoFileName, progressBar, taskbarItemInfo, SetStatus, this.UpdateDisplays, this.OnFramesProcessed);
 			RadiusPickerValuesChanged(null, null);
 
 			VideoNameStatus.Text = videoFileName;
@@ -496,7 +496,6 @@ namespace Eyetracking
 
 			if (AutoAddCustomTemplateCheckBox.IsChecked.Value && isPupilManullySetOnThisFrame)
 				UseImageAsTemplateButton_Click(null, null);
-
 
 			double l = Canvas.GetLeft(SearchWindowRectangle);			
 			pupilFinder.left = (int)(Canvas.GetLeft(SearchWindowRectangle) / canvas.Width * pupilFinder.width);

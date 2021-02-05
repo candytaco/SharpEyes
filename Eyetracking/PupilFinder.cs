@@ -124,7 +124,12 @@ namespace Eyetracking
 		protected FramesProcessedDelegate OnFramesProcessed;
 		public CancelPupilFindingDelegate CancelPupilFinding;
 
-		public PupilFinder(string videoFileName, System.Windows.Controls.ProgressBar progressBar, 
+		/// <summary>
+		/// For taskbar progress bars
+		/// </summary>
+		protected System.Windows.Shell.TaskbarItemInfo taskbar;
+
+		public PupilFinder(string videoFileName, System.Windows.Controls.ProgressBar progressBar, System.Windows.Shell.TaskbarItemInfo taskbar,
 						   SetStatusDelegate setStatus, FrameProcessedDelegate updateFrame, FramesProcessedDelegate framesProcessed)
 		{
 			this.videoFileName = videoFileName;
@@ -132,6 +137,7 @@ namespace Eyetracking
 			this.SetStatus = setStatus;
 			this.UpdateFrame = updateFrame;
 			this.OnFramesProcessed = framesProcessed;
+			this.taskbar = taskbar;
 			videoSource = new VideoCapture(videoFileName);
 			width = (int)videoSource.Get(VideoCaptureProperties.FrameWidth);
 			height = (int)videoSource.Get(VideoCaptureProperties.FrameHeight);
@@ -215,6 +221,7 @@ namespace Eyetracking
 			worker.ProgressChanged += delegate (object sender, ProgressChangedEventArgs e)
 			{
 				SetStatus(string.Format("Parsing timestamps {0}/100%", e.ProgressPercentage));
+				taskbar.ProgressValue = (double)e.ProgressPercentage / 100.0;
 				progressBar.Value = e.ProgressPercentage;
 			};
 
@@ -224,9 +231,11 @@ namespace Eyetracking
 				SetStatus();
 				// seek to beginning
 				CurrentFrameNumber = 0;
+				taskbar.ProgressState = System.Windows.Shell.TaskbarItemProgressState.None;
 				isTimestampParsed = true;
 			};
 
+			taskbar.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Normal;
 			worker.RunWorkerAsync();
 
 		}

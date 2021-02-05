@@ -14,6 +14,9 @@
 		<CommandBinding x:Name="SaveFileCommand" Command="Save" Executed="SaveFileCommand_Executed"/>
 		<CommandBinding x:Name="SaveFileAsCommand" Command="SaveAs" Executed="SaveFileAsCommand_Executed"/>
 	</Window.CommandBindings>
+	<Window.TaskbarItemInfo>
+		<TaskbarItemInfo x:Name="taskbarItemInfo"/>
+	</Window.TaskbarItemInfo>
 	<Window.InputBindings>
 		<KeyBinding Modifiers="Control" Key="S" Command="Save"/>
 		<KeyBinding Modifiers="Control" Key="O" Command="Open"/>

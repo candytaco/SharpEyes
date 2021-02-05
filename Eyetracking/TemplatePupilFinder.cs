@@ -34,9 +34,9 @@ namespace Eyetracking
 
 		public bool IsUsingCustomTemplates { get { return storedPupilSize != null; } }
 
-		public TemplatePupilFinder(string videoFileName, System.Windows.Controls.ProgressBar progressBar,
+		public TemplatePupilFinder(string videoFileName, System.Windows.Controls.ProgressBar progressBar, System.Windows.Shell.TaskbarItemInfo taskbar,
 								   SetStatusDelegate setStatus, FrameProcessedDelegate updateFrame, FramesProcessedDelegate framesProcessed)
-			: base(videoFileName, progressBar, setStatus, updateFrame, framesProcessed)
+			: base(videoFileName, progressBar, taskbar, setStatus, updateFrame, framesProcessed)
 		{
 			MakeTemplates();
 		}
@@ -195,6 +195,7 @@ namespace Eyetracking
 			worker.ProgressChanged += delegate (object sender, ProgressChangedEventArgs e)
 			{
 				SetStatus(string.Format("Finding pupils in {0} frames {1}/100%", Frames, e.ProgressPercentage));
+				taskbar.ProgressValue = (double)e.ProgressPercentage / 100;
 				progressBar.Value = e.ProgressPercentage;
 			};
 
@@ -204,12 +205,17 @@ namespace Eyetracking
 				if (e.Cancelled)
 					SetStatus(string.Format("Idle. Pupil finding was cancelled."));
 				else
-					SetStatus(string.Format("Idle. {0} frames processed in {1:c}", Frames, DateTime.Now - start));
+				{
+					TimeSpan elapsed = DateTime.Now - start;
+					SetStatus(string.Format("Idle. {0} frames processed in {1:c} ({2} fps)", Frames, elapsed, (int)(Frames / elapsed.TotalSeconds)));
+				}
 				this.Dispatcher.Invoke(OnFramesProcessed);
+				taskbar.ProgressState = System.Windows.Shell.TaskbarItemProgressState.None;
 				CancelPupilFinding -= worker.CancelAsync;
 			};
 
 			CancelPupilFinding += worker.CancelAsync;
+			taskbar.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Normal;
 			worker.RunWorkerAsync();
 		}
 
