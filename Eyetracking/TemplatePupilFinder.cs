@@ -29,7 +29,7 @@ namespace Eyetracking
 			{
 				if (videoFileName == null) return null;
 				return Path.Combine(Path.GetDirectoryName(videoFileName),
-									String.Format("{0} templates.dat", Path.GetFileNameWithoutExtension(videoFileName)));
+									String.Format("{0} templates.npy", Path.GetFileNameWithoutExtension(videoFileName)));
 			}
 		}
 

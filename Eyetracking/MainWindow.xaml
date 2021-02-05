@@ -8,10 +8,16 @@
         mc:Ignorable="d"
         Title="SharpEyes" Height="500" Width="800" Icon="icons8-iris-scan-96.ico">
 	<Window.CommandBindings>
+		<!--For some reason the custom commands generate a false positive for "Value cannot be null." They work so ignore the squiggles.-->
 		<CommandBinding x:Name="OpenEyetrackingDataCommand" Command="local:EyetrackerCommands.OpenEyetrackingData" Executed="OpenEyetrackingDataCommand_Executed"/>
-		<CommandBinding x:Name="NextFrameCommand" Command="local:EyetrackerCommands.NextFrame" Executed="NextFrameCommand_Executed"/>
-		<CommandBinding x:Name="PrevFrameCommand" Command="local:EyetrackerCommands.PrevFrame" Executed="PrevFrameCommand_Executed"/>
+		<CommandBinding x:Name="RightCommand" Command="local:EyetrackerCommands.Right" Executed="NextFrameCommand_Executed"/>
+		<CommandBinding x:Name="LeftCommand" Command="local:EyetrackerCommands.Left" Executed="PrevFrameCommand_Executed"/>
+		<CommandBinding x:Name="UpCommand" Command="local:EyetrackerCommands.Up" Executed="MovePupilUp"/>
+		<CommandBinding x:Name="DownCommand" Command="local:EyetrackerCommands.Down" Executed="MovePupilDown"/>
 		<CommandBinding x:Name="PlayPauseCommand" Command="local:EyetrackerCommands.PlayPause" Executed="PlayPauseCommand_Executed"/>
+		<CommandBinding x:Name="IncreasePupilSizeCommand" Command="local:EyetrackerCommands.IncreasePupilSize" Executed="IncreasePupilSizeCommand_Executed"/>
+		<CommandBinding x:Name="DecreasePupilSizeCommand" Command="local:EyetrackerCommands.DecreasePupilSize" Executed="DecreasePupilSizeCommand_Executed"/>
+
 		<CommandBinding x:Name="OpenVideoCommand" Command="Open" Executed="OpenVideoCommand_Executed"/>
 		<CommandBinding x:Name="NewFileCommand" Command="New" Executed="NewFileCommand_Executed"/>
 		<CommandBinding x:Name="SaveFileCommand" Command="Save" Executed="SaveFileCommand_Executed"/>
@@ -123,7 +129,7 @@
 			<TabItem Header="Pupil Finding">
 				<Grid Background="#FFE5E5E5">
 					<Button Name="ReadTimestampButton" Content="Read timestamps" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="Auto" Click="ReadTimestampButton_Click" IsEnabled="False"/>
-					<Button Name="FindPupilsButton"  Content="Find Pupils" HorizontalAlignment="Left" Margin="10,63,0,0" VerticalAlignment="Top" Width="Auto" Click="FindPupilsButton_Click" IsEnabled="False" IsEnabledChanged="FindPupilsButton_IsEnabledChanged"/>
+					<Button Name="FindPupilsButton"  Content="Find Pupils" HorizontalAlignment="Left" Margin="10,63,0,0" VerticalAlignment="Top" Width="75" Click="FindPupilsButton_Click" IsEnabled="False" />
 
 					<GroupBox Header="Pupil finder type" HorizontalAlignment="Left" Height="100" Margin="213,10,0,0" VerticalAlignment="Top" Width="136">
 						<Grid  Margin="0">
@@ -171,8 +177,9 @@
 					<Label Content="Min radius" HorizontalAlignment="Left" Margin="20,126,0,0" VerticalAlignment="Top"/>
 					<xctk:IntegerUpDown x:Name="MaxRadiusPicker" Value="25" Increment="1" Minimum="10" Maximum="50" Height="24" Margin="254,128,19.2,199.2" ValueChanged="RadiusPickerValuesChanged"/>
 					<Label Content="Max radius" HorizontalAlignment="Left" Margin="182,126,0,0" VerticalAlignment="Top"/>
-					<Button x:Name="FindPupilsAllFramesButton" Content="Find Pupils All Frames" HorizontalAlignment="Left" Margin="76,63,0,0" VerticalAlignment="Top" Width="Auto" Click="FindPupilsAllFrames_Click" IsEnabled="False"/>
 					<Button Name="CancelPupilFindingButton" Content="Cancel" HorizontalAlignment="Left" Margin="119,92,0,0" VerticalAlignment="Top" Width="75" Visibility="Hidden" Click="CancelPupilFindingButton_Click"/>
+					<CheckBox Name="FindPupilsAllFramesCheckBox" Content="All Frames" HorizontalAlignment="Left" Margin="91,65,0,0" VerticalAlignment="Top" IsChecked="False" Checked="FindPupilsAllFramesCheckBox_Checked" Unchecked="FindPupilsAllFramesCheckBox_Checked"/>
+					<Button Name="StepBackButton" Content="Step back" HorizontalAlignment="Left" Margin="102,87,0,0" VerticalAlignment="Top" Width="75" Click="StepBackButton_Click"/>
 				</Grid>
 			</TabItem>
 			<TabItem Header="Image Pre-filtering">
