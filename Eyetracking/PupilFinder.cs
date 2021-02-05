@@ -66,11 +66,18 @@ namespace Eyetracking
 			get { return _currentFrameNumber; }
 			set
 			{
-				_currentFrameNumber = value - 1;
-				videoSource.Set(VideoCaptureProperties.PosFrames, value - 1);
+				int desired = value;
+				if (desired < 0) desired = 0;
+				else if (desired > frameCount - 1) desired = frameCount - 1;
+				_currentFrameNumber = desired - 1;
+				videoSource.Set(VideoCaptureProperties.PosFrames, desired);
 				ReadGrayscaleFrame();
 			}
 		}
+		// NOTE: IT LOOKS LIKE VideoCaptureProperties.PosFrames is 1-INDEXED!!
+		// or rather, like my previews implementation of CurrentFrameNumber, it is the 0-indexed frame number
+		// of the upcoming frame.
+		public double OpenCVFramePosition { get { return videoSource.Get(VideoCaptureProperties.PosFrames); } }
 		public Mat cvFrame { get; protected set; } = null;
 		protected Mat[] colorChannels = new Mat[3];
 		protected Mat red;
@@ -324,7 +331,10 @@ namespace Eyetracking
 		/// <param name="frame">frame to go to</param>
 		public void Seek(int frame)
 		{
+			if (frame < 0) frame = 0;
+			else if (frame > frameCount - 1) frame = frameCount - 1;
 			_currentFrameNumber = frame - 1;
+			videoSource.Set(VideoCaptureProperties.PosFrames, frame);
 		}
 
 		public void SaveTimestamps(string fileName)
