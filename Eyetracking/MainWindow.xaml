@@ -243,6 +243,7 @@
 							</Grid>
 						</TabItem>
 					</TabControl>
+					<CheckBox Name="AutoStartPupilEditModeCheckBox" Content="Automatically enter pupil edit mode on pause" HorizontalAlignment="Left" Margin="10,268,0,0" VerticalAlignment="Top" IsChecked="True"/>
 				</Grid>
 			</TabItem>
 		</TabControl>

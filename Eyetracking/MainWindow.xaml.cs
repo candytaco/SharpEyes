@@ -970,6 +970,11 @@ namespace Eyetracking
 			{
 				FindPupilsButton.Click += FindPupilsButton_Click;
 				FindPupilsButton.Click -= CancelPupilFindingButton_Click;
+				if (AutoStartPupilEditModeCheckBox.IsChecked.Value)
+				{
+					editingState = EditingState.MovingPupil;
+					movePupilEllipseButton.IsChecked = true;
+				}
 			}
 			StepBackButton.IsEnabled = !isPupilFinding;
 		}
