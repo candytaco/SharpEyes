@@ -43,6 +43,12 @@ namespace Eyetracking
 
 		public static readonly RoutedUICommand DecreasePupilSize = new RoutedUICommand("Decrease Pupil Size", "Decrease Pupil Size", typeof(EyetrackerCommands),
 																					   new InputGestureCollection() { new KeyGesture(Key.OemOpenBrackets) });
+
+		public static readonly RoutedUICommand DrawWindow = new RoutedUICommand("Draw window", "Draw window", typeof(EyetrackerCommands),
+																				new InputGestureCollection() { new KeyGesture(Key.M, ModifierKeys.Alt) });
+
+		public static readonly RoutedUICommand MovePupil = new RoutedUICommand("Move pupil", "Move pupil", typeof(EyetrackerCommands),
+																			   new InputGestureCollection() { new KeyGesture(Key.V, ModifierKeys.Alt) });
 	};
 
 	/// <summary>
@@ -1137,6 +1143,16 @@ namespace Eyetracking
 		private void ShowFilteredVideoButton_Checked(object sender, RoutedEventArgs e)
 		{
 			UpdateDisplays();
+		}
+
+		private void DrawWindowCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			DrawWindowButton_Click(null, null);
+		}
+
+		private void MovePupilCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			MovePupilEllipseButton_Click(null, null);
 		}
 
 		private void NextTemplateButton_Click(object sender, RoutedEventArgs e)

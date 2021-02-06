@@ -17,6 +17,8 @@
 		<CommandBinding x:Name="PlayPauseCommand" Command="local:EyetrackerCommands.PlayPause" Executed="PlayPauseCommand_Executed"/>
 		<CommandBinding x:Name="IncreasePupilSizeCommand" Command="local:EyetrackerCommands.IncreasePupilSize" Executed="IncreasePupilSizeCommand_Executed"/>
 		<CommandBinding x:Name="DecreasePupilSizeCommand" Command="local:EyetrackerCommands.DecreasePupilSize" Executed="DecreasePupilSizeCommand_Executed"/>
+		<CommandBinding x:Name="DrawWindowCommand" Command="local:EyetrackerCommands.DrawWindow" Executed="DrawWindowCommand_Executed"/>
+		<CommandBinding x:Name="MovePupilCommand" Command="local:EyetrackerCommands.MovePupil" Executed="MovePupilCommand_Executed"/>
 
 		<CommandBinding x:Name="OpenVideoCommand" Command="Open" Executed="OpenVideoCommand_Executed"/>
 		<CommandBinding x:Name="NewFileCommand" Command="New" Executed="NewFileCommand_Executed"/>
