@@ -237,7 +237,8 @@ namespace Eyetracking
 		/// </summary>
 		public void ParseTimeStamps()
 		{
-			SetStatus("Parsing timestamps 0/100%");
+			SetStatus("Parsing timestamps 0%");
+			DateTime start = DateTime.Now;
 			BackgroundWorker worker = new BackgroundWorker
 			{
 				WorkerReportsProgress = true
@@ -275,7 +276,7 @@ namespace Eyetracking
 
 			worker.ProgressChanged += delegate (object sender, ProgressChangedEventArgs e)
 			{
-				SetStatus(string.Format("Parsing timestamps {0}/100%", e.ProgressPercentage));
+				SetStatus(string.Format("Parsing timestamps {0}%", e.ProgressPercentage));
 				taskbar.ProgressValue = e.ProgressPercentage / 100.0;
 				progressBar.Value = e.ProgressPercentage;
 			};
@@ -283,7 +284,8 @@ namespace Eyetracking
 			worker.RunWorkerCompleted += delegate (object sender, RunWorkerCompletedEventArgs e)
 			{
 				progressBar.Value = 0;
-				SetStatus();
+				TimeSpan elapsed = DateTime.Now - start;
+				SetStatus(string.Format("Idle. {0} frames processed in {1:c} ({2} fps)", frameCount, elapsed, (int)(frameCount / elapsed.TotalSeconds)));
 				// seek to beginning
 				CurrentFrameNumber = 0;
 				taskbar.ProgressState = System.Windows.Shell.TaskbarItemProgressState.None;

@@ -835,25 +835,6 @@ namespace Eyetracking
 			ResetTemplatesButton.IsEnabled = false;
 		}
 
-		private void LoadDebugDataMenuItem_Click(object sender, RoutedEventArgs e)
-		{
-			try
-			{
-				LoadFile("D:\\run01.avi");
-				pupilFinder.LoadTimestamps("D:\\test timestamps.npy");
-				FindPupilsButton.IsEnabled = true;
-				pupilFinder.LoadPupilLocations("D:\\test eyetracking.npy");
-				PupilX = pupilFinder.pupilLocations[0, 0];
-				PupilY = pupilFinder.pupilLocations[0, 1];
-				PupilRadius = pupilFinder.pupilLocations[0, 2];
-				PupilConfidence = pupilFinder.pupilLocations[0, 3];
-			}
-			catch (Exception)
-			{
-				MessageBox.Show("Debug files only exist on tz's computer and this is hard coded\nThis basically loads a video and saved timestamps in one go.", "Debug data load failed", MessageBoxButton.OK, MessageBoxImage.Error);
-			}
-		}
-
 		/// <summary>
 		/// Called when a chunk of frames is processed
 		/// </summary>

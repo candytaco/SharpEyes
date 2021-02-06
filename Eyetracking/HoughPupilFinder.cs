@@ -60,7 +60,7 @@ namespace Eyetracking
 
 			worker.ProgressChanged += delegate (object sender, ProgressChangedEventArgs e)
 			{
-				SetStatus(string.Format("Finding pupils {0}/100%", e.ProgressPercentage));
+				SetStatus(string.Format("Finding pupils {0}%", e.ProgressPercentage));
 				progressBar.Value = e.ProgressPercentage;
 			};
 
