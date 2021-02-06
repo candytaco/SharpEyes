@@ -85,7 +85,7 @@ namespace Eyetracking
 				NumTemplates = 0;
 				storedPupilSize = new List<double>();
 			}
-			if (grayFrame.Width < 1)
+			if (filteredFrame.Width < 1)
 			{
 				_currentFrameNumber--;
 				ReadGrayscaleFrame();
@@ -93,7 +93,7 @@ namespace Eyetracking
 			templates.Add(new Mat(bottom - top, right - left, MatType.CV_8UC1));
 			storedPupilSize.Add(radius);
 			matchResults.Add(new Mat());
-			grayFrame[top, bottom, left, right].CopyTo(templates[NumTemplates++]);
+			filteredFrame[top, bottom, left, right].CopyTo(templates[NumTemplates++]);
 		}
 
 		/// <summary>
