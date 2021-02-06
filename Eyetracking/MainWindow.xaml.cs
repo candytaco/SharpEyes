@@ -82,8 +82,6 @@ namespace Eyetracking
 		private bool isEditingStarted = false;  // generic flag for indicating whether the window/pupil edit has begun with a mouseclick
 		private System.Windows.Point mouseMoveStartPoint;
 		private bool isMovingSearchWindow = false;
-		private bool isMovingPupilEllipse = false;
-		private bool isWindowManuallySet = false;
 
 		// data related stuff
 		private EditingState _editingState = EditingState.None;
@@ -95,11 +93,11 @@ namespace Eyetracking
 				_editingState = value;
 				if (_editingState == EditingState.MovingPupil)
 				{
-					RightCommand.Executed += MovePupilRight;
 					RightCommand.Executed -= NextFrameCommand_Executed;
+					RightCommand.Executed += MovePupilRight;
 
-					LeftCommand.Executed += MovePupilLeft;
 					LeftCommand.Executed -= PrevFrameCommand_Executed;
+					LeftCommand.Executed += MovePupilLeft;
 
 					UpCommand.Executed += MovePupilUp;
 					DownCommand.Executed += MovePupilDown;
@@ -176,8 +174,9 @@ namespace Eyetracking
 				{
 					transparency = 1;
 				}
-
-				PupilEllipse.Stroke.Opacity = transparency;
+				// during moving pupil, we deep the drawn pupil at 50% transparency
+				if (editingState != EditingState.MovingPupil)
+					PupilEllipse.Stroke.Opacity = transparency;
 			}
 		}
 
@@ -355,7 +354,7 @@ namespace Eyetracking
 					break;
 			}
 
-			pupilFinder.ReadFrame();
+			pupilFinder.ReadGrayscaleFrame();
 			UpdateDisplays();
 			pupilFinder.Seek(0);
 			saveAllMenuItem.IsEnabled = true;
@@ -419,13 +418,15 @@ namespace Eyetracking
 				int seconds = frames / pupilFinder.fps;
 				frames -= seconds * pupilFinder.fps;
 				VideoTimeLabel.Content = String.Format("{0:00}:{1:00}:{2:00};{3:#00}", hours, minutes, seconds, frames + 1);
-				VideoFrameImage.Source = pupilFinder.GetFrameForDisplay(false);
+				VideoFrameImage.Source = pupilFinder.GetFrameForDisplay(ShowFilteredVideoButton.IsChecked.Value);
 
 				PupilX = pupilFinder.pupilLocations[pupilFinder.CurrentFrameNumber, 0];
 				PupilY = pupilFinder.pupilLocations[pupilFinder.CurrentFrameNumber, 1];
 				PupilRadius = pupilFinder.pupilLocations[pupilFinder.CurrentFrameNumber, 2];
 				PupilConfidence = pupilFinder.pupilLocations[pupilFinder.CurrentFrameNumber, 3];
 
+				// at some point check if this could be moved into an arg and passed in from the pupil finders,
+				// which would need some change in the delegate signature
 				isPupilManullySetOnThisFrame = false;
 			}
 			catch (Exception e)
@@ -509,6 +510,9 @@ namespace Eyetracking
 					PupilX = mouseMoveStartPoint.X / videoScaleFactor;
 					PupilY = mouseMoveStartPoint.Y / videoScaleFactor;
 
+					// make transparent so we can see better
+					PupilEllipse.Stroke.Opacity = 0.5;
+
 					isEditingStarted = true;
 					break;
 				default:
@@ -526,9 +530,17 @@ namespace Eyetracking
 			switch (editingState)
 			{
 				case EditingState.DrawingWindow:
-					// TODO: allow r->l,b->t movement
-					SearchWindowRectangle.Width = e.GetPosition(canvas).X - mouseMoveStartPoint.X;
-					SearchWindowRectangle.Height = e.GetPosition(canvas).Y - mouseMoveStartPoint.Y;
+					// confine to canvas
+					Point mouse = e.GetPosition(canvas);
+					mouse.X = mouse.X > 0 ? mouse.X : 0;
+					mouse.X = mouse.X < canvas.Width ? mouse.X : canvas.Width;
+					mouse.Y = mouse.Y > 0 ? mouse.Y : 0;
+					mouse.Y = mouse.Y < canvas.Height ? mouse.Y : canvas.Height;
+
+					Canvas.SetLeft(SearchWindowRectangle, mouse.X < mouseMoveStartPoint.X ? mouse.X : mouseMoveStartPoint.X);
+					Canvas.SetTop(SearchWindowRectangle, mouse.Y < mouseMoveStartPoint.Y ? mouse.Y : mouseMoveStartPoint.Y);
+					SearchWindowRectangle.Width = Math.Abs(e.GetPosition(canvas).X - mouseMoveStartPoint.X);
+					SearchWindowRectangle.Height = Math.Abs(e.GetPosition(canvas).Y - mouseMoveStartPoint.Y);
 					break;
 				case EditingState.MovingPupil:
 					PupilX = e.GetPosition(canvas).X / videoScaleFactor;
@@ -546,11 +558,12 @@ namespace Eyetracking
 			switch (editingState)
 			{
 				case EditingState.DrawingWindow:
-					isWindowManuallySet = true;
 					drawWindowButton.IsChecked = false;
 					editingState = EditingState.None;
 					break;
 				case EditingState.MovingPupil:  // do not auto turn off pupil editing
+					// undo the temporary transparency
+					PupilEllipse.Stroke.Opacity = 1;
 					UpdatePupilPositionData();
 					break;
 				default:    // EditingState.None
@@ -699,6 +712,7 @@ namespace Eyetracking
 			pupilFinder.bilateralSigmaColor = BilateralSigmaColorPicker.Value.Value;
 			pupilFinder.bilateralSigmaSpace = BilateralSigmaSpacePicker.Value.Value;
 			pupilFinder.medianBlurSize = MedianBlurSizePicker.Value.Value;
+			pupilFinder.FilterCurrentFrame();
 
 			VideoFrameImage.Source = pupilFinder.GetFrameForDisplay(true);
 		}
@@ -707,12 +721,16 @@ namespace Eyetracking
 		{
 			if (SettingsTabs.SelectedIndex == 1)
 			{
+				ShowFilteredVideoButton.IsChecked = true;
+				ShowFilteredVideoButton.IsEnabled = false;
 				ImageFilterValuesChanged(null, null);
 			}
 			else
 			{
 				try
 				{
+					ShowFilteredVideoButton.IsChecked = false;
+					ShowFilteredVideoButton.IsEnabled = true;
 					VideoFrameImage.Source = pupilFinder.GetFrameForDisplay(false);
 				}
 				catch (Exception) { }
@@ -1045,6 +1063,7 @@ namespace Eyetracking
 			if (PupilY >= 1)
 			{
 				PupilY--;
+				UpdatePupilPositionData();
 			}
 		}
 
@@ -1113,6 +1132,11 @@ namespace Eyetracking
 		private void StepBackButton_Click(object sender, RoutedEventArgs e)
 		{
 			UpdateVideoTime(pupilFinder.CurrentFrameNumber - FramesToProcessPicker.Value.Value);
+		}
+
+		private void ShowFilteredVideoButton_Checked(object sender, RoutedEventArgs e)
+		{
+			UpdateDisplays();
 		}
 
 		private void NextTemplateButton_Click(object sender, RoutedEventArgs e)

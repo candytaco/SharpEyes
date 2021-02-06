@@ -133,6 +133,7 @@ namespace Eyetracking
 		private NDArray timeStamps = null;
 		protected Mat grayFrame = new Mat();
 		protected Mat filteringFrame = new Mat();   // helper for filtering
+		protected Mat filteredFrame = new Mat();	// processed frame in which to find pupils
 		protected bool[] isFrameProcessed;          // has each frame been processed?
 		public bool AreAllFramesProcessed           // has all frames been processed?
 		{
@@ -328,56 +329,59 @@ namespace Eyetracking
 			return success;
 		}
 
-		protected void FilterCurrentFrame()
+		public void FilterCurrentFrame()
 		{
+			grayFrame.CopyTo(filteredFrame);
 			if (bilateralBlurSize > 0)
 			{
-				filteringFrame = grayFrame.BilateralFilter(bilateralBlurSize, bilateralSigmaColor, bilateralSigmaSpace);
-				filteringFrame.CopyTo(grayFrame);
+				filteringFrame = filteredFrame.BilateralFilter(bilateralBlurSize, bilateralSigmaColor, bilateralSigmaSpace);
+				filteringFrame.CopyTo(filteredFrame);
 				filteringFrame = new Mat();
 			}
 			if (medianBlurSize > 1)
 			{
-				filteringFrame = grayFrame.MedianBlur(medianBlurSize);
-				filteringFrame.CopyTo(grayFrame);
+				filteringFrame = filteredFrame.MedianBlur(medianBlurSize);
+				filteringFrame.CopyTo(filteredFrame);
 				filteringFrame = new Mat();
 			}
+			isCVFrameConverted = false;
 		}
 
 		/// <summary>
 		/// Gets the current frame that has been read in for display
 		/// </summary>
-		/// <param name="grayScale">get the grayscale frame instead of the RGB frame.</param>
+		/// <param name="filtered">get the filtered frame instead of the RGB frame.</param>
 		/// <returns></returns>
-		public BitmapImage GetFrameForDisplay(bool grayScale)
+		public BitmapImage GetFrameForDisplay(bool filtered)
 		{
 			if (cvFrame == null)
 			{
 				return null;
 			}
 
-			if ((grayScale == isBitmapFrameGrayscale) && isCVFrameConverted)
+			if ((filtered == isBitmapFrameGrayscale) && isCVFrameConverted)
 			{
 				return bitmapFrame;
 			}
 
-			isBitmapFrameGrayscale = grayScale;
+			isBitmapFrameGrayscale = filtered;
 			isCVFrameConverted = true;
-			if (grayScale)
+			if (filtered)
 			{
-				grayFrame.ToBitmap().Save(BMPConvertMemeory, ImageFormat.Bmp);
+				filteredFrame.ToBitmap().Save(BMPConvertMemeory, ImageFormat.Bmp);
 			}
 			else
 			{
 				cvFrame.ToBitmap().Save(BMPConvertMemeory, ImageFormat.Bmp);
 			}
-
+			
 			BMPConvertMemeory.Position = 0;
 			bitmapFrame = new BitmapImage();
 			bitmapFrame.BeginInit();
 			bitmapFrame.StreamSource = BMPConvertMemeory;
 			bitmapFrame.CacheOption = BitmapCacheOption.OnLoad;
 			bitmapFrame.EndInit();
+			BMPConvertMemeory.SetLength(0);
 			return bitmapFrame;
 		}
 

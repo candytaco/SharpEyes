@@ -33,7 +33,18 @@
 		<KeyBinding Modifiers="Control+Shift" Key="S" Command="SaveAs"/>
 	</Window.InputBindings>
 	<Grid>
-		<Menu Height="23" VerticalAlignment="Top" IsMainMenu="True" Margin="0,0,0,0">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition/>
+			<ColumnDefinition MaxWidth="385"/>
+		</Grid.ColumnDefinitions>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="auto"/>
+		</Grid.RowDefinitions>
+		<Menu Height="23" VerticalAlignment="Top" IsMainMenu="True" Margin="0,0,0,0" Grid.ColumnSpan="2" Grid.Row="0">
 			<MenuItem Header="_File" Name="fileMenu">
 				<MenuItem Header="_Open Video" Name="openFileMenuItem" Click="OpenFileMenuItem_Click"></MenuItem>
 				<MenuItem Header="Load _Timestamps" Name="loadSavedDataMenuItem" Click="LoadSavedDataMenuItem_Click"></MenuItem>
@@ -56,7 +67,8 @@
 			</MenuItem>
 		</Menu>
 
-		<ToolBar VerticalAlignment="Top" Height="26" ToolBarTray.IsLocked="True" Margin="0,23,-0.4,0">
+		<ToolBar VerticalAlignment="Top" Height="26" ToolBarTray.IsLocked="True" Margin="0,0,-0.4,0"
+				 Grid.ColumnSpan="2" Grid.Row="1">
 			<Button Height="21.3333333333333" VerticalAlignment="Top" Width="Auto" Name="openVideoButton" Click="OpenFileMenuItem_Click">Open Video
 				<Button.ToolTip>Open a video file.</Button.ToolTip>
 			</Button>
@@ -67,7 +79,7 @@
 				<ToggleButton.ToolTip>Move found pupil location.</ToggleButton.ToolTip>
 			</ToggleButton>
 		</ToolBar>
-		<StatusBar Margin="0,0,0,0" VerticalAlignment="Bottom" Height="21">
+		<StatusBar Margin="0,0,0,0" VerticalAlignment="Bottom" Height="21" Grid.Row="5" Grid.ColumnSpan="2">
 			<StatusBar.ItemsPanel>
 				<ItemsPanelTemplate>
 					<Grid>
@@ -109,23 +121,20 @@
 				<TextBlock Name="StatusText">Current Status</TextBlock>
 			</StatusBarItem>
 		</StatusBar>
-		<Canvas Name="canvas" HorizontalAlignment="Left" Margin="4,52,0,0" VerticalAlignment="Top" Width="400" Height="300" Background="Transparent" 
-				MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseMove="Canvas_MouseMove" MouseLeftButtonUp="Canvas_MouseLeftButtonUp" MouseWheel="Canvas_MouseWheel">
-			<Image x:Name="VideoFrameImage" Margin="0,0,0,0" Width="400" Height="300"/>
+		<Viewbox Margin="4,4,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Row="2" Stretch="Uniform">
+			<Canvas x:Name="canvas" Background="Transparent" 
+		  MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseMove="Canvas_MouseMove" MouseLeftButtonUp="Canvas_MouseLeftButtonUp" MouseWheel="Canvas_MouseWheel"
+				Height="300" Width="400">
+				<Image x:Name="VideoFrameImage" Margin="0,0,0,0" Width="400" Height="300"/>
 
-			<Ellipse Name="PupilEllipse" Fill="Transparent" HorizontalAlignment="Left" Height="32" Margin="0" 
-					 Stroke="#FF00BAFF" VerticalAlignment="Top" Width="32" RenderTransformOrigin="0.5,0.5" StrokeThickness="3"/>
-			<Rectangle Name="SearchWindowRectangle" Fill="Transparent" HorizontalAlignment="Left" Height="300" Margin="0" 
-					   Stroke="#FF87CA00" VerticalAlignment="Top" Width="400" StrokeThickness="3" RenderTransformOrigin="0.5,0.5"/>
-		</Canvas>
-		<Button Name="PlayPauseButton" Content="Play" HorizontalAlignment="Left" Margin="179,377,0,0" VerticalAlignment="Top" Width="45" Click="PlayPauseButton_Click" IsEnabled="False"/>
-		<Button Name="PreviousFrameButton" Content="&lt;" HorizontalAlignment="Left" Margin="154,377,0,0" VerticalAlignment="Top" Width="20" Click="PreviousFrameButton_Click" IsEnabled="False"/>
-		<Button Name="NextFrameButton" Content="&gt;" HorizontalAlignment="Left" Margin="229,377,0,0" VerticalAlignment="Top" Width="20" Click="NextFrameButton_Click" IsEnabled="False"/>
-		<Slider Name="VideoSlider" HorizontalAlignment="Left" Margin="4,357,0,0" VerticalAlignment="Top" Width="400" Minimum="0" Maximum="100" LargeChange="10" 
-				MouseDown="VideoSlider_MouseDown" MouseUp="VideoSlider_MouseUp"
-				Thumb.DragCompleted="VideoSlider_DragCompleted" Thumb.DragStarted="VideoSlider_DragStarted"/>
-		<Label Name="VideoTimeLabel" Content="00:00:00;00" HorizontalAlignment="Left" HorizontalContentAlignment="Right" Margin="329,371,0,0" VerticalAlignment="Top" Width="76"/>
-		<TabControl Name="SettingsTabs" HorizontalAlignment="Left" Height="380" Margin="419,54,0,0" VerticalAlignment="Top" Width="365" SelectionChanged="TabControl_SelectionChanged">
+				<Ellipse x:Name="PupilEllipse" Fill="Transparent" HorizontalAlignment="Left" Height="32" Margin="0" 
+			  Stroke="#FF00BAFF" VerticalAlignment="Top" Width="32" RenderTransformOrigin="0.5,0.5" StrokeThickness="3" />
+				<Rectangle x:Name="SearchWindowRectangle" Fill="Transparent" HorizontalAlignment="Left" Height="300" Margin="0" 
+			  Stroke="#FF87CA00" VerticalAlignment="Top" Width="400" StrokeThickness="3" RenderTransformOrigin="0.5,0.5"/>
+			</Canvas>
+		</Viewbox>
+		<TabControl Name="SettingsTabs" Height="auto" Margin="4,4,4,4" Width="Auto" SelectionChanged="TabControl_SelectionChanged"
+					Grid.Column="1" Grid.Row="2" Grid.RowSpan="2">
 			<TabItem Header="Pupil Finding">
 				<Grid Background="#FFE5E5E5">
 					<Button Name="ReadTimestampButton" Content="Read timestamps" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="Auto" Click="ReadTimestampButton_Click" IsEnabled="False"/>
@@ -138,7 +147,7 @@
 						</Grid>
 					</GroupBox>
 
-					<xctk:IntegerUpDown Name="FramesToProcessPicker" Value="180" Increment="1" Minimum="1" Height="24" Margin="10,87,263.2,240.2"/>
+					<xctk:IntegerUpDown Name="FramesToProcessPicker" Value="180" Increment="1" Minimum="1" Height="24" Margin="10,87,263.4,253" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="75" MinHeight="26"/>
 					<Button x:Name="LoadSavedTimeStampsButton" Content="Load timestamps" HorizontalAlignment="Left" Margin="10,34,0,0" VerticalAlignment="Top" Width="Auto" Click="LoadSavedDataMenuItem_Click" IsEnabled="False"/>
 					<TabControl HorizontalAlignment="Left" Height="176" Margin="10,165,0,0" VerticalAlignment="Top" Width="339" BorderThickness="0">
 						<TabControl.Resources>
@@ -173,9 +182,9 @@
 							</Grid>
 						</TabItem>
 					</TabControl>
-					<xctk:IntegerUpDown x:Name="MinRadiusPicker" Value="10" Increment="1" Minimum="1" Maximum="25" Height="24" Margin="91,128,182.2,199.2" ValueChanged="RadiusPickerValuesChanged"/>
+					<xctk:IntegerUpDown x:Name="MinRadiusPicker" Value="10" Increment="1" Minimum="1" Maximum="25" Height="24" Margin="91,128,0,0" ValueChanged="RadiusPickerValuesChanged" VerticalAlignment="Top" HorizontalAlignment="Left" MinWidth="75" MinHeight="26"/>
 					<Label Content="Min radius" HorizontalAlignment="Left" Margin="20,126,0,0" VerticalAlignment="Top"/>
-					<xctk:IntegerUpDown x:Name="MaxRadiusPicker" Value="25" Increment="1" Minimum="10" Maximum="50" Height="24" Margin="254,128,19.2,199.2" ValueChanged="RadiusPickerValuesChanged"/>
+					<xctk:IntegerUpDown x:Name="MaxRadiusPicker" Value="25" Increment="1" Minimum="10" Maximum="50" Height="24" Margin="254,128,0,0" ValueChanged="RadiusPickerValuesChanged" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="75" MinHeight="26"/>
 					<Label Content="Max radius" HorizontalAlignment="Left" Margin="182,126,0,0" VerticalAlignment="Top"/>
 					<Button Name="CancelPupilFindingButton" Content="Cancel" HorizontalAlignment="Left" Margin="119,92,0,0" VerticalAlignment="Top" Width="75" Visibility="Hidden" Click="CancelPupilFindingButton_Click"/>
 					<CheckBox Name="FindPupilsAllFramesCheckBox" Content="All Frames" HorizontalAlignment="Left" Margin="91,65,0,0" VerticalAlignment="Top" IsChecked="False" Checked="FindPupilsAllFramesCheckBox_Checked" Unchecked="FindPupilsAllFramesCheckBox_Checked"/>
@@ -184,13 +193,13 @@
 			</TabItem>
 			<TabItem Header="Image Pre-filtering">
 				<Grid Background="#FFE5E5E5">
-					<xctk:IntegerUpDown x:Name="BilateralBlurSizePicker" Value="0" Increment="1" Minimum="0" Maximum="50" Height="24" Margin="104,15,169.2,312.2" ValueChanged="ImageFilterValuesChanged"/>
-					<xctk:IntegerUpDown x:Name="MedianBlurSizePicker" Value="1" Increment="2" Minimum="1" Maximum="51" Height="24" Margin="104,170,169.2,157.2" ValueChanged="ImageFilterValuesChanged"/>
+					<xctk:IntegerUpDown x:Name="BilateralBlurSizePicker" Value="0" Increment="1" Minimum="0" Maximum="50" Height="24" Margin="104,15,169.2,312.2" ValueChanged="ImageFilterValuesChanged" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="75" MinHeight="24"/>
+					<xctk:IntegerUpDown x:Name="MedianBlurSizePicker" Value="1" Increment="2" Minimum="1" Maximum="51" Height="24" Margin="104,170,169.2,157.2" ValueChanged="ImageFilterValuesChanged" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="75" MinHeight="24"/>
 					<Label Content="Bilateral blur" HorizontalAlignment="Left" Margin="22,15,0,0" VerticalAlignment="Top"/>
 					<Label Content="Median blur" HorizontalAlignment="Left" Margin="25,168,0,0" VerticalAlignment="Top"/>
-					<xctk:IntegerUpDown x:Name="BilateralSigmaColorPicker" Value="30" Increment="1" Minimum="0" Maximum="255" Height="24" Margin="104,46,169.2,281.2" ValueChanged="ImageFilterValuesChanged"/>
+					<xctk:IntegerUpDown x:Name="BilateralSigmaColorPicker" Value="30" Increment="1" Minimum="0" Maximum="255" Height="24" Margin="104,46,169.2,281.2" ValueChanged="ImageFilterValuesChanged" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="75" MinHeight="24"/>
 					<Label Content="Sigma Color" HorizontalAlignment="Left" Margin="24,46,0,0" VerticalAlignment="Top"/>
-					<xctk:IntegerUpDown x:Name="BilateralSigmaSpacePicker" Value="10" Increment="1" Minimum="0" Maximum="320" Height="24" Margin="104,77,169.2,250.2" ValueChanged="ImageFilterValuesChanged"/>
+					<xctk:IntegerUpDown x:Name="BilateralSigmaSpacePicker" Value="10" Increment="1" Minimum="0" Maximum="320" Height="24" Margin="104,77,169.2,250.2" ValueChanged="ImageFilterValuesChanged" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="75" MinHeight="24"/>
 					<Label Content="Sigma Space" HorizontalAlignment="Left" Margin="22,77,0,0" VerticalAlignment="Top"/>
 				</Grid>
 			</TabItem>
@@ -235,10 +244,22 @@
 				</Grid>
 			</TabItem>
 		</TabControl>
-		<TextBlock Name="XPositionText" HorizontalAlignment="Left" Margin="14,380,0,0" TextWrapping="Wrap" Text="X: 0" VerticalAlignment="Top" TextAlignment="Center"/>
-		<TextBlock Name="YPositionText" HorizontalAlignment="Left" Margin="14,396,0,0" TextWrapping="Wrap" Text="Y: 0" VerticalAlignment="Top" TextAlignment="Center"/>
-		<TextBlock Name="RadiusText" HorizontalAlignment="Left" Margin="14,412,0,0" TextWrapping="Wrap" Text="Radius: 0" VerticalAlignment="Top" TextAlignment="Center"/>
-		<TextBlock Name="ConfidenceText" HorizontalAlignment="Left" Margin="14,428,0,0" TextWrapping="Wrap" Text="Confidence: 0" VerticalAlignment="Top" TextAlignment="Center"/>
+		<Grid Grid.Column="0" Grid.Row="3" Margin="4,4,4,4">
+			<Button x:Name="PlayPauseButton" Content="Play" HorizontalAlignment="Center" Margin="0,20,0,0" VerticalAlignment="Top" Width="45" Click="PlayPauseButton_Click" IsEnabled="False"/>
+			<Button x:Name="PreviousFrameButton" Content="&lt;" HorizontalAlignment="Center" Margin="-75,20,0,0" VerticalAlignment="Top" Width="20" Click="PreviousFrameButton_Click" IsEnabled="False"/>
+			<Button x:Name="NextFrameButton" Content="&gt;" HorizontalAlignment="Center" Margin="75,20,0,0" VerticalAlignment="Top" Width="20" Click="NextFrameButton_Click" IsEnabled="False"/>
+			<Slider x:Name="VideoSlider" VerticalAlignment="Top" Width="auto" Minimum="0" Maximum="100" LargeChange="10" 
+			  MouseDown="VideoSlider_MouseDown" MouseUp="VideoSlider_MouseUp"
+			  Thumb.DragCompleted="VideoSlider_DragCompleted" Thumb.DragStarted="VideoSlider_DragStarted"/>
+			<Label x:Name="VideoTimeLabel" Content="00:00:00;00" HorizontalAlignment="Right" HorizontalContentAlignment="Right" Margin="0,14,0,0" VerticalAlignment="Top" Width="76"/>
+			<TextBlock x:Name="XPositionText" HorizontalAlignment="Left" Margin="10,23,0,0" TextWrapping="Wrap" Text="X: 0" VerticalAlignment="Top" TextAlignment="Center"/>
+			<TextBlock x:Name="YPositionText" HorizontalAlignment="Left" Margin="10,39,0,0" TextWrapping="Wrap" Text="Y: 0" VerticalAlignment="Top" TextAlignment="Center"/>
+			<TextBlock x:Name="RadiusText" HorizontalAlignment="Left" Margin="10,55,0,0" TextWrapping="Wrap" Text="Radius: 0" VerticalAlignment="Top" TextAlignment="Center"/>
+			<TextBlock x:Name="ConfidenceText" HorizontalAlignment="Left" Margin="10,71,0,0" TextWrapping="Wrap" Text="Confidence: 0" VerticalAlignment="Top" TextAlignment="Center"/>
+			<CheckBox x:Name="ShowFilteredVideoButton" Content="Show filtered video" HorizontalAlignment="Right" Margin="0,62,4,0" VerticalAlignment="Top" IsChecked="False" 
+					  Checked="ShowFilteredVideoButton_Checked" Unchecked="ShowFilteredVideoButton_Checked"/>
+
+		</Grid>
 
 	</Grid>
 </Window>

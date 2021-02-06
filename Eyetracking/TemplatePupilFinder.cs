@@ -151,7 +151,7 @@ namespace Eyetracking
 					{
 						Parallel.For(0, templates.Count, i =>
 						{
-							Cv2.MatchTemplate(grayFrame[top, bottom, left, right], templates[i], matchResults[i], TemplateMatchModes.CCoeffNormed);
+							Cv2.MatchTemplate(filteredFrame[top, bottom, left, right], templates[i], matchResults[i], TemplateMatchModes.CCoeffNormed);
 							double minVal, maxVal;
 							Point minLocation, maxLocation;
 							matchResults[i].MinMaxLoc(out minVal, out maxVal, out minLocation, out maxLocation);
