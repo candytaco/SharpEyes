@@ -1141,6 +1141,17 @@ namespace Eyetracking
 			MovePupilEllipseButton_Click(null, null);
 		}
 
+		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+		{
+			if (AutoSaveOnExitMenuItem.IsChecked)
+			{
+				pupilFinder.SaveTimestamps();
+				pupilFinder.SavePupilLocations();
+				if (pupilFinder is TemplatePupilFinder templatePupilFinder)
+					templatePupilFinder.SaveTemplates();
+			}
+		}
+
 		private void NextTemplateButton_Click(object sender, RoutedEventArgs e)
 		{
 			TemplatePreviewIndex++;

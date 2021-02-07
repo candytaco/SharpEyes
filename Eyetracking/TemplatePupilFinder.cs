@@ -233,8 +233,9 @@ namespace Eyetracking
 			worker.RunWorkerAsync();
 		}
 
-		public void SaveTemplates(string fileName)
+		public void SaveTemplates(string fileName = null)
 		{
+			fileName = fileName ?? this.autoTemplatesFileName;
 			using (FileStream fileStream = new FileStream(fileName, FileMode.Create))
 			using (ZipArchive dataFile = new ZipArchive(fileStream, ZipArchiveMode.Create, true))
 			{

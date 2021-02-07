@@ -6,7 +6,8 @@
 		xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:local="clr-namespace:Eyetracking"
         mc:Ignorable="d"
-        Title="SharpEyes" Height="500" Width="800" Icon="icons8-iris-scan-96.ico">
+        Title="SharpEyes" Height="500" Width="800" Icon="icons8-iris-scan-96.ico"
+		Closing="Window_Closing">
 	<Window.CommandBindings>
 		<!--For some reason the custom commands generate a false positive for "Value cannot be null." They work so ignore the squiggles.-->
 		<CommandBinding x:Name="OpenEyetrackingDataCommand" Command="local:EyetrackerCommands.OpenEyetrackingData" Executed="OpenEyetrackingDataCommand_Executed"/>
@@ -57,12 +58,12 @@
 				<MenuItem Header="_Save Eyetracking" Name="saveEyetrackingMenuItem" Click="SaveEyetrackingMenuItem_Click" IsEnabled="False"></MenuItem>
 				<MenuItem Header="Save Templates" Name="saveTemplatesMenuItem" Click="SaveTemplatesMenuItem_Click" IsEnabled="False"/>
 				<MenuItem Header="Save All" Name="saveAllMenuItem" Click="SaveAllMenuItem_Click" IsEnabled="False"/>
+				<MenuItem Header="Auto save on exit" Name="AutoSaveOnExitMenuItem" IsCheckable="True" IsChecked="True"/>
 				<Separator></Separator>
 			</MenuItem>
 			<MenuItem Header="_Edit" Name="editMenu">
 			</MenuItem>
 			<MenuItem Header="_Tools" Name="toolsMenu">
-				<MenuItem Header="_Load Debug Data" Name="loadDebugDataMenuItem" Click="LoadDebugDataMenuItem_Click"/>
 			</MenuItem>
 			<MenuItem Header="_Help" Name="helpMenu">
 				<MenuItem Header="_About" Name="AboutMenuItem" Click="AboutMenuItem_Click" />

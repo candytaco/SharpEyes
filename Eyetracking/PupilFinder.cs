@@ -407,13 +407,15 @@ namespace Eyetracking
 			videoSource.Set(VideoCaptureProperties.PosFrames, frame);
 		}
 
-		public void SaveTimestamps(string fileName)
+		public void SaveTimestamps(string fileName = null)
 		{
+			fileName = fileName ?? this.autoTimestampFileName;
 			Num.save(fileName, timeStamps);
 		}
 
-		public void SavePupilLocations(string fileName)
+		public void SavePupilLocations(string fileName = null)
 		{
+			fileName = fileName ?? this.autoPupilsFileName;
 			Num.save(fileName, pupilLocations);
 		}
 
