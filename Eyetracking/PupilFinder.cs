@@ -199,7 +199,7 @@ namespace Eyetracking
 			else
 			{
 				pupilLocations = Num.zeros((frameCount, 4), NPTypeCode.Double);
-				pupilLocations -= 1;	// use -1 to indicate pupil not yet found on this frame
+				pupilLocations *= Num.NaN;	// use NaN to indicate pupil not yet found on this frame
 			}
 
 			cvFrame = new Mat();
@@ -250,7 +250,7 @@ namespace Eyetracking
 			{
 				for (int i = 0; i < frameCount; i++)
 				{
-					videoSource.Read(cvFrame);
+					if (!videoSource.Read(cvFrame)) break ;
 					Cv2.Split(cvFrame, out colorChannels);
 					timeStamps[i, 0] = Templates.MatchDigit(colorChannels[2][195, 207, 7, 15]) * 10 + Templates.MatchDigit(colorChannels[2][195, 207, 15, 23]);     // hours
 					timeStamps[i, 1] = Templates.MatchDigit(colorChannels[2][195, 207, 35, 43]) * 10 + Templates.MatchDigit(colorChannels[2][195, 207, 43, 51]);    // minutes
@@ -456,7 +456,10 @@ namespace Eyetracking
 			int numFramesToUpdate = (updateMode == ManualUpdateMode.Exponential) ? frameDecay : (int)(frameDecay / Math.Log(dD));
 			for (int i = 0; i < numFramesToUpdate; i++)
 			{
-				if (i + startFrame >= frameCount) break;
+				if (i + startFrame >= frameCount)
+					break;
+				if (pupilLocations[i + startFrame, 0] == Num.NaN)
+					break;	// don't update auto values if they don't exist
 				fade = (updateMode == ManualUpdateMode.Exponential) ? dD * Math.Exp(i / frameDecay) : (double)(frameDecay - i) / frameDecay;
 				pupilLocations[i + startFrame, 0] += fade * dX;
 				pupilLocations[i + startFrame, 1] += fade * dY;
@@ -473,14 +476,13 @@ namespace Eyetracking
 		public BitmapImage GetFramesProcessedPreviewImage(int width = 1920, int height = 6)
 		{
 			if (pupilLocations == null) return null;
-			Mat representation = new Mat(frameCount, height, MatType.CV_8UC3);
-			double value;   // hacky comparison because doing a direct comparison on pupilLocations[i, 0] > 0 gets a null
+			Mat representation = new Mat(height, frameCount, MatType.CV_8UC3);
 			MatIndexer<Vec3b> indexer = representation.GetGenericIndexer<Vec3b>();
 			for (int i = 0; i < frameCount; i++)
 			{
-				value = pupilLocations[i, 0];
 				for (int j = 0; j < height; j++)
-					indexer[i, j] = value > 0 ? Scalar.LimeGreen.ToVec3b() : Scalar.DeepPink.ToVec3b();
+					representation.Set(j, i, Double.IsNaN(pupilLocations[i, 0]) ? Scalar.DeepPink.ToVec3b() : Scalar.LimeGreen.ToVec3b());
+					//indexer[i, j] = value > 0 ? Scalar.LimeGreen.ToVec3b() : Scalar.DeepPink.ToVec3b();
 			}
 			representation.Resize(new Size(width, height), 0, 0, InterpolationFlags.Nearest).ToBitmap().Save(BMPConvertMemeory, ImageFormat.Bmp);
 			BMPConvertMemeory.Position = 0;
@@ -491,6 +493,12 @@ namespace Eyetracking
 			bitmapFrame.EndInit();
 			BMPConvertMemeory.SetLength(0);
 			return bitmapFrame;
+		}
+
+		public void ResetPupilLocations()
+		{
+			pupilLocations = Num.zeros((frameCount, 4), NPTypeCode.Double);
+			pupilLocations *= Num.NaN;    // use -1 to indicate pupil not yet found on this frame
 		}
 	}
 }

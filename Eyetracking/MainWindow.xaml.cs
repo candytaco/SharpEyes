@@ -97,28 +97,29 @@ namespace Eyetracking
 			set
 			{
 				_editingState = value;
-				if (_editingState == EditingState.MovingPupil)
-				{
-					RightCommand.Executed -= NextFrameCommand_Executed;
-					RightCommand.Executed += MovePupilRight;
+				// the switching is disable for the while being until I can debug this issue.
+				//if (_editingState == EditingState.MovingPupil)
+				//{
+				//	RightCommand.Executed -= NextFrameCommand_Executed;
+				//	RightCommand.Executed += MovePupilRight;
 
-					LeftCommand.Executed -= PrevFrameCommand_Executed;
-					LeftCommand.Executed += MovePupilLeft;
+				//	LeftCommand.Executed -= PrevFrameCommand_Executed;
+				//	LeftCommand.Executed += MovePupilLeft;
 
-					UpCommand.Executed += MovePupilUp;
-					DownCommand.Executed += MovePupilDown;
-				}
-				else
-				{
-					RightCommand.Executed -= MovePupilRight;
-					RightCommand.Executed += NextFrameCommand_Executed;
+				//	UpCommand.Executed += MovePupilUp;
+				//	DownCommand.Executed += MovePupilDown;
+				//}
+				//else
+				//{
+				//	RightCommand.Executed -= MovePupilRight;
+				//	RightCommand.Executed += NextFrameCommand_Executed;
 
-					LeftCommand.Executed -= MovePupilLeft;
-					LeftCommand.Executed += PrevFrameCommand_Executed;
+				//	LeftCommand.Executed -= MovePupilLeft;
+				//	LeftCommand.Executed += PrevFrameCommand_Executed;
 
-					UpCommand.Executed -= MovePupilUp;
-					DownCommand.Executed -= MovePupilDown;
-				}
+				//	UpCommand.Executed -= MovePupilUp;
+				//	DownCommand.Executed -= MovePupilDown;
+				//}
 			}
 		}
 		private bool isPupilManullySetOnThisFrame = false;
@@ -134,6 +135,10 @@ namespace Eyetracking
 			{
 				Canvas.SetLeft(PupilEllipse, value * videoScaleFactor - PupilEllipse.Width / 2);
 				XPositionText.Text = string.Format("X: {0:####.#}", value);
+				if (value < 0 && PupilEllipse.IsVisible)
+					PupilEllipse.Visibility = Visibility.Hidden;
+				else if (value > 0 && !PupilEllipse.IsVisible)
+					PupilEllipse.Visibility = Visibility.Visible;
 			}
 		}
 		private double PupilY
@@ -517,6 +522,8 @@ namespace Eyetracking
 
 					PupilX = mouseMoveStartPoint.X / videoScaleFactor;
 					PupilY = mouseMoveStartPoint.Y / videoScaleFactor;
+					if (Double.IsNaN(PupilRadius))
+						PupilRadius = 16;
 
 					// make transparent so we can see better
 					PupilEllipse.Stroke.Opacity = 0.5;
@@ -909,13 +916,13 @@ namespace Eyetracking
 
 		private void SaveEyetrackingMenuItem_Click(object sender, RoutedEventArgs e)
 		{
-			if (!pupilFinder.AreAllFramesProcessed)
-			{
-				if (MessageBox.Show("Not all frames processed. Save data?", "Incomplete processing", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
-				{
-					return;
-				}
-			}
+			//if (!pupilFinder.AreAllFramesProcessed)
+			//{
+			//	if (MessageBox.Show("Not all frames processed. Save data?", "Incomplete processing", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+			//	{
+			//		return;
+			//	}
+			//}
 
 			SaveFileDialog saveFileDialog = new SaveFileDialog
 			{
@@ -1199,9 +1206,19 @@ namespace Eyetracking
 			TemplatePreviewIndex++;
 		}
 
+		private void ResetButton_Click(object sender, RoutedEventArgs e)
+		{
+			if (pupilFinder != null)
+			{
+				pupilFinder.ResetPupilLocations();
+				UpdateDisplays();
+				UpdateFramesProcessedPreviewImage();
+			}
+		}
+
 		private void UpdateFramesProcessedPreviewImage()
 		{
-			FramesProcessedPreviewImage.Source = (pupilFinder == null) ? null : pupilFinder.GetFramesProcessedPreviewImage();
+			FramesProcessedPreviewImage.Source = (pupilFinder == null) ? null : pupilFinder.GetFramesProcessedPreviewImage((int)PreviewImageGrid.ActualWidth);
 		}
 	}
 }
