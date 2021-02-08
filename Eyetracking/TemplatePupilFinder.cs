@@ -29,7 +29,7 @@ namespace Eyetracking
 			{
 				if (videoFileName == null) return null;
 				return Path.Combine(Path.GetDirectoryName(videoFileName),
-									String.Format("{0} templates.npy", Path.GetFileNameWithoutExtension(videoFileName)));
+									String.Format("{0} templates.dat", Path.GetFileNameWithoutExtension(videoFileName)));
 			}
 		}
 
@@ -244,19 +244,22 @@ namespace Eyetracking
 
 		public void SaveTemplates(string fileName = null)
 		{
-			fileName = fileName ?? this.autoTemplatesFileName;
-			using (FileStream fileStream = new FileStream(fileName, FileMode.Create))
-			using (ZipArchive dataFile = new ZipArchive(fileStream, ZipArchiveMode.Create, true))
+			if (IsUsingCustomTemplates)
 			{
-				BinaryFormatter formatter = new BinaryFormatter();
-				ZipArchiveEntry pupilLocationEntry = dataFile.CreateEntry("storeedPupilSizes.list");
-				using (Stream stream = pupilLocationEntry.Open())
-					formatter.Serialize(stream, storedPupilSize);
-				for (int i = 0; i < NumTemplates; i++)
+				fileName = fileName ?? this.autoTemplatesFileName;
+				using (FileStream fileStream = new FileStream(fileName, FileMode.Create))
+				using (ZipArchive dataFile = new ZipArchive(fileStream, ZipArchiveMode.Create, true))
 				{
-					ZipArchiveEntry templateEntry = dataFile.CreateEntry(string.Format("template{0}.png", i));
-					using (Stream stream = templateEntry.Open())
-						templates[i].WriteToStream(stream);
+					BinaryFormatter formatter = new BinaryFormatter();
+					ZipArchiveEntry pupilLocationEntry = dataFile.CreateEntry("storeedPupilSizes.list");
+					using (Stream stream = pupilLocationEntry.Open())
+						formatter.Serialize(stream, storedPupilSize);
+					for (int i = 0; i < NumTemplates; i++)
+					{
+						ZipArchiveEntry templateEntry = dataFile.CreateEntry(string.Format("template{0}.png", i));
+						using (Stream stream = templateEntry.Open())
+							templates[i].WriteToStream(stream);
+					}
 				}
 			}
 		}

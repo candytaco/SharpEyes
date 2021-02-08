@@ -262,8 +262,9 @@
 			<Button x:Name="PlayPauseButton" Content="Play" HorizontalAlignment="Center" Margin="0,20,0,0" VerticalAlignment="Top" Width="45" Click="PlayPauseButton_Click" IsEnabled="False"/>
 			<Button x:Name="PreviousFrameButton" Content="&lt;" HorizontalAlignment="Center" Margin="-75,20,0,0" VerticalAlignment="Top" Width="20" Click="PreviousFrameButton_Click" IsEnabled="False"/>
 			<Button x:Name="NextFrameButton" Content="&gt;" HorizontalAlignment="Center" Margin="75,20,0,0" VerticalAlignment="Top" Width="20" Click="NextFrameButton_Click" IsEnabled="False"/>
+			<Image Height="6" Name="FramesProcessedPreviewImage" VerticalAlignment="Top" Width="auto" Margin="5,0" Stretch="Fill"/>
 			<Slider x:Name="VideoSlider" VerticalAlignment="Top" Width="auto" Minimum="0" Maximum="100" LargeChange="10" 
-			  MouseDown="VideoSlider_MouseDown" MouseUp="VideoSlider_MouseUp"
+			  MouseDown="VideoSlider_MouseDown" MouseUp="VideoSlider_MouseUp" Value="5"
 			  Thumb.DragCompleted="VideoSlider_DragCompleted" Thumb.DragStarted="VideoSlider_DragStarted"/>
 			<Label x:Name="VideoTimeLabel" Content="00:00:00;00" HorizontalAlignment="Right" HorizontalContentAlignment="Right" Margin="0,14,0,0" VerticalAlignment="Top" Width="76"/>
 			<TextBlock x:Name="XPositionText" HorizontalAlignment="Left" Margin="10,23,0,0" TextWrapping="Wrap" Text="X: 0" VerticalAlignment="Top" TextAlignment="Center"/>

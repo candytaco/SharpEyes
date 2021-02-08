@@ -364,6 +364,8 @@ namespace Eyetracking
 			UpdateDisplays();
 			pupilFinder.Seek(0);
 			saveAllMenuItem.IsEnabled = true;
+
+			UpdateFramesProcessedPreviewImage();
 		}
 
 		private void PlayPauseButton_Click(object sender, RoutedEventArgs e)
@@ -847,6 +849,7 @@ namespace Eyetracking
 		public void OnFramesProcessed()
 		{
 			UpdatePupilFindingButtons(false);
+			UpdateFramesProcessedPreviewImage();
 		}
 
 		private void ExponentialFadeFramePicker_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -1194,6 +1197,11 @@ namespace Eyetracking
 		private void NextTemplateButton_Click(object sender, RoutedEventArgs e)
 		{
 			TemplatePreviewIndex++;
+		}
+
+		private void UpdateFramesProcessedPreviewImage()
+		{
+			FramesProcessedPreviewImage.Source = (pupilFinder == null) ? null : pupilFinder.GetFramesProcessedPreviewImage();
 		}
 	}
 }

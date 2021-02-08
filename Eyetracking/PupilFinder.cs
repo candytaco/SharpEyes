@@ -197,7 +197,10 @@ namespace Eyetracking
 			if (File.Exists(autoPupilsFileName))
 				LoadPupilLocations(autoPupilsFileName);
 			else
+			{
 				pupilLocations = Num.zeros((frameCount, 4), NPTypeCode.Double);
+				pupilLocations -= 1;	// use -1 to indicate pupil not yet found on this frame
+			}
 
 			cvFrame = new Mat();
 			for (int i = 0; i < 3; i++)
@@ -459,6 +462,35 @@ namespace Eyetracking
 				pupilLocations[i + startFrame, 1] += fade * dY;
 				pupilLocations[i + startFrame, 2] += fade * dR;
 			}
+		}
+
+		/// <summary>
+		/// Gets a green-red representation of which frames has had FindPupils run over them
+		/// </summary>
+		/// <param name="width">width of image to get</param>
+		/// <param name="height">height of image to get</param>
+		/// <returns></returns>
+		public BitmapImage GetFramesProcessedPreviewImage(int width = 1920, int height = 6)
+		{
+			if (pupilLocations == null) return null;
+			Mat representation = new Mat(frameCount, height, MatType.CV_8UC3);
+			double value;   // hacky comparison because doing a direct comparison on pupilLocations[i, 0] > 0 gets a null
+			MatIndexer<Vec3b> indexer = representation.GetGenericIndexer<Vec3b>();
+			for (int i = 0; i < frameCount; i++)
+			{
+				value = pupilLocations[i, 0];
+				for (int j = 0; j < height; j++)
+					indexer[i, j] = value > 0 ? Scalar.LimeGreen.ToVec3b() : Scalar.DeepPink.ToVec3b();
+			}
+			representation.Resize(new Size(width, height), 0, 0, InterpolationFlags.Nearest).ToBitmap().Save(BMPConvertMemeory, ImageFormat.Bmp);
+			BMPConvertMemeory.Position = 0;
+			bitmapFrame = new BitmapImage();
+			bitmapFrame.BeginInit();
+			bitmapFrame.StreamSource = BMPConvertMemeory;
+			bitmapFrame.CacheOption = BitmapCacheOption.OnLoad;
+			bitmapFrame.EndInit();
+			BMPConvertMemeory.SetLength(0);
+			return bitmapFrame;
 		}
 	}
 }
