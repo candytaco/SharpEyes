@@ -999,7 +999,10 @@ namespace Eyetracking
 				{
 					templatePupilFinder.LoadTemplates(openFileDialog.FileName);
 					TemplatePreviewIndex = templatePupilFinder.NumTemplates;
-					SetStatus(String.Format("Idla; Loaded {0} templates", templatePupilFinder.NumTemplates));
+					SetStatus(String.Format("Idle; Loaded {0} templates", templatePupilFinder.NumTemplates));
+
+					if (templatePupilFinder.NumTemplates > 1)
+						DeleteTemplateButton.Visibility = Visibility.Visible;
 				}
 			}
 		}
