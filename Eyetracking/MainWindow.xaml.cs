@@ -1168,6 +1168,28 @@ namespace Eyetracking
 			}
 		}
 
+		private void NRecentTemplatesPicker_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+		{
+
+		}
+
+		private void TemplateCountComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			if (pupilFinder is TemplatePupilFinder templatePupilFinder)
+			{
+				if (TemplateCountComboBox.SelectedIndex == 0)
+				{
+					templatePupilFinder.NumActiveTemplates = 0;
+					NRecentTemplatesPicker.Visibility = Visibility.Hidden;
+				}
+				else
+				{
+					NRecentTemplatesPicker.Visibility = Visibility.Visible;
+					templatePupilFinder.NumActiveTemplates = NRecentTemplatesPicker.Value.Value;
+				}
+			}
+		}
+
 		private void NextTemplateButton_Click(object sender, RoutedEventArgs e)
 		{
 			TemplatePreviewIndex++;
