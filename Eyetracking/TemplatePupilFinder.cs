@@ -42,6 +42,12 @@ namespace Eyetracking
 		/// </summary>
 		private List<double> storedPupilSize = null;
 
+		/// <summary>
+		/// How many of the templates to actually use, since more accurate templates may be added
+		/// throughout the run. If 0, use all.
+		/// </summary>
+		public int NumActiveTemplates = 0;
+
 		public bool IsUsingCustomTemplates { get { return storedPupilSize != null; } }
 
 		public TemplatePupilFinder(string videoFileName, System.Windows.Controls.ProgressBar progressBar, System.Windows.Shell.TaskbarItemInfo taskbar,
@@ -149,7 +155,10 @@ namespace Eyetracking
 					ReadGrayscaleFrame();
 					if (NumTemplates > 1)
 					{
-						Parallel.For(0, templates.Count, i =>
+						int startIndex = NumActiveTemplates == 0 ? 0 : templates.Count - NumActiveTemplates;
+						if (startIndex < 0) startIndex = 0;
+
+						Parallel.For(startIndex, templates.Count, i =>
 						{
 							Cv2.MatchTemplate(filteredFrame[top, bottom, left, right], templates[i], matchResults[i], TemplateMatchModes.CCoeffNormed);
 							double minVal, maxVal;

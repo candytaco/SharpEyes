@@ -814,16 +814,21 @@ namespace Eyetracking
 
 		private void UseImageAsTemplateButton_Click(object sender, RoutedEventArgs e)
 		{
-			int top = (int)(PupilY - PupilRadius * 1.5);
-			int bottom = (int)(PupilY + PupilRadius * 1.5 + 2);
-			int left = (int)(PupilX - PupilRadius * 1.5);
-			int right = (int)(PupilX + PupilRadius * 1.5 + 2);
-			((TemplatePupilFinder)pupilFinder).AddImageSegmentAsTemplate(top, bottom, left, right, PupilRadius);
-			TemplatePreviewIndex = ((TemplatePupilFinder)pupilFinder).NumTemplates;
-			if (!saveTemplatesMenuItem.IsEnabled)
+			if (pupilFinder is TemplatePupilFinder templatePupilFinder)
 			{
-				saveTemplatesMenuItem.IsEnabled = true;
-				ResetTemplatesButton.IsEnabled = true;
+				int top = (int)(PupilY - PupilRadius * 1.5);
+				int bottom = (int)(PupilY + PupilRadius * 1.5 + 2);
+				int left = (int)(PupilX - PupilRadius * 1.5);
+				int right = (int)(PupilX + PupilRadius * 1.5 + 2);
+				templatePupilFinder.AddImageSegmentAsTemplate(top, bottom, left, right, PupilRadius);
+				TemplatePreviewIndex = templatePupilFinder.NumTemplates;
+				if (!saveTemplatesMenuItem.IsEnabled)
+				{
+					saveTemplatesMenuItem.IsEnabled = true;
+					ResetTemplatesButton.IsEnabled = true;
+				}
+				if (templatePupilFinder.NumTemplates > 1)
+					DeleteTemplateButton.Visibility = Visibility.Visible;
 			}
 		}
 
@@ -833,6 +838,7 @@ namespace Eyetracking
 			TemplatePreviewIndex = 0;
 			saveTemplatesMenuItem.IsEnabled = false;
 			ResetTemplatesButton.IsEnabled = false;
+			DeleteTemplateButton.Visibility = Visibility.Hidden;
 		}
 
 		/// <summary>
@@ -1149,6 +1155,16 @@ namespace Eyetracking
 				pupilFinder.SavePupilLocations();
 				if (pupilFinder is TemplatePupilFinder templatePupilFinder)
 					templatePupilFinder.SaveTemplates();
+			}
+		}
+
+		private void DeleteTemplateButton_Click(object sender, RoutedEventArgs e)
+		{
+			if (pupilFinder is TemplatePupilFinder templatePupilFinder)
+			{
+				templatePupilFinder.RemoveTemplate(TemplatePreviewIndex--);
+				if (templatePupilFinder.NumTemplates < 2)	// no deleting last one!
+					DeleteTemplateButton.Visibility = Visibility.Hidden;
 			}
 		}
 
