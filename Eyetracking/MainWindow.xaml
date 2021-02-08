@@ -185,7 +185,7 @@
 									<ComboBoxItem Content="All templates"/>
 									<ComboBoxItem Content="N recent templates"/>
 								</ComboBox>
-								<xctk:IntegerUpDown x:Name="NRecentTemplatesPicker" Value="16" Increment="1" Minimum="1" Height="24" Margin="45,125,0,0" 
+								<xctk:IntegerUpDown x:Name="NRecentTemplatesPicker" Value="16" Increment="1" Minimum="1" Height="24" Margin="45,125,0,0"  Visibility="Hidden"
 													ValueChanged="NRecentTemplatesPicker_ValueChanged" VerticalAlignment="Top" HorizontalAlignment="Left" MinWidth="75" MinHeight="26"/>
 							</Grid>
 						</TabItem>

@@ -453,6 +453,7 @@ namespace Eyetracking
 			int numFramesToUpdate = (updateMode == ManualUpdateMode.Exponential) ? frameDecay : (int)(frameDecay / Math.Log(dD));
 			for (int i = 0; i < numFramesToUpdate; i++)
 			{
+				if (i + startFrame >= frameCount) break;
 				fade = (updateMode == ManualUpdateMode.Exponential) ? dD * Math.Exp(i / frameDecay) : (double)(frameDecay - i) / frameDecay;
 				pupilLocations[i + startFrame, 0] += fade * dX;
 				pupilLocations[i + startFrame, 1] += fade * dY;

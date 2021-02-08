@@ -1149,7 +1149,7 @@ namespace Eyetracking
 
 		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
-			if (AutoSaveOnExitMenuItem.IsChecked)
+			if (AutoSaveOnExitMenuItem.IsChecked && pupilFinder != null)
 			{
 				pupilFinder.SaveTimestamps();
 				pupilFinder.SavePupilLocations();
