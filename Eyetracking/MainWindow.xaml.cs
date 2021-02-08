@@ -1170,7 +1170,8 @@ namespace Eyetracking
 
 		private void NRecentTemplatesPicker_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
 		{
-
+			if (pupilFinder is TemplatePupilFinder templatePupilFinder)
+				templatePupilFinder.NumActiveTemplates = NRecentTemplatesPicker.Value.Value;
 		}
 
 		private void TemplateCountComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
