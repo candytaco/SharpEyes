@@ -146,6 +146,8 @@ namespace Eyetracking
 				WorkerReportsProgress = true,
 				WorkerSupportsCancellation = true
 			};
+
+			int framesProcessed = 0;
 			worker.DoWork += delegate (object sender, DoWorkEventArgs args)
 			{
 				// TODO: perhaps parallelize over frames rather than templates
@@ -201,6 +203,7 @@ namespace Eyetracking
 
 					isFrameProcessed[CurrentFrameNumber] = true;
 					isAnyFrameProcessed = true;
+					framesProcessed++;
 
 					this.Dispatcher.Invoke(() =>
 					{
@@ -224,15 +227,11 @@ namespace Eyetracking
 
 			worker.RunWorkerCompleted += delegate (object sender, RunWorkerCompletedEventArgs e)
 			{
+				TimeSpan elapsed = DateTime.Now - start;
 				progressBar.Value = 0;
-				if (e.Cancelled)
-					SetStatus(string.Format("Idle. Pupil finding was cancelled."));
-				else
-				{
-					TimeSpan elapsed = DateTime.Now - start;
-					SetStatus(string.Format("Idle. {0} frames processed in {1:c} ({2} fps)", Frames, elapsed, (int)(Frames / elapsed.TotalSeconds)));
-				}
-				this.Dispatcher.Invoke(OnFramesProcessed);
+				SetStatus(string.Format("Idle.{3} {0} frames processed in {1:c} ({2} fps)", framesProcessed, elapsed, (int)(Frames / elapsed.TotalSeconds), 
+																							e.Cancelled ? "Pupil finding cancelled." : ""));
+				this.Dispatcher.Invoke(OnFramesPupilsProcessed);
 				taskbar.ProgressState = System.Windows.Shell.TaskbarItemProgressState.None;
 				CancelPupilFinding -= worker.CancelAsync;
 			};
