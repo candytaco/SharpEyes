@@ -7,7 +7,7 @@ which is way better than the Eyetracking package way of setting values and hopin
 
 See the [wiki](https://github.com/candytaco/SharpEyes/wiki) for more information.
 
-As of Feb 2, 2021, this is extremely an work in progress, and only the most basic functionalities are supported. These are:
+As of Feb 10, 2021, this is extremely an work in progress, and only the most basic functionalities are supported. These are:
 * Loading a video
 * Parsing timestamps
 * Filtering the image before finding the pupil
@@ -18,7 +18,9 @@ As of Feb 2, 2021, this is extremely an work in progress, and only the most basi
 * Saving out the found pupil locations to a .npy file to be parsed by the Eyetracking package.
 * Reading in files that this saved.
 
-There are many edge cases that will throw un-handled exceptions right now. Eventually, they will be ironed out.
+Most exceptions have been handled. However, some of the fixes are bad batches that simply prevent the program from crashing.
+There are probably many more insidious silent bugs that corrupt the data.
+I recommend restarting the program every time you process a video to prevent weird data bleed overs.
 
 ## Current usage
 1. Open a video
