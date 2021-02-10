@@ -341,6 +341,9 @@ namespace Eyetracking
 					saveTemplatesMenuItem.IsEnabled = true;
 					ResetTemplatesButton.IsEnabled = true;
 					autoloads.Add("templates");
+
+					if (templatePupilFinder.NumTemplates > 1)
+						DeleteTemplateButton.Visibility = Visibility.Visible;
 				}
 			}
 

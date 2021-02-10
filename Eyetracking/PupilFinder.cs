@@ -255,7 +255,7 @@ namespace Eyetracking
 					timeStamps[i, 0] = Templates.MatchDigit(colorChannels[2][195, 207, 7, 15]) * 10 + Templates.MatchDigit(colorChannels[2][195, 207, 15, 23]);     // hours
 					timeStamps[i, 1] = Templates.MatchDigit(colorChannels[2][195, 207, 35, 43]) * 10 + Templates.MatchDigit(colorChannels[2][195, 207, 43, 51]);    // minutes
 
-					if (Templates.SecondsMarkerMatch(colorChannels[0][195, 207, 103, 111])) // check for seconds marker location
+					if (Templates.SecondsMarkerMatch(colorChannels[2][195, 207, 103, 111])) // check for seconds marker location
 					{
 						timeStamps[i, 2] = Templates.MatchDigit(colorChannels[2][195, 207, 67, 75]);            // a single seconds digit
 						timeStamps[i, 3] = Templates.MatchDigit(colorChannels[2][195, 207, 79, 87]) * 100 +
