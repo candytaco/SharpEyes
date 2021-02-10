@@ -5,6 +5,8 @@ which is way better than the Eyetracking package way of setting values and hopin
 
 ![](screenshot.png)
 
+See the [wiki](https://github.com/candytaco/SharpEyes/wiki) for more information.
+
 As of Feb 2, 2021, this is extremely an work in progress, and only the most basic functionalities are supported. These are:
 * Loading a video
 * Parsing timestamps
