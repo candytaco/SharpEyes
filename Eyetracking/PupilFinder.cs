@@ -158,10 +158,11 @@ namespace Eyetracking
 		public double bilateralSigmaSpace = 0;
 
 		// UI delegates/references
-		protected SetStatusDelegate SetStatus { get; private set; }
+		public SetStatusDelegate SetStatus { get; private set; }
 		protected System.Windows.Controls.ProgressBar progressBar;
-		protected FrameProcessedDelegate UpdateFrame;
-		protected FramesProcessedDelegate OnFramesProcessed;
+		public FrameProcessedDelegate UpdateFrame;
+		public FramesProcessedDelegate OnFramesPupilsProcessed; // delegate for when pupils are found in a chunk of frames
+		public FramesProcessedDelegate OnTimeStampsFound;		// delegate for when timestamps are found
 		public CancelPupilFindingDelegate CancelPupilFinding;
 
 		/// <summary>
@@ -176,7 +177,7 @@ namespace Eyetracking
 			this.progressBar = progressBar;
 			SetStatus = setStatus;
 			UpdateFrame = updateFrame;
-			OnFramesProcessed = framesProcessed;
+			OnFramesPupilsProcessed = framesProcessed;
 			this.taskbar = taskbar;
 			videoSource = new VideoCapture(videoFileName);
 			width = (int)videoSource.Get(VideoCaptureProperties.FrameWidth);
@@ -293,6 +294,7 @@ namespace Eyetracking
 				CurrentFrameNumber = 0;
 				taskbar.ProgressState = System.Windows.Shell.TaskbarItemProgressState.None;
 				isTimestampParsed = true;
+				OnTimeStampsFound();
 			};
 
 			taskbar.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Normal;

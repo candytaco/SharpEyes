@@ -645,6 +645,13 @@ namespace Eyetracking
 		{
 			if (pupilFinder != null)
 			{
+				ReadTimestampButton.IsEnabled = false;
+				LoadSavedTimeStampsButton.IsEnabled = false;
+				pupilFinder.OnTimeStampsFound += delegate ()
+												{
+													ReadTimestampButton.IsEnabled = true;
+													LoadSavedTimeStampsButton.IsEnabled = true;
+												};
 				pupilFinder.Seek(0);
 				pupilFinder.ParseTimeStamps();
 				FindPupilsButton.IsEnabled = true;

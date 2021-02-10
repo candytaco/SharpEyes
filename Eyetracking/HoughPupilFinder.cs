@@ -71,7 +71,7 @@ namespace Eyetracking
 					SetStatus(string.Format("Idle. Pupil finding was cancelled."));
 				else
 					SetStatus(string.Format("Idle. {0} frames processed in {1:c}", Frames, DateTime.Now - start));
-				this.Dispatcher.Invoke(OnFramesProcessed);
+				this.Dispatcher.Invoke(OnFramesPupilsProcessed);
 				CancelPupilFinding -= worker.CancelAsync;
 			};
 
