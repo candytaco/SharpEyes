@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Num = NumSharp.np;
 
 namespace Eyetracking
 {
@@ -37,7 +39,40 @@ namespace Eyetracking
 		public static RBF2D LeaveOneOutSelect(double[] x, double[] y, double[] value, Tuple<double, double> baseRadiusRange, int numBaseRadii, 
 											  Tuple<int, int> numLayersRange, Tuple<double, double> regularizerRange, int numRegularizers, bool logSpaceRegularizers)
 		{
-			return null;
+			RBF2D best = null;
+			double bestError = Double.PositiveInfinity;
+			List<double> regularizers = new List<double>
+			{
+				regularizerRange.Item1
+			};
+			double start = regularizerRange.Item1;
+			double end = regularizerRange.Item2;
+			if (logSpaceRegularizers)
+			{
+				start = start == 0 ? -6 : Math.Log(start);
+				end = Math.Log(end);
+			}
+			foreach (double regularizer in Num.linspace(start, end, regularizerRange.Item1 == 0 ? numRegularizers - 1 : numRegularizers))
+			{
+				regularizers.Add(logSpaceRegularizers ? Math.Pow(10, regularizer) : regularizer);
+			}
+
+			foreach (double baseRadius in Num.linspace(baseRadiusRange.Item1, baseRadiusRange.Item2, numBaseRadii))
+				for (int numLayers = numLayersRange.Item1; numLayers < numLayersRange.Item2 + 1; numLayers++)
+					foreach (double regularizer in regularizers)
+					{
+						RBF2D RBF = new RBF2D(x, y, value);
+						RBF.baseRadius = baseRadius;
+						RBF.numLayers = numLayers;
+						RBF.regularizer = regularizer;
+						double error = RBF.CrossValidate();
+						if (error < bestError)
+						{
+							best = RBF;
+							bestError = error;
+						}
+					}
+			return best;
 		}
 
 		private alglib.rbfmodel RBFModel;
@@ -50,6 +85,8 @@ namespace Eyetracking
 		public Nullable<double> baseRadius = null;
 		public int numLayers = 5;
 		public double regularizer = 0;
+
+		public double RMSError { get; private set; } = 10000;
 
 		public RBF2D()
 		{
@@ -86,9 +123,45 @@ namespace Eyetracking
 			alglib.rbfsetpoints(RBFModel, formattedData);
 
 			// this call sets the algorithms and have hyperparameters that need tuning
-			alglib.rbfsetalgohierarchical(RBFModel, 1.0, 3, 0.0);
+			alglib.rbfsetalgohierarchical(RBFModel, baseRadius ?? 1.0, numLayers, regularizer);
 
 			alglib.rbfbuildmodel(RBFModel, out RBFReport);
+		}
+
+		/// <summary>
+		/// Does leave-one-out cross validation and stores the mean error
+		/// </summary>
+		public double CrossValidate()
+		{
+			double sumErrorSquared = 0;
+			object parallelLock = new object();
+			Parallel.For(0, dataX.Length, i => 
+			{
+				alglib.rbfmodel thisModel;
+				alglib.rbfreport thisReport;
+				alglib.rbfcreate(2, 1, out thisModel);
+
+				double[,] formattedData = new double[dataX.Length - 1, 3];
+				int index = 0;
+				for (int j = 0; j < dataX.Length; j++)
+				{
+					if (j == i) continue;
+					formattedData[index, 0] = dataX[j];
+					formattedData[index, 1] = dataY[j];
+					formattedData[index++, 2] = dataValue[j];
+				}
+				alglib.rbfsetpoints(thisModel, formattedData);
+				alglib.rbfsetalgohierarchical(thisModel, baseRadius ?? 1.0, numLayers, regularizer);
+				alglib.rbfbuildmodel(thisModel, out thisReport);
+
+				double error = alglib.rbfcalc2(thisModel, dataX[i], dataY[i]) - dataValue[i];
+				lock (parallelLock)
+				{
+					sumErrorSquared += error * error;
+				}
+			});
+			RMSError = Math.Sqrt(sumErrorSquared / dataX.Length);
+			return RMSError;
 		}
 
 		public double Evaluate(double x, double y)
