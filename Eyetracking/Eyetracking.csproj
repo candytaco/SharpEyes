@@ -183,6 +183,7 @@
     <Compile Include="Calibrator.cs" />
     <Compile Include="HoughPupilFinder.cs" />
     <Compile Include="PupilFinder.cs" />
+    <Compile Include="RBF2D.cs" />
     <Compile Include="TemplatePupilFinder.cs" />
     <Compile Include="Templates.cs" />
     <Page Include="CalibrationParametersWindow.xaml">
