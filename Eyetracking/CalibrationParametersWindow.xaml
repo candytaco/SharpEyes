@@ -1,0 +1,27 @@
+﻿<Window x:Class="Eyetracking.CalibrationParametersWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Eyetracking"
+        mc:Ignorable="d"
+        Title="Calibration Parameters" Height="450" Width="800" WindowStyle="ToolWindow">
+	<Grid>
+		<Button Name="CancelButton" Content="Cancel" HorizontalAlignment="Right" Margin="0,0,9.6,10" VerticalAlignment="Bottom" Width="75"/>
+		<Button Name="AcceptButton" Content="Accept" HorizontalAlignment="Right" Margin="0,0,89.6,10" VerticalAlignment="Bottom" Width="75"/>
+		<TabControl Margin="4,4,4,42" >
+			<TabItem Header="Calibration Points">
+				<Grid Background="#FFE5E5E5">
+					<DataGrid Name="CalibrationPointsDataGrid" HorizontalAlignment="Left" Height="306" Margin="10,30,0,0" VerticalAlignment="Top" Width="178"/>
+					<Label Content="Calibration Points" HorizontalAlignment="Left" Margin="10,4,0,0" VerticalAlignment="Top"/>
+					<DataGrid x:Name="CalibrationOrderDataGrid" HorizontalAlignment="Left" Height="306" Margin="198,30,0,0" VerticalAlignment="Top" Width="178"/>
+					<Label Content="Calibration Order" HorizontalAlignment="Left" Margin="198,4,0,0" VerticalAlignment="Top"/>
+				</Grid>
+			</TabItem>
+			<TabItem Header="TabItem">
+				<Grid Background="#FFE5E5E5"/>
+			</TabItem>
+		</TabControl>
+
+	</Grid>
+</Window>

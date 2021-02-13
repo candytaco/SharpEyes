@@ -302,7 +302,7 @@ namespace Eyetracking
 
 			VideoSlider.Maximum = pupilFinder.frameCount - 1;
 
-			timer = new DispatcherTimer();
+			timer = new DispatcherTimer(DispatcherPriority.Render);
 			timer.Interval = timePerFrame;
 			timer.Tick += VideoPlayTimerTick;
 
@@ -413,7 +413,12 @@ namespace Eyetracking
 
 		private void VideoPlayTimerTick(object sender, EventArgs e)
 		{
-			pupilFinder.CurrentFrameNumber++;
+			if (pupilFinder.CurrentFrameNumber >= pupilFinder.frameCount - 1)
+			{
+				// stop if we reached the end
+				PlayPauseButton_Click(null, null);
+			}
+			pupilFinder.ReadGrayscaleFrame();
 			UpdateDisplays();
 		}
 
