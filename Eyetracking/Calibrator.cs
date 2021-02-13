@@ -63,10 +63,10 @@ namespace Eyetracking
 			}
 
 			//
-			xInterpolator = RBF2D.LeaveOneOutSelect(pupilX, pupilY, screenX, calibrationParameters.baseRadiusRange, calibrationParameters.numBaseRadii,
+			xInterpolator = RBF2D.SearchHyperparameters(pupilX, pupilY, screenX, calibrationParameters.baseRadiusRange, calibrationParameters.numBaseRadii,
 													calibrationParameters.numLayersRange, calibrationParameters.regularizerRange, calibrationParameters.numRegularizers,
 													calibrationParameters.logSpaceRegularizers);
-			yInterpolator = RBF2D.LeaveOneOutSelect(pupilX, pupilY, screenY, calibrationParameters.baseRadiusRange, calibrationParameters.numBaseRadii,
+			yInterpolator = RBF2D.SearchHyperparameters(pupilX, pupilY, screenY, calibrationParameters.baseRadiusRange, calibrationParameters.numBaseRadii,
 													calibrationParameters.numLayersRange, calibrationParameters.regularizerRange, calibrationParameters.numRegularizers,
 													calibrationParameters.logSpaceRegularizers);
 		}
