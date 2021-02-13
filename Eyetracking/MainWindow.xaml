@@ -260,7 +260,11 @@
 			</TabItem>
 			<TabItem Header="Calibration">
 				<Grid Background="#FFE5E5E5">
-					
+					<Button Name="MarkInButton" Content="Mark In" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75"/>
+					<Button Name="MarkOutButton" Content="Mark Out" HorizontalAlignment="Left" Margin="90,10,0,0" VerticalAlignment="Top" Width="75"/>
+					<Button Name="OpenCalibrationParametersButton" Content="Calibration Parameters" HorizontalAlignment="Left" Margin="10,267,0,0" VerticalAlignment="Top" Width="125"/>
+					<Button Name="CalibrateButton" Content="Calibrate" HorizontalAlignment="Left" Margin="10,291,0,0" VerticalAlignment="Top" Width="75"/>
+
 				</Grid>
 			</TabItem>
 		</TabControl>

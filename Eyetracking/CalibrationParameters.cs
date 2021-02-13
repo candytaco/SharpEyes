@@ -10,8 +10,10 @@ namespace Eyetracking
 	/// <summary>
 	/// A struct that stores information about the eyetracking calibration sequence
 	/// </summary>
-	class CalibrationParameters
+	public class CalibrationParameters
 	{
+		// video information
+
 		/// <summary>
 		/// List of calibration points in screen space
 		/// </summary>
@@ -31,6 +33,57 @@ namespace Eyetracking
 		/// DPI Scaling factor. See Unreal Engine
 		/// </summary>
 		public double DPIUnscaleFactor = 1.0;
+
+		/// <summary>
+		/// Default amount of time to discard from beginning of each point
+		/// to account for saccade time
+		/// </summary>
+		public double calibrationPointStartDelaySeconds = 1 / 6.0;
+
+		/// <summary>
+		/// Framerate of eyetracking videos
+		/// </summary>
+		public int eyetrackingFPS = 60;
+
+		/// <summary>
+		/// Conversion from delay in seconds to frames
+		/// </summary>
+		public int calibrationPointStartDelayFrames
+		{
+			get
+			{
+				return (int)(calibrationPointStartDelaySeconds * eyetrackingFPS);
+			}
+		}
+
+		// Calibration hyperparameters
+
+		/// <summary>
+		/// Minimum base radius for RBF
+		/// </summary>
+		public double minBaseRadius = 1.0;
+
+		public double maxBaseRadius = 100.0;
+
+		public Tuple<double, double> baseRadiusRange => new Tuple<double, double>(minBaseRadius, maxBaseRadius);
+
+		public int numBaseRadii = 10;
+
+		public int minNumLayers = 1;
+
+		public int maxNumlayers = 10;
+
+		public Tuple<int, int> numLayersRange => new Tuple<int, int>(minNumLayers, maxNumlayers);
+
+		public double minRegularizer = 0;
+
+		public double maxRegularizer = 10;
+
+		public Tuple<double, double> regularizerRange => new Tuple<double, double>(minRegularizer, maxRegularizer);
+
+		public int numRegularizers = 10;
+
+		public bool logSpaceRegularizers = true;
 
 		public CalibrationParameters()
 		{

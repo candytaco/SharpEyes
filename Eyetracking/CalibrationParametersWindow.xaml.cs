@@ -26,8 +26,12 @@ namespace Eyetracking
 	/// </summary>
 	public partial class CalibrationParametersWindow : Window
 	{
-		public CalibrationParametersWindow()
+		private CalibrationParameters calibrationParameters;
+
+		public CalibrationParametersWindow(CalibrationParameters parameters)
 		{
+			calibrationParameters = parameters;
+			// TODO: Create data bindings between calibration parameters object and UI
 			InitializeComponent();
 		}
 	}
