@@ -1061,7 +1061,7 @@ namespace Eyetracking
 
 		private void PlayPauseCommand_Executed(object sender, ExecutedRoutedEventArgs e)
 		{
-			IsPlaying = !IsPlaying;
+            FindPupilsButton_Click(null, null);
 		}
 
 		private void SaveAllMenuItem_Click(object sender, RoutedEventArgs e)
