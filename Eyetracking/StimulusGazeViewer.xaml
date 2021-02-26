@@ -1,0 +1,126 @@
+﻿<Window x:Class="Eyetracking.StimulusGazeViewer"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Eyetracking"
+        mc:Ignorable="d"
+        Title="Stimulus View" Height="450" Width="800">
+    <Window.TaskbarItemInfo>
+        <TaskbarItemInfo x:Name="taskbarItemInfo"/>
+    </Window.TaskbarItemInfo>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition MaxWidth="385"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+
+        <Menu Height="23" VerticalAlignment="Top" IsMainMenu="True" Margin="0,0,0,0" Grid.ColumnSpan="2" Grid.Row="0">
+            <MenuItem Header="_File" Name="fileMenu">
+                <MenuItem Header="_Open Video" Name="openVideoMenuItem" Click="OpenVideoMenuItem_Click"></MenuItem>
+                <MenuItem Header="_Load Gaze" Name="loadGazeMenuItem" Click="LoadGazeMenuItem_Click" IsEnabled="False"/>
+                <Separator/>
+                <MenuItem Header="_Save Gaze" Name="saveGazeMenuItem" Click="SaveGazeMenuItem_Click" IsEnabled="False"/>
+                <MenuItem Header="_Save Gaze As" Name="saveGazeAsMenuItem" Click="SaveGazeAsMenuItem_Click" IsEnabled="False"/>
+                <MenuItem Header="Auto save on exit" Name="AutoSaveOnExitMenuItem" IsCheckable="True" IsChecked="True"/>
+                <Separator></Separator>
+            </MenuItem>
+            <MenuItem Header="_Edit" Name="editMenu">
+            </MenuItem>
+            <MenuItem Header="_Tools" Name="toolsMenu">
+            </MenuItem>
+            <MenuItem Header="_Help" Name="helpMenu">
+                <MenuItem Header="_About" Name="AboutMenuItem" Click="AboutMenuItem_Click" />
+            </MenuItem>
+        </Menu>
+
+        <ToolBar VerticalAlignment="Top" Height="26" ToolBarTray.IsLocked="True" Margin="0,0,-0.4,0"
+				 Grid.ColumnSpan="2" Grid.Row="1">
+            <Button Height="21.3333333333333" VerticalAlignment="Top" Width="Auto" Name="openVideoButton" Click="OpenFileMenuItem_Click">Open Video
+                <Button.ToolTip>Open a video file.</Button.ToolTip>
+            </Button>
+            <ToggleButton Height="21.3333333333333" VerticalAlignment="Top" Width="Auto" Name="loadGazeButton" Click="LoadGazeMenuItem_Click">Load Gaze
+
+                <ToggleButton.ToolTip>Load Gaze info.</ToggleButton.ToolTip>
+            </ToggleButton>
+            <ToggleButton Height="21.3333333333333" VerticalAlignment="Top" Width="Auto" Name="moveGazeButtom" Click="MoveGazeButtom_Click">Move Gaze
+                <ToggleButton.ToolTip>Move gaze location.</ToggleButton.ToolTip>
+            </ToggleButton>
+        </ToolBar>
+
+        <Viewbox Margin="4,4,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Row="2" Stretch="Uniform">
+            <Canvas x:Name="canvas" Background="Transparent" MouseLeftButtonDown="Canvas_MouseLeftButtonDown" 
+                    MouseMove="Canvas_MouseMove" MouseLeftButtonUp="Canvas_MouseLeftButtonUp"
+				    Height="300" Width="400">
+                <MediaElement Name="VideoMediaElement" Margin="0" LoadedBehavior="Manual" ScrubbingEnabled="True" UnloadedBehavior="Manual" MediaEnded="VideoMediaElement_MediaEnded"
+                              Height="300" Width="400"/>
+
+                <Ellipse x:Name="GazeEllipse" Fill="Transparent" HorizontalAlignment="Left" Height="32" Margin="0" 
+			  Stroke="#FF00BAFF" VerticalAlignment="Top" Width="32" RenderTransformOrigin="0.5,0.5" StrokeThickness="3" />
+            </Canvas>
+        </Viewbox>
+
+        <Grid Grid.Column="0" Grid.Row="3" Margin="4,4,4,4">
+            <Button x:Name="PlayPauseButton" Content="Play" HorizontalAlignment="Center" Margin="0,20,0,0" VerticalAlignment="Top" Width="45" Click="PlayPauseButton_Click" IsEnabled="False"/>
+            <Button x:Name="PreviousKeyFrameButton" Content="&lt;" HorizontalAlignment="Center" Margin="-75,20,0,0" VerticalAlignment="Top" Width="20" Click="PreviousKeyFrameButton_Click" IsEnabled="False"/>
+            <Button x:Name="NextKeyFrameButton" Content="&gt;" HorizontalAlignment="Center" Margin="75,20,0,0" VerticalAlignment="Top" Width="20" Click="NextKeyFrameButton_Click" IsEnabled="False"/>
+            <Grid x:Name="PreviewImageGrid" Height="6" VerticalAlignment="Top" Width="auto" Margin="5,0">
+                <Image Name="FramesProcessedPreviewImage" Stretch="Fill"/>
+            </Grid>
+            <Slider x:Name="VideoSlider" VerticalAlignment="Top" Width="auto" Minimum="0" Maximum="100" LargeChange="10" 
+                    MouseDown="VideoSlider_MouseDown" MouseUp="VideoSlider_MouseUp" Value="5"
+			        Thumb.DragCompleted="VideoSlider_DragCompleted" Thumb.DragStarted="VideoSlider_DragStarted"/>
+            <Label x:Name="VideoTimeLabel" Content="00:00:00;00" HorizontalAlignment="Right" HorizontalContentAlignment="Right" Margin="0,14,0,0" VerticalAlignment="Top" Width="76"/>
+            <TextBlock x:Name="XPositionText" HorizontalAlignment="Left" Margin="10,23,0,0" TextWrapping="Wrap" Text="X: 0" VerticalAlignment="Top" TextAlignment="Center"/>
+            <TextBlock x:Name="YPositionText" HorizontalAlignment="Left" Margin="10,39,0,0" TextWrapping="Wrap" Text="Y: 0" VerticalAlignment="Top" TextAlignment="Center"/>
+        </Grid>
+
+        <Grid Grid.Column="1" Grid.Row="2" Margin="4">
+            <Button Name="SetCurrentAsEyetrackingStartButton" Content="Set current as eyetracking start" HorizontalAlignment="Left" VerticalAlignment="Top" Width="175" Click="SetCurrentAsEyetrackingStartButton_Click"/>
+            <Button Name="AutoFindEyetrackingStartButton" Content="Auto find eyetracking start" HorizontalAlignment="Left" VerticalAlignment="Top" Width="150" Margin="0,24,0,0" Click="AutoFindEyetrackingStartButton_Click"/>
+        </Grid>
+
+        <StatusBar Margin="0,0,0,0" VerticalAlignment="Bottom" Height="21" Grid.Row="5" Grid.ColumnSpan="2">
+            <StatusBar.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                    </Grid>
+                </ItemsPanelTemplate>
+            </StatusBar.ItemsPanel>
+            <StatusBarItem>
+                <TextBlock Name="VideoNameStatus">Video name</TextBlock>
+            </StatusBarItem>
+            <Separator Grid.Column="1"/>
+            <StatusBarItem Grid.Column="2">
+                <TextBlock Name="VideoDurationStatus">Video Duration</TextBlock>
+            </StatusBarItem>
+            <Separator Grid.Column="3"/>
+            <StatusBarItem Grid.Column="4">
+                <TextBlock Name="FPSStatus">0 fps</TextBlock>
+            </StatusBarItem>
+            <Separator Grid.Column="5"/>
+            <StatusBarItem Grid.Column="6">
+                <TextBlock Name="VideoSizeStatus">0x0</TextBlock>
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</Window>
