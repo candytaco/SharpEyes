@@ -4,8 +4,24 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Eyetracking"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
         Title="Stimulus View" Height="450" Width="800">
+
+    <Window.CommandBindings>
+        <!--For some reason the custom commands generate a false positive for "Value cannot be null." They work so ignore the squiggles.-->
+        <CommandBinding x:Name="OpenEyetrackingDataCommand" Command="local:EyetrackerCommands.OpenEyetrackingData" Executed="OpenEyetrackingDataCommand_Executed"/>
+        <CommandBinding x:Name="RightCommand" Command="local:EyetrackerCommands.Right" Executed="RightCommand_Executed"/>
+        <CommandBinding x:Name="LeftCommand" Command="local:EyetrackerCommands.Left" Executed="LeftCommand_Executed"/>
+        <CommandBinding x:Name="PlayPauseCommand" Command="local:EyetrackerCommands.PlayPause" Executed="PlayPauseCommand_Executed"/>
+        <CommandBinding x:Name="MovePupilCommand" Command="local:EyetrackerCommands.MovePupil" Executed="MovePupilCommand_Executed"/>
+
+        <CommandBinding x:Name="OpenVideoCommand" Command="Open" Executed="OpenVideoCommand_Executed"/>
+        <CommandBinding x:Name="NewFileCommand" Command="New" Executed="NewFileCommand_Executed"/>
+        <CommandBinding x:Name="SaveFileCommand" Command="Save" Executed="SaveFileCommand_Executed"/>
+        <CommandBinding x:Name="SaveFileAsCommand" Command="SaveAs" Executed="SaveFileAsCommand_Executed"/>
+    </Window.CommandBindings>
+
     <Window.TaskbarItemInfo>
         <TaskbarItemInfo x:Name="taskbarItemInfo"/>
     </Window.TaskbarItemInfo>
@@ -43,14 +59,13 @@
 
         <ToolBar VerticalAlignment="Top" Height="26" ToolBarTray.IsLocked="True" Margin="0,0,-0.4,0"
 				 Grid.ColumnSpan="2" Grid.Row="1">
-            <Button Height="21.3333333333333" VerticalAlignment="Top" Width="Auto" Name="openVideoButton" Click="OpenFileMenuItem_Click">Open Video
+            <Button Height="21.3333333333333" VerticalAlignment="Top" Width="Auto" Name="openVideoButton" Click="OpenVideoMenuItem_Click">Open Video
                 <Button.ToolTip>Open a video file.</Button.ToolTip>
             </Button>
-            <ToggleButton Height="21.3333333333333" VerticalAlignment="Top" Width="Auto" Name="loadGazeButton" Click="LoadGazeMenuItem_Click">Load Gaze
-
-                <ToggleButton.ToolTip>Load Gaze info.</ToggleButton.ToolTip>
-            </ToggleButton>
-            <ToggleButton Height="21.3333333333333" VerticalAlignment="Top" Width="Auto" Name="moveGazeButtom" Click="MoveGazeButtom_Click">Move Gaze
+            <Button Height="21.3333333333333" VerticalAlignment="Top" Width="Auto" Name="loadGazeButton" Click="LoadGazeMenuItem_Click" IsEnabled="False">Load Gaze
+                <Button.ToolTip>Load Gaze info.</Button.ToolTip>
+            </Button>
+            <ToggleButton Height="21.3333333333333" VerticalAlignment="Top" Width="Auto" Name="moveGazeButton" Click="MoveGazeButtom_Click" IsEnabled="False">Move Gaze
                 <ToggleButton.ToolTip>Move gaze location.</ToggleButton.ToolTip>
             </ToggleButton>
         </ToolBar>
@@ -58,12 +73,12 @@
         <Viewbox Margin="4,4,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Row="2" Stretch="Uniform">
             <Canvas x:Name="canvas" Background="Transparent" MouseLeftButtonDown="Canvas_MouseLeftButtonDown" 
                     MouseMove="Canvas_MouseMove" MouseLeftButtonUp="Canvas_MouseLeftButtonUp"
-				    Height="300" Width="400">
+				    Height="768" Width="1024">
                 <MediaElement Name="VideoMediaElement" Margin="0" LoadedBehavior="Manual" ScrubbingEnabled="True" UnloadedBehavior="Manual" MediaEnded="VideoMediaElement_MediaEnded"
-                              Height="300" Width="400"/>
+                              Height="768" Width="1024"/>
 
-                <Ellipse x:Name="GazeEllipse" Fill="Transparent" HorizontalAlignment="Left" Height="32" Margin="0" 
-			  Stroke="#FF00BAFF" VerticalAlignment="Top" Width="32" RenderTransformOrigin="0.5,0.5" StrokeThickness="3" />
+                <Ellipse x:Name="GazeEllipse" Fill="Transparent" HorizontalAlignment="Left" Height="{Binding ElementName=GazeMarkerDiameterPicker, Path=Value}" Width="{Binding ElementName=GazeMarkerDiameterPicker, Path=Value}" Margin="0" 
+			             Stroke="#FF00BAFF" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" StrokeThickness="8"/>
             </Canvas>
         </Viewbox>
 
@@ -83,8 +98,12 @@
         </Grid>
 
         <Grid Grid.Column="1" Grid.Row="2" Margin="4">
-            <Button Name="SetCurrentAsEyetrackingStartButton" Content="Set current as eyetracking start" HorizontalAlignment="Left" VerticalAlignment="Top" Width="175" Click="SetCurrentAsEyetrackingStartButton_Click"/>
-            <Button Name="AutoFindEyetrackingStartButton" Content="Auto find eyetracking start" HorizontalAlignment="Left" VerticalAlignment="Top" Width="150" Margin="0,24,0,0" Click="AutoFindEyetrackingStartButton_Click"/>
+            <Button Name="SetCurrentAsDataStartButton" Content="Set current as data start" HorizontalAlignment="Left" VerticalAlignment="Top" Width="135" Click="SetCurrentAsDataStartButton_Click" IsEnabled="False"/>
+            <Button Name="AutoFindDataStartButton" Content="Auto find data start" HorizontalAlignment="Left" VerticalAlignment="Top" Width="135" Margin="0,24,0,0" Click="AutoFindDataStartButton_Click" IsEnabled="False"/>
+            <xctk:IntegerUpDown x:Name="EyetrackingFPSPicker" Value="60" Increment="1" Minimum="1" Maximum="120" Height="24" Margin="132,48,0,0" ValueChanged="EyetrackingFPSPicker_ValueChanged" VerticalAlignment="Top" HorizontalAlignment="Left" MinWidth="45" MinHeight="26" Width="45"/>
+            <Label Content="Eyetracking FPS" HorizontalAlignment="Left" Margin="35,48,0,0" VerticalAlignment="Top"/>
+            <xctk:IntegerUpDown x:Name="GazeMarkerDiameterPicker" Value="204" Increment="1" Minimum="1" Maximum="500" Height="24" Margin="132,79,0,0" ValueChanged="GazeMarkerDiameterPicker_ValueChanged" VerticalAlignment="Top" HorizontalAlignment="Left" MinWidth="45" MinHeight="26" Width="45"/>
+            <Label Content="Gaze Marker Diameter" HorizontalAlignment="Left" Margin="0,79,0,0" VerticalAlignment="Top"/>
         </Grid>
 
         <StatusBar Margin="0,0,0,0" VerticalAlignment="Bottom" Height="21" Grid.Row="5" Grid.ColumnSpan="2">
@@ -120,6 +139,13 @@
             <Separator Grid.Column="5"/>
             <StatusBarItem Grid.Column="6">
                 <TextBlock Name="VideoSizeStatus">0x0</TextBlock>
+            </StatusBarItem>
+            <Separator Grid.Column="7"/>
+            <StatusBarItem Grid.Column="8">
+                <ProgressBar Name="progressBar" Height="10" Width="200" Minimum="0" Maximum="100"/>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="9">
+                <TextBlock Name="StatusText">Current Status</TextBlock>
             </StatusBarItem>
         </StatusBar>
     </Grid>

@@ -64,7 +64,8 @@
 			<MenuItem Header="_Edit" Name="editMenu">
 			</MenuItem>
 			<MenuItem Header="_Tools" Name="toolsMenu">
-			</MenuItem>
+                <MenuItem Header="_Stimulus view" Name="StimulusViewMenuItem" Click="StimulusViewMenuItem_Click"/>
+            </MenuItem>
 			<MenuItem Header="_Help" Name="helpMenu">
 				<MenuItem Header="_About" Name="AboutMenuItem" Click="AboutMenuItem_Click" />
 			</MenuItem>

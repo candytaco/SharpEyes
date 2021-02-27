@@ -97,7 +97,7 @@ namespace Eyetracking
 			set
 			{
 				_editingState = value;
-				// the switching is disable for the while being until I can debug this issue.
+				// the switching is disabled for the while being until I can debug this issue.
 				//if (_editingState == EditingState.MovingPupil)
 				//{
 				//	RightCommand.Executed -= NextFrameCommand_Executed;
@@ -1235,7 +1235,13 @@ namespace Eyetracking
 			}
 		}
 
-		private void UpdateFramesProcessedPreviewImage()
+        private void StimulusViewMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            StimulusGazeViewer stimulusGazeViewer = new StimulusGazeViewer();
+            stimulusGazeViewer.Show();
+        }
+
+        private void UpdateFramesProcessedPreviewImage()
 		{
 			FramesProcessedPreviewImage.Source = (pupilFinder == null) ? null : pupilFinder.GetFramesProcessedPreviewImage((int)PreviewImageGrid.ActualWidth);
 		}
