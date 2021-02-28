@@ -1,17 +1,16 @@
 ﻿using Microsoft.Win32;
+using NumSharp;
+using OpenCvSharp;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
-using NumSharp;
 using Num = NumSharp.np;
-using OpenCvSharp;
-using OpenCvSharp.Extensions;
-using Window = System.Windows.Window;
 using Point = System.Windows.Point;
-using System.IO;
+using Window = System.Windows.Window;
 
 namespace Eyetracking
 {
@@ -22,6 +21,7 @@ namespace Eyetracking
 	{
 		private DispatcherTimer timer;
 		private bool isPlaying = false;
+
 		public bool IsPlaying
 		{
 			get { return isPlaying; }
@@ -52,10 +52,19 @@ namespace Eyetracking
 		/// Timings of keyframes, i.e. frames on which the gaze location has been manually edited.
 		/// Values are milliseconds from start.
 		/// </summary>
-		private List<int> keyFrames;
-
+		private List<double> videoKeyFrames;
+		
 		private NDArray gazeLocations = null;
-		private bool isGazeLoaded = false;	// extra because checking gazeLocations != null throws a NullReferenceException....
+
+		/// <summary>
+		/// Converts the current time into the video into an index into the gaze locations data array
+		/// </summary>
+		private int? frameIndex
+		{
+			get => VideoTimeToGazeDataIndex(VideoMediaElement.Position.TotalMilliseconds);
+		}
+
+		private bool isGazeLoaded = false; // extra because checking gazeLocations != null throws a NullReferenceException....
 
 		private double _gazeX = 0;
 		private double _gazeY = 0;
@@ -100,14 +109,13 @@ namespace Eyetracking
 		/// <summary>
 		/// For tracking where the mouse is moving the gaze location
 		/// </summary>
-		Point mouseMoveStartPoint;
+		private Point mouseMoveStartPoint;
 
 		/// <summary>
 		/// Are we in the middle of moving the gaze location?
 		/// </summary>
-		bool isMovingGaze = false;
-
-		string gazeFileName = null;
+		private bool isMovingGaze = false;
+		private string gazeFileName = null;
 
 		public StimulusGazeViewer()
 		{
@@ -148,8 +156,6 @@ namespace Eyetracking
 			NextFrameButton.IsEnabled = true;
 			PreviousFrameButton.IsEnabled = true;
 
-			keyFrames = new List<int>();
-
 			timer.Interval = new TimeSpan(10000000 / EyetrackingFPSPicker.Value.Value);
 			stimulusFrameDuration = 1000.0 / EyetrackingFPSPicker.Value.Value;
 			timer.Tick += UpdateDisplays;
@@ -175,25 +181,37 @@ namespace Eyetracking
 
 		}
 
+		/// <summary>
+		/// Converts a video time in ms to an index into the gaze data array
+		/// </summary>
+		/// <param name="milliseconds"></param>
+		/// <returns></returns>
+		private int? VideoTimeToGazeDataIndex(double milliseconds)
+		{
+			if (!isGazeLoaded) return null;
+			return (int) ((milliseconds - dataStartTime) / eyetrackingFrameDuration);
+		}
+
 		private void UpdateDisplays(object sender, EventArgs e)
 		{
 			VideoSlider.Value = VideoMediaElement.Position.TotalMilliseconds;
 
 			VideoTimeLabel.Content = string.Format("{0:00}:{1:00}:{2:00};{3:#00}", VideoMediaElement.Position.Hours,
-																				   VideoMediaElement.Position.Minutes,
-																				   VideoMediaElement.Position.Seconds,
-																				   (int)(VideoMediaElement.Position.Milliseconds / stimulusFrameDuration));
+				VideoMediaElement.Position.Minutes,
+				VideoMediaElement.Position.Seconds,
+				(int)(VideoMediaElement.Position.Milliseconds / stimulusFrameDuration));
 
 			if (isGazeLoaded)
+			{
 				if (VideoMediaElement.Position.TotalMilliseconds >= dataStartTime)
 				{
-					int frameIndex = (int) ((VideoMediaElement.Position.TotalMilliseconds - dataStartTime) / eyetrackingFrameDuration);
 					if (frameIndex < gazeLocations.shape[0])
 					{
 						gazeX = gazeLocations[frameIndex, 0];
 						gazeY = gazeLocations[frameIndex, 1];
 					}
 				}
+			}
 		}
 
 		private void LoadGazeMenuItem_Click(object sender, RoutedEventArgs e)
@@ -211,15 +229,24 @@ namespace Eyetracking
 				AutoFindDataStartButton.IsEnabled = true;
 				EyetrackingFPSPicker_ValueChanged(null, null);
 				gazeFileName = openFileDialog.FileName;
+
+				videoKeyFrames = new List<double>(new double[]
+					{0, VideoMediaElement.NaturalDuration.TimeSpan.TotalMilliseconds});
+				NextKeyFrameButton.IsEnabled = true;
+				PreviousFrameButton.IsEnabled = true;
 			}
 		}
 
 		private void SaveGazeMenuItem_Click(object sender, RoutedEventArgs e)
 		{
 			if (gazeFileName == null)
+			{
 				SaveGazeAsMenuItem_Click(sender, e);
+			}
 			else
+			{
 				Num.save(gazeFileName, gazeLocations);
+			}
 		}
 
 		private void MoveGazeButton_Click(object sender, RoutedEventArgs e)
@@ -243,7 +270,7 @@ namespace Eyetracking
 			if (isMovingGaze)
 			{
 				isMovingGaze = false;
-				UpdateGazePositionData();
+				UpdateGazePositionData(e.GetPosition(canvas));
 			}
 		}
 
@@ -262,10 +289,58 @@ namespace Eyetracking
 			}
 		}
 
-
-		private void UpdateGazePositionData()
+		/// <summary>
+		/// Adds the current frame as a new keyframe
+		/// </summary>
+		private void AddKeyFrame()
 		{
+			videoKeyFrames.Add(VideoMediaElement.Position.TotalMilliseconds);
+			videoKeyFrames.Sort();
+		}
 
+		/// <summary>
+		/// total millisecond value of the previous keyframe
+		/// </summary>
+		private double? PreviousVideoKeyFrame
+		{
+			get
+			{
+				for (int i = videoKeyFrames.Count - 1; i > -1; i--)
+				{
+					if (videoKeyFrames[i] < VideoMediaElement.Position.TotalMilliseconds)
+						return videoKeyFrames[i];
+				}
+				return null;
+			}
+		}
+
+		/// <summary>
+		/// total millisecond value of the next keyframe
+		/// </summary>
+		private double? NextVideoKeyFrame
+		{
+			get
+			{
+				for (int i = 0; i < videoKeyFrames.Count; i++)
+				{
+					if (videoKeyFrames[i] > VideoMediaElement.Position.TotalMilliseconds)
+						return videoKeyFrames[i];
+				}
+				return null;
+			}
+		}
+
+		/// <summary>
+		/// Updates the stored gaze position after a manual edit. The update is as follows:
+		/// The current frame will become a keyframe. The full delta will be applied to this frame
+		/// and all successive frames. The delta will be interpolated to zero between the current
+		/// frame and the previous keyframe.
+		/// </summary>
+		/// <param name="finalPositionOnMove">Final position when mouse is released</param>
+		private void UpdateGazePositionData(Point finalPositionOnMove)
+		{
+			Vector delta = finalPositionOnMove - mouseMoveStartPoint;
+			// TODO:: This is next up!
 		}
 
 
@@ -286,7 +361,7 @@ namespace Eyetracking
 		}
 
 		private void VideoSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
-		{ 
+		{
 			VideoMediaElement.Position = new TimeSpan((long)(10000 * VideoSlider.Value));
 			UpdateDisplays(null, null);
 		}
@@ -304,7 +379,7 @@ namespace Eyetracking
 
 		private void AutoFindDataStartButton_Click(object sender, RoutedEventArgs e)
 		{
-
+			MessageBox.Show("Auto start finding not implemented yet");
 		}
 
 		private void PlayPauseButton_Click(object sender, RoutedEventArgs e)
@@ -319,12 +394,12 @@ namespace Eyetracking
 
 		private void PreviousKeyFrameButton_Click(object sender, RoutedEventArgs e)
 		{
-
+			SetVideoPosition(PreviousVideoKeyFrame ?? 0);
 		}
 
 		private void NextKeyFrameButton_Click(object sender, RoutedEventArgs e)
 		{
-
+			SetVideoPosition(NextVideoKeyFrame ?? VideoMediaElement.NaturalDuration.TimeSpan.TotalMilliseconds);
 		}
 
 		private void SaveGazeAsMenuItem_Click(object sender, RoutedEventArgs e)
@@ -414,7 +489,9 @@ namespace Eyetracking
 		private void SetVideoPosition(double milliseconds)
 		{
 			if ((milliseconds < 0) || (milliseconds > VideoMediaElement.NaturalDuration.TimeSpan.TotalMilliseconds))
+			{
 				return;
+			}
 
 			VideoMediaElement.Position = new TimeSpan((long)(10000 * milliseconds));
 			UpdateDisplays(null, null);
@@ -426,9 +503,21 @@ namespace Eyetracking
 			{
 				IsPlaying = false;
 				if (e.Delta < 0)
+				{
 					NextFrameButton_Click(null, null);
+				}
 				else
+				{
 					PreviousFrameButton_Click(null, null);
+				}
+			}
+		}
+
+		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+		{
+			if (AutoSaveOnExitMenuItem.IsChecked && (gazeFileName != null))
+			{
+				Num.save(gazeFileName, gazeLocations);
 			}
 		}
 	}

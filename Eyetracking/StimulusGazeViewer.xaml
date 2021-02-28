@@ -7,7 +7,8 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
         Title="Stimulus View" Height="450" Width="800"
-        DataContext="{Binding RelativeSource={RelativeSource Self}}">
+        DataContext="{Binding RelativeSource={RelativeSource Self}}"
+        Closing="Window_Closing">
 
     <Window.CommandBindings>
         <!--For some reason the custom commands generate a false positive for "Value cannot be null." They work so ignore the squiggles.-->
