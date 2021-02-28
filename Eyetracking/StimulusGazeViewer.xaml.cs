@@ -7,6 +7,9 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using NumSharp;
 using Num = NumSharp.np;
+using OpenCvSharp;
+using OpenCvSharp.Extensions;
+using Window = System.Windows.Window;
 
 namespace Eyetracking
 {
@@ -78,9 +81,12 @@ namespace Eyetracking
 		}
 
 		/// <summary>
-		/// Duration of a frame in milliseconds
+		/// Duration of a frame in the stimulus video in milliseconds
 		/// </summary>
 		private double frameDuration = 0;
+
+		// == open cv stuff ==
+		private VideoCapture videoSource;
 
 		public StimulusGazeViewer()
 		{
@@ -126,6 +132,15 @@ namespace Eyetracking
 			timer.Interval = new TimeSpan(10000000 / EyetrackingFPSPicker.Value.Value);
 			frameDuration = 1000.0 / EyetrackingFPSPicker.Value.Value;
 			timer.Tick += UpdateDisplays;
+
+			videoSource = new VideoCapture(videoFileName);
+
+			// update status bar
+			VideoNameStatus.Text = videoFileName;
+			VideoDurationStatus.Text = MainWindow.FramesToDurationString(videoSource.FrameCount, (int)videoSource.Fps);
+			FPSStatus.Text = string.Format("{0:##} fps", videoSource.Fps);
+			VideoSizeStatus.Text = string.Format("{0}×{1}", videoSource.FrameWidth, videoSource.FrameHeight);
+			frameDuration = 1000.0 / videoSource.Fps;
 		}
 
 		private void VideoOpened(object sender, RoutedEventArgs e)

@@ -141,7 +141,7 @@
             </StatusBarItem>
             <Separator Grid.Column="5"/>
             <StatusBarItem Grid.Column="6">
-                <TextBlock Name="VideoSizeStatus">0x0</TextBlock>
+                <TextBlock Name="VideoSizeStatus">0×0</TextBlock>
             </StatusBarItem>
             <Separator Grid.Column="7"/>
             <StatusBarItem Grid.Column="8">

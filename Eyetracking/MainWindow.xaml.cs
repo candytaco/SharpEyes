@@ -286,7 +286,7 @@ namespace Eyetracking
 
 			VideoNameStatus.Text = videoFileName;
 			VideoDurationStatus.Text = FramesToDurationString(pupilFinder.frameCount, pupilFinder.fps);
-			VideoSizeStatus.Text = string.Format("{0}x{1}", pupilFinder.width, pupilFinder.height);
+			VideoSizeStatus.Text = string.Format("{0}×{1}", pupilFinder.width, pupilFinder.height);
 			FPSStatus.Text = string.Format("{0:##} fps", pupilFinder.fps);
 
 			videoScaleFactor = VideoFrameImage.Width / pupilFinder.width;
