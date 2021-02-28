@@ -10,6 +10,8 @@ using Num = NumSharp.np;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
 using Window = System.Windows.Window;
+using Point = System.Windows.Point;
+using System.IO;
 
 namespace Eyetracking
 {
@@ -90,8 +92,22 @@ namespace Eyetracking
 		/// </summary>
 		private double eyetrackingFrameDuration = 0;
 
-		// == open cv stuff ==
+		/// <summary>
+		/// Used to read basic video info
+		/// </summary>
 		private VideoCapture videoSource;
+
+		/// <summary>
+		/// For tracking where the mouse is moving the gaze location
+		/// </summary>
+		Point mouseMoveStartPoint;
+
+		/// <summary>
+		/// Are we in the middle of moving the gaze location?
+		/// </summary>
+		bool isMovingGaze = false;
+
+		string gazeFileName = null;
 
 		public StimulusGazeViewer()
 		{
@@ -109,11 +125,11 @@ namespace Eyetracking
 			};
 			if (openFileDialog.ShowDialog() == true)
 			{
-				LoadFile(openFileDialog.FileName);
+				LoadVideoFile(openFileDialog.FileName);
 			}
 		}
 
-		private void LoadFile(string videoFileName)
+		private void LoadVideoFile(string videoFileName)
 		{
 			VideoMediaElement.MediaOpened += VideoOpened;
 			VideoMediaElement.Source = new Uri(videoFileName);
@@ -194,12 +210,16 @@ namespace Eyetracking
 				SetCurrentAsDataStartButton.IsEnabled = true;
 				AutoFindDataStartButton.IsEnabled = true;
 				EyetrackingFPSPicker_ValueChanged(null, null);
+				gazeFileName = openFileDialog.FileName;
 			}
 		}
 
 		private void SaveGazeMenuItem_Click(object sender, RoutedEventArgs e)
 		{
-
+			if (gazeFileName == null)
+				SaveGazeAsMenuItem_Click(sender, e);
+			else
+				Num.save(gazeFileName, gazeLocations);
 		}
 
 		private void MoveGazeButton_Click(object sender, RoutedEventArgs e)
@@ -209,18 +229,45 @@ namespace Eyetracking
 
 		private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
 		{
-
+			if (moveGazeButton.IsChecked.Value)
+			{
+				mouseMoveStartPoint = e.GetPosition(canvas);
+				gazeX = mouseMoveStartPoint.X;
+				gazeY = mouseMoveStartPoint.Y;
+				isMovingGaze = true;
+			}
 		}
 
 		private void Canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
 		{
-
+			if (isMovingGaze)
+			{
+				isMovingGaze = false;
+				UpdateGazePositionData();
+			}
 		}
 
 		private void Canvas_MouseMove(object sender, MouseEventArgs e)
 		{
+			if (isMovingGaze)
+			{
+				Point mouse = e.GetPosition(canvas);
+				mouse.X = mouse.X > 0 ? mouse.X : 0;
+				mouse.X = mouse.X < canvas.Width ? mouse.X : canvas.Width;
+				mouse.Y = mouse.Y > 0 ? mouse.Y : 0;
+				mouse.Y = mouse.Y < canvas.Height ? mouse.Y : canvas.Height;
+
+				gazeX = mouse.X;
+				gazeY = mouse.Y;
+			}
+		}
+
+
+		private void UpdateGazePositionData()
+		{
 
 		}
+
 
 		private void VideoMediaElement_MediaEnded(object sender, RoutedEventArgs e)
 		{
@@ -282,7 +329,16 @@ namespace Eyetracking
 
 		private void SaveGazeAsMenuItem_Click(object sender, RoutedEventArgs e)
 		{
-
+			SaveFileDialog saveFileDialog = new SaveFileDialog
+			{
+				Filter = "Numpy file (*.npy)|*.npy",
+				Title = "Save timestamps...",
+				FileName = Path.GetFileNameWithoutExtension(gazeFileName ?? "gaze locations")
+			};
+			if (saveFileDialog.ShowDialog() == true)
+			{
+				Num.save(gazeFileName, gazeLocations);
+			}
 		}
 
 		private void OpenEyetrackingDataCommand_Executed(object sender, ExecutedRoutedEventArgs e)
