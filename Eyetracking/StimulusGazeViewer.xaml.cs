@@ -5,6 +5,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using NumSharp;
+using Num = NumSharp.np;
 
 namespace Eyetracking
 {
@@ -37,15 +39,48 @@ namespace Eyetracking
 		}
 
 		/// <summary>
-		/// Start time pf data in the stimulus video, in milliseconds
+		/// Start time of data in the stimulus video, in milliseconds
 		/// </summary>
-		private Nullable<int> dataStartTime = null;
+		private double? dataStartTime = null;
 
 		/// <summary>
 		/// Timings of keyframes, i.e. frames on which the gaze location has been manually edited.
 		/// Values are milliseconds from start.
 		/// </summary>
 		private List<int> keyFrames;
+
+		private NDArray gazeLocations = null;
+		private bool isGazeLoaded = false;	// extra because checking gazeLocations != null throws a NullReferenceException....
+
+		private double _gazeX = 0;
+		private double _gazeY = 0;
+
+		public double gazeX
+		{
+			get => _gazeX;
+			set
+			{
+				_gazeX = value;
+				Canvas.SetLeft(GazeEllipse, value - GazeMarkerDiameterPicker.Value.Value / 2); // replaced by binding
+				XPositionText.Text = string.Format("X: {0:####.#}", value);
+			}
+		}
+
+		public double gazeY
+		{
+			get => _gazeY;
+			set
+			{
+				_gazeY = value;
+				Canvas.SetTop(GazeEllipse, value - GazeMarkerDiameterPicker.Value.Value / 2); // replaced by binding
+				YPositionText.Text = string.Format("Y: {0:####.#}", value);
+			}
+		}
+
+		/// <summary>
+		/// Duration of a frame in milliseconds
+		/// </summary>
+		private double frameDuration = 0;
 
 		public StimulusGazeViewer()
 		{
@@ -69,6 +104,7 @@ namespace Eyetracking
 
 		private void LoadFile(string videoFileName)
 		{
+			VideoMediaElement.MediaOpened += VideoOpened;
 			VideoMediaElement.Source = new Uri(videoFileName);
 			VideoMediaElement.LoadedBehavior = MediaState.Manual;
 			VideoMediaElement.Play();
@@ -82,10 +118,20 @@ namespace Eyetracking
 			saveGazeMenuItem.IsEnabled = true;
 			saveGazeAsMenuItem.IsEnabled = true;
 			PlayPauseButton.IsEnabled = true;
+			NextFrameButton.IsEnabled = true;
+			PreviousFrameButton.IsEnabled = true;
 
 			keyFrames = new List<int>();
 
 			timer.Interval = new TimeSpan(10000000 / EyetrackingFPSPicker.Value.Value);
+			frameDuration = 1000.0 / EyetrackingFPSPicker.Value.Value;
+			timer.Tick += UpdateDisplays;
+		}
+
+		private void VideoOpened(object sender, RoutedEventArgs e)
+		{
+			VideoSlider.Maximum = VideoMediaElement.NaturalDuration.TimeSpan.TotalMilliseconds;
+			UpdateDisplays(null, null);
 		}
 
 		private void FindDataStart()
@@ -93,9 +139,41 @@ namespace Eyetracking
 
 		}
 
+		private void UpdateDisplays(object sender, EventArgs e)
+		{
+			VideoSlider.Value = VideoMediaElement.Position.TotalMilliseconds;
+
+			VideoTimeLabel.Content = string.Format("{0:00}:{1:00}:{2:00};{3:#00}", VideoMediaElement.Position.Hours,
+																				   VideoMediaElement.Position.Minutes,
+																				   VideoMediaElement.Position.Seconds,
+																				   (int)(VideoMediaElement.Position.Milliseconds / frameDuration));
+
+			if (isGazeLoaded)
+				if (VideoMediaElement.Position.TotalMilliseconds >= dataStartTime)
+				{
+					int frameIndex = (int) ((VideoMediaElement.Position.TotalMilliseconds - dataStartTime) / frameDuration);
+					if (frameIndex < gazeLocations.shape[0])
+					{
+						gazeX = gazeLocations[frameIndex, 0];
+						gazeY = gazeLocations[frameIndex, 1];
+					}
+				}
+		}
+
 		private void LoadGazeMenuItem_Click(object sender, RoutedEventArgs e)
 		{
-
+			OpenFileDialog openFileDialog = new OpenFileDialog
+			{
+				Filter = "Numpy file (*.npy)|*.npy",
+				Title = "Load gaze locations..."
+			};
+			if (openFileDialog.ShowDialog() == true)
+			{
+				gazeLocations = Num.load(openFileDialog.FileName);
+				isGazeLoaded = true;
+				SetCurrentAsDataStartButton.IsEnabled = true;
+				AutoFindDataStartButton.IsEnabled = true;
+			}
 		}
 
 		private void SaveGazeMenuItem_Click(object sender, RoutedEventArgs e)
@@ -103,7 +181,7 @@ namespace Eyetracking
 
 		}
 
-		private void MoveGazeButtom_Click(object sender, RoutedEventArgs e)
+		private void MoveGazeButton_Click(object sender, RoutedEventArgs e)
 		{
 
 		}
@@ -130,27 +208,30 @@ namespace Eyetracking
 
 		private void VideoSlider_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-
+			VideoMediaElement.Pause();
 		}
 
 		private void VideoSlider_MouseUp(object sender, MouseButtonEventArgs e)
 		{
-
+			VideoMediaElement.Position = new TimeSpan((long)(10000 * VideoSlider.Value));
+			UpdateDisplays(null, null);
 		}
 
 		private void VideoSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
-		{
-
+		{ 
+			VideoMediaElement.Position = new TimeSpan((long)(10000 * VideoSlider.Value));
+			UpdateDisplays(null, null);
 		}
 
 		private void VideoSlider_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
 		{
-
+			VideoMediaElement.Pause();
 		}
 
 		private void SetCurrentAsDataStartButton_Click(object sender, RoutedEventArgs e)
 		{
-
+			dataStartTime = VideoMediaElement.Position.TotalMilliseconds;
+			UpdateDisplays(null, null);
 		}
 
 		private void AutoFindDataStartButton_Click(object sender, RoutedEventArgs e)
@@ -240,6 +321,18 @@ namespace Eyetracking
 
 		private void GazeMarkerDiameterPicker_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
 		{
+		}
+
+		private void PreviousFrameButton_Click(object sender, RoutedEventArgs e)
+		{
+			VideoMediaElement.Position = new TimeSpan((long)(10000 * (VideoSlider.Value - frameDuration)));
+			UpdateDisplays(null, null);
+		}
+
+		private void NextFrameButton_Click(object sender, RoutedEventArgs e)
+		{
+			VideoMediaElement.Position = new TimeSpan((long)(10000 * (VideoSlider.Value + frameDuration)));
+			UpdateDisplays(null, null);
 		}
 	}
 }

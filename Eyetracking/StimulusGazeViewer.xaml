@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:Eyetracking"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
-        Title="Stimulus View" Height="450" Width="800">
+        Title="Stimulus View" Height="450" Width="800"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}">
 
     <Window.CommandBindings>
         <!--For some reason the custom commands generate a false positive for "Value cannot be null." They work so ignore the squiggles.-->
@@ -65,7 +66,7 @@
             <Button Height="21.3333333333333" VerticalAlignment="Top" Width="Auto" Name="loadGazeButton" Click="LoadGazeMenuItem_Click" IsEnabled="False">Load Gaze
                 <Button.ToolTip>Load Gaze info.</Button.ToolTip>
             </Button>
-            <ToggleButton Height="21.3333333333333" VerticalAlignment="Top" Width="Auto" Name="moveGazeButton" Click="MoveGazeButtom_Click" IsEnabled="False">Move Gaze
+            <ToggleButton Height="21.3333333333333" VerticalAlignment="Top" Width="Auto" Name="moveGazeButton" Click="MoveGazeButton_Click" IsEnabled="False">Move Gaze
                 <ToggleButton.ToolTip>Move gaze location.</ToggleButton.ToolTip>
             </ToggleButton>
         </ToolBar>
@@ -78,14 +79,13 @@
                               Height="768" Width="1024"/>
 
                 <Ellipse x:Name="GazeEllipse" Fill="Transparent" HorizontalAlignment="Left" Height="{Binding ElementName=GazeMarkerDiameterPicker, Path=Value}" Width="{Binding ElementName=GazeMarkerDiameterPicker, Path=Value}" Margin="0" 
-			             Stroke="#FF00BAFF" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" StrokeThickness="8"/>
+			             Stroke="#FF00BAFF" VerticalAlignment="Top" StrokeThickness="8" Canvas.Top="{Binding gazeY}" Canvas.Left="{Binding gazeX}" RenderTransformOrigin="0.5,0.5"/>
             </Canvas>
         </Viewbox>
 
         <Grid Grid.Column="0" Grid.Row="3" Margin="4,4,4,4">
             <Button x:Name="PlayPauseButton" Content="Play" HorizontalAlignment="Center" Margin="0,20,0,0" VerticalAlignment="Top" Width="45" Click="PlayPauseButton_Click" IsEnabled="False"/>
-            <Button x:Name="PreviousKeyFrameButton" Content="&lt;" HorizontalAlignment="Center" Margin="-75,20,0,0" VerticalAlignment="Top" Width="20" Click="PreviousKeyFrameButton_Click" IsEnabled="False"/>
-            <Button x:Name="NextKeyFrameButton" Content="&gt;" HorizontalAlignment="Center" Margin="75,20,0,0" VerticalAlignment="Top" Width="20" Click="NextKeyFrameButton_Click" IsEnabled="False"/>
+            <Button x:Name="PreviousFrameButton" Content="&lt;" HorizontalAlignment="Center" Margin="-75,20,0,0" VerticalAlignment="Top" Width="20" Click="PreviousFrameButton_Click" IsEnabled="False"/>
             <Grid x:Name="PreviewImageGrid" Height="6" VerticalAlignment="Top" Width="auto" Margin="5,0">
                 <Image Name="FramesProcessedPreviewImage" Stretch="Fill"/>
             </Grid>
@@ -95,6 +95,9 @@
             <Label x:Name="VideoTimeLabel" Content="00:00:00;00" HorizontalAlignment="Right" HorizontalContentAlignment="Right" Margin="0,14,0,0" VerticalAlignment="Top" Width="76"/>
             <TextBlock x:Name="XPositionText" HorizontalAlignment="Left" Margin="10,23,0,0" TextWrapping="Wrap" Text="X: 0" VerticalAlignment="Top" TextAlignment="Center"/>
             <TextBlock x:Name="YPositionText" HorizontalAlignment="Left" Margin="10,39,0,0" TextWrapping="Wrap" Text="Y: 0" VerticalAlignment="Top" TextAlignment="Center"/>
+            <Button x:Name="PreviousKeyFrameButton" Content="❮❮" HorizontalAlignment="Center" Margin="128,20,252.8,0" VerticalAlignment="Top" Width="20" Click="PreviousKeyFrameButton_Click" IsEnabled="False"/>
+            <Button x:Name="NextFrameButton" Content="&gt;" HorizontalAlignment="Center" Margin="227.9,20,152.9,0" VerticalAlignment="Top" Width="20" Click="NextFrameButton_Click" IsEnabled="False"/>
+            <Button x:Name="NextKeyFrameButton" Content="❯❯" HorizontalAlignment="Center" Margin="253,20,127.8,0" VerticalAlignment="Top" Width="20" Click="NextKeyFrameButton_Click" IsEnabled="False"/>
         </Grid>
 
         <Grid Grid.Column="1" Grid.Row="2" Margin="4">
@@ -106,7 +109,7 @@
             <Label Content="Gaze Marker Diameter" HorizontalAlignment="Left" Margin="0,79,0,0" VerticalAlignment="Top"/>
         </Grid>
 
-        <StatusBar Margin="0,0,0,0" VerticalAlignment="Bottom" Height="21" Grid.Row="5" Grid.ColumnSpan="2">
+        <StatusBar Margin="0,0,0,0" VerticalAlignment="Bottom" Height="21" Grid.Row="4" Grid.ColumnSpan="2">
             <StatusBar.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Grid>
@@ -125,7 +128,7 @@
                     </Grid>
                 </ItemsPanelTemplate>
             </StatusBar.ItemsPanel>
-            <StatusBarItem>
+            <StatusBarItem Grid.Column="0">
                 <TextBlock Name="VideoNameStatus">Video name</TextBlock>
             </StatusBarItem>
             <Separator Grid.Column="1"/>

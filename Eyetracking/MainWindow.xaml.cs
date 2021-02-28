@@ -122,7 +122,7 @@ namespace Eyetracking
 				//}
 			}
 		}
-		private bool isPupilManullySetOnThisFrame = false;
+		private bool isPupilManuallySetOnThisFrame = false;
 
 		// Pupil X and Y set the _center_ of the ellipse
 		// The outward-facing values, both returned and in the text lables,
@@ -130,7 +130,7 @@ namespace Eyetracking
 		// PupilEllipse's values reflect values in screen space
 		private double PupilX
 		{
-			get { return Canvas.GetLeft(PupilEllipse) / videoScaleFactor + PupilRadius; }
+			get => Canvas.GetLeft(PupilEllipse) / videoScaleFactor + PupilRadius;
 			set
 			{
 				Canvas.SetLeft(PupilEllipse, value * videoScaleFactor - PupilEllipse.Width / 2);
@@ -143,7 +143,7 @@ namespace Eyetracking
 		}
 		private double PupilY
 		{
-			get { return Canvas.GetTop(PupilEllipse) / videoScaleFactor + PupilRadius; }
+			get => Canvas.GetTop(PupilEllipse) / videoScaleFactor + PupilRadius; 
 			set
 			{
 				Canvas.SetTop(PupilEllipse, value * videoScaleFactor - PupilEllipse.Height / 2);
@@ -152,7 +152,7 @@ namespace Eyetracking
 		}
 		private double PupilRadius
 		{
-			get { return PupilEllipse.Height / 2 / videoScaleFactor; }
+			get => PupilEllipse.Height / 2 / videoScaleFactor; 
 			set
 			{
 				if (value < pupilFinder.minRadius) // pupil hasn't been found yet so we just break
@@ -171,7 +171,7 @@ namespace Eyetracking
 		private double _pupilConfidence = 1;
 		private double PupilConfidence
 		{
-			get { return _pupilConfidence; }
+			get => _pupilConfidence; 
 			set
 			{
 				_pupilConfidence = value;
@@ -197,8 +197,7 @@ namespace Eyetracking
 		/// </summary>
 		private int TemplatePreviewIndex
 		{
-			get
-			{ return _templatePreviewIndex; }
+			get => _templatePreviewIndex;
 			set
 			{
 				if (pupilFinder is TemplatePupilFinder templatePupilFinder)
@@ -221,7 +220,7 @@ namespace Eyetracking
 
 		public bool IsPlaying
 		{
-			get { return isPlaying; }
+			get => isPlaying; 
 			set
 			{
 				isPlaying = value;
@@ -243,10 +242,7 @@ namespace Eyetracking
 
 		public bool HasFile
 		{
-			get
-			{
-				return !(pupilFinder.videoFileName == null);
-			}
+			get => pupilFinder.videoFileName != null;
 		}
 
 		public MainWindow()
@@ -448,7 +444,7 @@ namespace Eyetracking
 
 				// at some point check if this could be moved into an arg and passed in from the pupil finders,
 				// which would need some change in the delegate signature
-				isPupilManullySetOnThisFrame = false;
+				isPupilManuallySetOnThisFrame = false;
 			}
 			catch (Exception e)
 			{
@@ -675,7 +671,7 @@ namespace Eyetracking
 				isEditingStarted = false;
 			}
 
-			if (AutoAddCustomTemplateCheckBox.IsChecked.Value && isPupilManullySetOnThisFrame)
+			if (AutoAddCustomTemplateCheckBox.IsChecked.Value && isPupilManuallySetOnThisFrame)
 			{
 				UseImageAsTemplateButton_Click(null, null);
 			}
@@ -826,7 +822,7 @@ namespace Eyetracking
 				}
 				pupilFinder.ManuallyUpdatePupilLocations(pupilFinder.CurrentFrameNumber, PupilX, PupilY, PupilRadius, frameDecay, mode);
 			}
-			isPupilManullySetOnThisFrame = true;
+			isPupilManuallySetOnThisFrame = true;
 		}
 
 		private void SetTemplatePreviewImage()
