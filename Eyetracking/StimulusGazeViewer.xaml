@@ -74,6 +74,7 @@
         <Viewbox Margin="4,4,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Row="2" Stretch="Uniform">
             <Canvas x:Name="canvas" Background="Transparent" MouseLeftButtonDown="Canvas_MouseLeftButtonDown" 
                     MouseMove="Canvas_MouseMove" MouseLeftButtonUp="Canvas_MouseLeftButtonUp"
+                    MouseWheel="Canvas_MouseWheel"
 				    Height="768" Width="1024">
                 <MediaElement Name="VideoMediaElement" Margin="0" LoadedBehavior="Manual" ScrubbingEnabled="True" UnloadedBehavior="Manual" MediaEnded="VideoMediaElement_MediaEnded"
                               Height="768" Width="1024"/>

@@ -83,7 +83,12 @@ namespace Eyetracking
 		/// <summary>
 		/// Duration of a frame in the stimulus video in milliseconds
 		/// </summary>
-		private double frameDuration = 0;
+		private double stimulusFrameDuration = 0;
+
+		/// <summary>
+		/// Duration of a frame in the eyetracking data
+		/// </summary>
+		private double eyetrackingFrameDuration = 0;
 
 		// == open cv stuff ==
 		private VideoCapture videoSource;
@@ -130,7 +135,7 @@ namespace Eyetracking
 			keyFrames = new List<int>();
 
 			timer.Interval = new TimeSpan(10000000 / EyetrackingFPSPicker.Value.Value);
-			frameDuration = 1000.0 / EyetrackingFPSPicker.Value.Value;
+			stimulusFrameDuration = 1000.0 / EyetrackingFPSPicker.Value.Value;
 			timer.Tick += UpdateDisplays;
 
 			videoSource = new VideoCapture(videoFileName);
@@ -140,7 +145,7 @@ namespace Eyetracking
 			VideoDurationStatus.Text = MainWindow.FramesToDurationString(videoSource.FrameCount, (int)videoSource.Fps);
 			FPSStatus.Text = string.Format("{0:##} fps", videoSource.Fps);
 			VideoSizeStatus.Text = string.Format("{0}×{1}", videoSource.FrameWidth, videoSource.FrameHeight);
-			frameDuration = 1000.0 / videoSource.Fps;
+			stimulusFrameDuration = 1000.0 / videoSource.Fps;
 		}
 
 		private void VideoOpened(object sender, RoutedEventArgs e)
@@ -161,12 +166,12 @@ namespace Eyetracking
 			VideoTimeLabel.Content = string.Format("{0:00}:{1:00}:{2:00};{3:#00}", VideoMediaElement.Position.Hours,
 																				   VideoMediaElement.Position.Minutes,
 																				   VideoMediaElement.Position.Seconds,
-																				   (int)(VideoMediaElement.Position.Milliseconds / frameDuration));
+																				   (int)(VideoMediaElement.Position.Milliseconds / stimulusFrameDuration));
 
 			if (isGazeLoaded)
 				if (VideoMediaElement.Position.TotalMilliseconds >= dataStartTime)
 				{
-					int frameIndex = (int) ((VideoMediaElement.Position.TotalMilliseconds - dataStartTime) / frameDuration);
+					int frameIndex = (int) ((VideoMediaElement.Position.TotalMilliseconds - dataStartTime) / eyetrackingFrameDuration);
 					if (frameIndex < gazeLocations.shape[0])
 					{
 						gazeX = gazeLocations[frameIndex, 0];
@@ -188,6 +193,7 @@ namespace Eyetracking
 				isGazeLoaded = true;
 				SetCurrentAsDataStartButton.IsEnabled = true;
 				AutoFindDataStartButton.IsEnabled = true;
+				EyetrackingFPSPicker_ValueChanged(null, null);
 			}
 		}
 
@@ -223,7 +229,7 @@ namespace Eyetracking
 
 		private void VideoSlider_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-			VideoMediaElement.Pause();
+			IsPlaying = false;
 		}
 
 		private void VideoSlider_MouseUp(object sender, MouseButtonEventArgs e)
@@ -240,7 +246,7 @@ namespace Eyetracking
 
 		private void VideoSlider_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
 		{
-			VideoMediaElement.Pause();
+			IsPlaying = false;
 		}
 
 		private void SetCurrentAsDataStartButton_Click(object sender, RoutedEventArgs e)
@@ -332,6 +338,7 @@ namespace Eyetracking
 		private void EyetrackingFPSPicker_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
 		{
 			timer.Interval = new TimeSpan(10000000 / EyetrackingFPSPicker.Value.Value);
+			eyetrackingFrameDuration = 1000.0 / EyetrackingFPSPicker.Value.Value;
 		}
 
 		private void GazeMarkerDiameterPicker_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -340,14 +347,33 @@ namespace Eyetracking
 
 		private void PreviousFrameButton_Click(object sender, RoutedEventArgs e)
 		{
-			VideoMediaElement.Position = new TimeSpan((long)(10000 * (VideoSlider.Value - frameDuration)));
-			UpdateDisplays(null, null);
+			SetVideoPosition(VideoSlider.Value - stimulusFrameDuration);
 		}
 
 		private void NextFrameButton_Click(object sender, RoutedEventArgs e)
 		{
-			VideoMediaElement.Position = new TimeSpan((long)(10000 * (VideoSlider.Value + frameDuration)));
+			SetVideoPosition(VideoSlider.Value + stimulusFrameDuration);
+		}
+
+		private void SetVideoPosition(double milliseconds)
+		{
+			if ((milliseconds < 0) || (milliseconds > VideoMediaElement.NaturalDuration.TimeSpan.TotalMilliseconds))
+				return;
+
+			VideoMediaElement.Position = new TimeSpan((long)(10000 * milliseconds));
 			UpdateDisplays(null, null);
+		}
+
+		private void Canvas_MouseWheel(object sender, MouseWheelEventArgs e)
+		{
+			if (VideoMediaElement.IsLoaded)
+			{
+				IsPlaying = false;
+				if (e.Delta < 0)
+					NextFrameButton_Click(null, null);
+				else
+					PreviousFrameButton_Click(null, null);
+			}
 		}
 	}
 }
