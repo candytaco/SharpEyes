@@ -271,8 +271,8 @@
 		</TabControl>
 		<Grid Grid.Column="0" Grid.Row="3" Margin="4,4,4,4">
 			<Button x:Name="PlayPauseButton" Content="Play" HorizontalAlignment="Center" Margin="0,20,0,0" VerticalAlignment="Top" Width="45" Click="PlayPauseButton_Click" IsEnabled="False"/>
-			<Button x:Name="PreviousFrameButton" Content="&lt;" HorizontalAlignment="Center" Margin="-75,20,0,0" VerticalAlignment="Top" Width="20" Click="PreviousFrameButton_Click" IsEnabled="False"/>
-			<Button x:Name="NextFrameButton" Content="&gt;" HorizontalAlignment="Center" Margin="75,20,0,0" VerticalAlignment="Top" Width="20" Click="NextFrameButton_Click" IsEnabled="False"/>
+            <Button x:Name="PreviousFrameButton" Content="⮜" ToolTip="Previous Frame" HorizontalAlignment="Center" Margin="-75,20,0,0" VerticalAlignment="Top" Width="20" Click="PreviousFrameButton_Click" IsEnabled="False"/>
+            <Button x:Name="NextFrameButton" Content="⮞" ToolTip="Next Frame" HorizontalAlignment="Center" Margin="75,20,0,0" VerticalAlignment="Top" Width="20" Click="NextFrameButton_Click" IsEnabled="False"/>
 			<Grid x:Name="PreviewImageGrid" Height="6" VerticalAlignment="Top" Width="auto" Margin="5,0">
 				<Image Name="FramesProcessedPreviewImage" Stretch="Fill"/>
 			</Grid>
