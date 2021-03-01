@@ -61,7 +61,7 @@ namespace Eyetracking
 		private List<VideoKeyFrame> videoKeyFrames;
 		public List<VideoKeyFrame> VideoKeyFrames
 		{
-			get => new List<VideoKeyFrame>(videoKeyFrames);
+			get => videoKeyFrames;
 		}
 
 		private NDArray gazeLocations = null;
@@ -179,6 +179,18 @@ namespace Eyetracking
 			FPSStatus.Text = string.Format("{0:##} fps", videoSource.Fps);
 			VideoSizeStatus.Text = string.Format("{0}×{1}", videoSource.FrameWidth, videoSource.FrameHeight);
 			stimulusFrameDuration = 1000.0 / videoSource.Fps;
+
+			// reset gaze information
+			dataStartTime = null;
+			dataEndTime = null;
+			isGazeLoaded = false;
+			gazeLocations = null;
+			videoKeyFrames.Clear();
+			KeyframesDataGrid.Items.Refresh();
+			GazeEllipse.Visibility = Visibility.Hidden;
+			StatusText.Text = "Data not loaded";
+			gazeX = 0;
+			gazeY = 0;
 		}
 
 		private void VideoOpened(object sender, RoutedEventArgs e)
@@ -500,8 +512,8 @@ namespace Eyetracking
 			SaveFileDialog saveFileDialog = new SaveFileDialog
 			{
 				Filter = "Numpy file (*.npy)|*.npy",
-				Title = "Save timestamps...",
-				FileName = Path.GetFileNameWithoutExtension(gazeFileName ?? "gaze locations")
+				Title = "Save gaze as...",
+				FileName = Path.GetFileNameWithoutExtension(gazeFileName == null ? "gaze locations" : gazeFileName + " corrected")
 			};
 			if (saveFileDialog.ShowDialog() == true)
 			{
@@ -511,7 +523,8 @@ namespace Eyetracking
 
 		private void OpenEyetrackingDataCommand_Executed(object sender, ExecutedRoutedEventArgs e)
 		{
-
+			if (loadGazeMenuItem.IsEnabled)
+				LoadGazeMenuItem_Click(null, null);
 		}
 
 		private void RightCommand_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -536,7 +549,7 @@ namespace Eyetracking
 
 		private void OpenVideoCommand_Executed(object sender, ExecutedRoutedEventArgs e)
 		{
-
+			OpenVideoMenuItem_Click(null, null);
 		}
 
 		private void NewFileCommand_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -546,12 +559,12 @@ namespace Eyetracking
 
 		private void SaveFileCommand_Executed(object sender, ExecutedRoutedEventArgs e)
 		{
-
+			SaveGazeMenuItem_Click(null, null);
 		}
 
 		private void SaveFileAsCommand_Executed(object sender, ExecutedRoutedEventArgs e)
 		{
-
+			SaveGazeAsMenuItem_Click(null, null);
 		}
 
 		private void AboutMenuItem_Click(object sender, RoutedEventArgs e)

@@ -23,6 +23,14 @@
         <CommandBinding x:Name="SaveFileAsCommand" Command="SaveAs" Executed="SaveFileAsCommand_Executed"/>
     </Window.CommandBindings>
 
+    <Window.InputBindings>
+        <KeyBinding Modifiers="Control" Key="S" Command="Save"/>
+        <KeyBinding Modifiers="Control" Key="O" Command="Open"/>
+        <KeyBinding Modifiers="Control" Key="N" Command="New"/>
+        <KeyBinding Modifiers="Control+Shift" Key="S" Command="SaveAs"/>
+        <KeyBinding Modifiers="Control" Key="L" Command="local:EyetrackerCommands.OpenEyetrackingData"/>
+    </Window.InputBindings>
+
     <Window.TaskbarItemInfo>
         <TaskbarItemInfo x:Name="taskbarItemInfo"/>
     </Window.TaskbarItemInfo>
@@ -164,7 +172,7 @@
                 <ProgressBar Name="progressBar" Height="10" Width="200" Minimum="0" Maximum="100" Visibility="Collapsed"/>
             </StatusBarItem>
             <StatusBarItem Grid.Column="8">
-                <TextBlock Name="StatusText">Data start not set</TextBlock>
+                <TextBlock Name="StatusText">Data not loaded</TextBlock>
             </StatusBarItem>
         </StatusBar>
     </Grid>
