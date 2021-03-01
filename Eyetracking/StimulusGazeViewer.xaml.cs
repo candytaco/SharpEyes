@@ -247,6 +247,9 @@ namespace Eyetracking
 				dataStartTime = null;
 				dataEndTime = null;
 				videoKeyFrames.Clear();
+				AddKeyFrameButton.IsEnabled = false;
+				PreviousKeyFrameButton.IsEnabled = false;
+				NextKeyFrameButton.IsEnabled = false;
 			}
 		}
 
@@ -459,6 +462,7 @@ namespace Eyetracking
 
 			NextKeyFrameButton.IsEnabled = true;
 			PreviousKeyFrameButton.IsEnabled = true;
+			AddKeyFrameButton.IsEnabled = true;
 
 			GazeEllipse.Visibility = Visibility.Visible;
 			StatusText.Text = String.Format("Data start " + VideoTimeLabel.Content);
@@ -608,6 +612,18 @@ namespace Eyetracking
 			{
 				Num.save(gazeFileName, gazeLocations);
 			}
+		}
+
+		private void KeyframesDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+		{
+			VideoKeyFrame? selectedFrame = KeyframesDataGrid.SelectedItem as VideoKeyFrame?;
+			if (selectedFrame.HasValue)
+				SetVideoPosition(selectedFrame.Value.VideoTime);
+		}
+
+		private void AddKeyFrameButton_Click(object sender, RoutedEventArgs e)
+		{
+			AddKeyFrame();
 		}
 	}
 }
