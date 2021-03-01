@@ -80,8 +80,13 @@
                 <MediaElement Name="VideoMediaElement" Margin="0" LoadedBehavior="Manual" ScrubbingEnabled="True" UnloadedBehavior="Manual" MediaEnded="VideoMediaElement_MediaEnded"
                               Height="768" Width="1024"/>
 
-                <Ellipse x:Name="GazeEllipse" Fill="Transparent" HorizontalAlignment="Left" Height="{Binding ElementName=GazeMarkerDiameterPicker, Path=Value}" Width="{Binding ElementName=GazeMarkerDiameterPicker, Path=Value}" Margin="0" 
-			             Stroke="#FF00BAFF" VerticalAlignment="Top" StrokeThickness="8" Canvas.Top="{Binding gazeY}" Canvas.Left="{Binding gazeX}" RenderTransformOrigin="0.5,0.5"/>
+                <Ellipse x:Name="GazeEllipse" Fill="Transparent" HorizontalAlignment="Left" 
+                         Height="{Binding ElementName=GazeMarkerDiameterPicker, Path=Value}" 
+                         Width="{Binding ElementName=GazeMarkerDiameterPicker, Path=Value}" Margin="0" 
+			             Stroke="#FF00BAFF" VerticalAlignment="Top" StrokeThickness="8" 
+                         Canvas.Top="{Binding gazeY}" 
+                         Canvas.Left="{Binding gazeX}" 
+                         RenderTransformOrigin="0.5,0.5" Visibility="Hidden"/>
             </Canvas>
         </Viewbox>
 
@@ -146,11 +151,11 @@
                 <TextBlock Name="VideoSizeStatus">0×0</TextBlock>
             </StatusBarItem>
             <Separator Grid.Column="7"/>
-            <StatusBarItem Grid.Column="8">
-                <ProgressBar Name="progressBar" Height="10" Width="200" Minimum="0" Maximum="100"/>
-            </StatusBarItem>
             <StatusBarItem Grid.Column="9">
-                <TextBlock Name="StatusText">Current Status</TextBlock>
+                <ProgressBar Name="progressBar" Height="10" Width="200" Minimum="0" Maximum="100" Visibility="Collapsed"/>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="8">
+                <TextBlock Name="StatusText">Data start not set</TextBlock>
             </StatusBarItem>
         </StatusBar>
     </Grid>

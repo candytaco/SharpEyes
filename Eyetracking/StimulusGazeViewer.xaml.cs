@@ -49,6 +49,12 @@ namespace Eyetracking
 		private double? dataStartTime = null;
 
 		/// <summary>
+		/// End time of the gaze data in stimulus video time in milliseconds
+		/// Can be beyond end of stimulus video.
+		/// </summary>
+		private double? dataEndTime = null;
+
+		/// <summary>
 		/// Timings of keyframes, i.e. frames on which the gaze location has been manually edited.
 		/// Values are milliseconds from start.
 		/// </summary>
@@ -186,10 +192,12 @@ namespace Eyetracking
 		/// </summary>
 		/// <param name="milliseconds"></param>
 		/// <returns></returns>
-		private int? VideoTimeToGazeDataIndex(double milliseconds)
+		private int? VideoTimeToGazeDataIndex(double? milliseconds)
 		{
 			if (!isGazeLoaded) return null;
-			return (int) ((milliseconds - dataStartTime) / eyetrackingFrameDuration);
+			if (milliseconds.HasValue)
+				return (int) ((milliseconds.Value - dataStartTime) / eyetrackingFrameDuration);
+			return null;
 		}
 
 		private void UpdateDisplays(object sender, EventArgs e)
@@ -229,11 +237,7 @@ namespace Eyetracking
 				AutoFindDataStartButton.IsEnabled = true;
 				EyetrackingFPSPicker_ValueChanged(null, null);
 				gazeFileName = openFileDialog.FileName;
-
-				videoKeyFrames = new List<double>(new double[]
-					{0, VideoMediaElement.NaturalDuration.TimeSpan.TotalMilliseconds});
-				NextKeyFrameButton.IsEnabled = true;
-				PreviousFrameButton.IsEnabled = true;
+				GazeEllipse.Visibility = Visibility.Hidden;
 			}
 		}
 
@@ -294,8 +298,11 @@ namespace Eyetracking
 		/// </summary>
 		private void AddKeyFrame()
 		{
-			videoKeyFrames.Add(VideoMediaElement.Position.TotalMilliseconds);
-			videoKeyFrames.Sort();
+			if (dataStartTime.HasValue && (VideoMediaElement.Position.TotalMilliseconds >= dataStartTime.Value) && (VideoMediaElement.Position.TotalMilliseconds <= dataEndTime.Value))
+			{
+				videoKeyFrames.Add(VideoMediaElement.Position.TotalMilliseconds);
+				videoKeyFrames.Sort();
+			}
 		}
 
 		/// <summary>
@@ -315,6 +322,14 @@ namespace Eyetracking
 		}
 
 		/// <summary>
+		/// Convenience property that converts the previous key frame time to data index
+		/// </summary>
+		private int? PreviousGazeDataKeyFrame
+		{
+			get => VideoTimeToGazeDataIndex(PreviousVideoKeyFrame);
+		}
+
+		/// <summary>
 		/// total millisecond value of the next keyframe
 		/// </summary>
 		private double? NextVideoKeyFrame
@@ -331,6 +346,14 @@ namespace Eyetracking
 		}
 
 		/// <summary>
+		/// Convenience property that converts the next key frame time to data index
+		/// </summary>
+		private int? NextGazeDataKeyFrame
+		{
+			get => VideoTimeToGazeDataIndex(NextVideoKeyFrame);
+		}
+
+		/// <summary>
 		/// Updates the stored gaze position after a manual edit. The update is as follows:
 		/// The current frame will become a keyframe. The full delta will be applied to this frame
 		/// and all successive frames. The delta will be interpolated to zero between the current
@@ -340,7 +363,23 @@ namespace Eyetracking
 		private void UpdateGazePositionData(Point finalPositionOnMove)
 		{
 			Vector delta = finalPositionOnMove - mouseMoveStartPoint;
-			// TODO:: This is next up!
+
+			AddKeyFrame();
+
+			double nFrames = (int)(frameIndex - PreviousGazeDataKeyFrame.Value);
+			double multiplier;
+			for (int i = PreviousGazeDataKeyFrame.Value; i < frameIndex; i++)
+			{
+				multiplier = (double) (i - PreviousGazeDataKeyFrame.Value) / nFrames;
+				gazeLocations[i, 0] += multiplier * delta.X;
+				gazeLocations[i, 1] += multiplier * delta.Y;
+			}
+
+			for (int i = frameIndex.Value; i < gazeLocations.shape[0]; i++)
+			{
+				gazeLocations[i, 0] += delta.X;
+				gazeLocations[i, 1] += delta.Y;
+			}
 		}
 
 
@@ -374,6 +413,20 @@ namespace Eyetracking
 		private void SetCurrentAsDataStartButton_Click(object sender, RoutedEventArgs e)
 		{
 			dataStartTime = VideoMediaElement.Position.TotalMilliseconds;
+
+			videoKeyFrames = new List<double>();
+			videoKeyFrames.Add(dataStartTime.Value);
+			dataEndTime = gazeLocations.shape[0] * eyetrackingFrameDuration + dataStartTime.Value;
+			if (dataEndTime.Value >= VideoMediaElement.NaturalDuration.TimeSpan.TotalMilliseconds)
+				videoKeyFrames.Add(VideoMediaElement.NaturalDuration.TimeSpan.TotalMilliseconds);
+			else videoKeyFrames.Add(dataEndTime.Value);
+
+			NextKeyFrameButton.IsEnabled = true;
+			PreviousKeyFrameButton.IsEnabled = true;
+
+			GazeEllipse.Visibility = Visibility.Visible;
+			StatusText.Text = String.Format("Data start " + VideoTimeLabel.Content);
+
 			UpdateDisplays(null, null);
 		}
 
@@ -463,7 +516,7 @@ namespace Eyetracking
 
 		private void AboutMenuItem_Click(object sender, RoutedEventArgs e)
 		{
-
+			MainWindow.ShowAboutDialogue();
 		}
 
 		private void EyetrackingFPSPicker_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)

@@ -51,11 +51,22 @@ namespace Eyetracking
 																			   new InputGestureCollection() { new KeyGesture(Key.V, ModifierKeys.Alt) });
 	};
 
+	
+
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>
 	public partial class MainWindow : System.Windows.Window
 	{
+		public static void ShowAboutDialogue()
+		{
+			Version version = Assembly.GetEntryAssembly().GetName().Version;
+			Assembly assembly = Assembly.GetExecutingAssembly();
+			string build = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly.Location).FileVersion;
+			MessageBox.Show(String.Format("SharpEyes\nVersion {0} {1} \nIcon from Icons8\nLibraries: Numsharp Lite & OpenCVSharp\nt.zhang\nThis is a work in progress and a lot of things don't work.", version, build),
+				"About SharpEyes", MessageBoxButton.OK, MessageBoxImage.Information);
+		}
+
 		public static string SecondsToDurationString(double seconds)
 		{
 			int hours = (int)(seconds / 3600);
@@ -894,11 +905,7 @@ namespace Eyetracking
 
 		private void AboutMenuItem_Click(object sender, RoutedEventArgs e)
 		{
-			Version version = Assembly.GetEntryAssembly().GetName().Version;
-			Assembly assembly = Assembly.GetExecutingAssembly();
-			string build = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly.Location).FileVersion;
-			MessageBox.Show(String.Format("SharpEyes\nVersion {0} {1} \nIcon from Icons8\nLibraries: Numsharp Lite & OpenCVSharp\nt.zhang\nThis is a work in progress and a lot of things don't work.", version, build),
-							"About SharpEyes", MessageBoxButton.OK, MessageBoxImage.Information);
+			ShowAboutDialogue();
 		}
 
 		private void TabControl_SelectionChanged_1(object sender, SelectionChangedEventArgs e)
