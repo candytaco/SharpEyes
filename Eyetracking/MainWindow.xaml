@@ -9,8 +9,7 @@
         Title="SharpEyes" Height="500" Width="800" Icon="icons8-iris-scan-96.ico"
 		Closing="Window_Closing">
 	<Window.CommandBindings>
-		<!--For some reason the custom commands generate a false positive for "Value cannot be null." They work so ignore the squiggles.-->
-		<CommandBinding x:Name="OpenEyetrackingDataCommand" Command="local:EyetrackerCommands.OpenEyetrackingData" Executed="OpenEyetrackingDataCommand_Executed"/>
+        <CommandBinding x:Name="OpenEyetrackingDataCommand" Command="local:EyetrackerCommands.OpenEyetrackingData" Executed="OpenEyetrackingDataCommand_Executed"/>
 		<CommandBinding x:Name="RightCommand" Command="local:EyetrackerCommands.Right" Executed="NextFrameCommand_Executed"/>
 		<CommandBinding x:Name="LeftCommand" Command="local:EyetrackerCommands.Left" Executed="PrevFrameCommand_Executed"/>
 		<CommandBinding x:Name="UpCommand" Command="local:EyetrackerCommands.Up" Executed="MovePupilUp"/>

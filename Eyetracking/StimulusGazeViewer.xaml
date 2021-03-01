@@ -11,7 +11,6 @@
         DataContext="{Binding RelativeSource={RelativeSource Self}}">
 
     <Window.CommandBindings>
-        <!--For some reason the custom commands generate a false positive for "Value cannot be null." They work so ignore the squiggles.-->
         <CommandBinding x:Name="OpenEyetrackingDataCommand" Command="local:EyetrackerCommands.OpenEyetrackingData" Executed="OpenEyetrackingDataCommand_Executed"/>
         <CommandBinding x:Name="RightCommand" Command="local:EyetrackerCommands.Right" Executed="RightCommand_Executed"/>
         <CommandBinding x:Name="LeftCommand" Command="local:EyetrackerCommands.Left" Executed="LeftCommand_Executed"/>
@@ -30,7 +29,7 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
-            <ColumnDefinition MaxWidth="385"/>
+            <ColumnDefinition MaxWidth="300"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -112,8 +111,8 @@
             <Label Content="Eyetracking FPS" HorizontalAlignment="Left" Margin="35,48,0,0" VerticalAlignment="Top"/>
             <xctk:IntegerUpDown x:Name="GazeMarkerDiameterPicker" Value="204" Increment="1" Minimum="1" Maximum="500" Height="24" Margin="132,79,0,0" ValueChanged="GazeMarkerDiameterPicker_ValueChanged" VerticalAlignment="Top" HorizontalAlignment="Left" MinWidth="45" MinHeight="26" Width="45"/>
             <Label Content="Gaze Marker Diameter" HorizontalAlignment="Left" Margin="0,79,0,0" VerticalAlignment="Top"/>
-            <GroupBox Header="Keyframes" HorizontalAlignment="Left" Height="232" Margin="0,110,-0.2,0" VerticalAlignment="Top" Width="377">
-                <DataGrid Name="KeyframesDataGrid" HorizontalAlignment="Left" Height="212" VerticalAlignment="Top" Width="362" 
+            <GroupBox Header="Keyframes" Margin="0,110,0,0">
+                <DataGrid Name="KeyframesDataGrid"
                           Margin="0,0,0,0" AutoGenerateColumns="False" ItemsSource="{Binding VideoKeyFrames}">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Stimulus time" Binding="{Binding VideoTimeStamp}"/>
