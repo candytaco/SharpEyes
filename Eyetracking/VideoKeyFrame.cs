@@ -9,32 +9,32 @@ namespace Eyetracking
 	/// <summary>
 	/// Struct for representing information about keyframes when editing gaze locations
 	/// </summary>
-	public class VideoKeyFrame
+	public struct VideoKeyFrame
 	{
 		/// <summary>
 		/// Video time in milliseconds
 		/// </summary>
-		public readonly double VideoTime;
+		public double VideoTime { get; }
 
 		/// <summary>
 		/// Timestamp representation of video time
 		/// </summary>
-		public readonly string VideoTimeStamp;
+		public string VideoTimeStamp { get; }
 
 		/// <summary>
 		/// Index in the gaze data
 		/// </summary>
-		public readonly int DataIndex;
+		public int DataIndex { get; }
 
 		/// <summary>
 		/// X of gaze in screen space
 		/// </summary>
-		public double GazeX;
+		public double GazeX { get; }
 
 		/// <summary>
 		/// Y of gaze in screen space
 		/// </summary>
-		public double GazeY;
+		public double GazeY { get; }
 
 		public VideoKeyFrame(double time, int index, string timestamp, double gazeX, double gazeY)
 		{
@@ -50,9 +50,29 @@ namespace Eyetracking
 			return lhs.VideoTime < time;
 		}
 
+		public static bool operator >= (VideoKeyFrame lhs, double time)
+		{
+			return !(lhs.VideoTime < time);
+		}
+
 		public static bool operator >(VideoKeyFrame lhs, double time)
 		{
 			return lhs.VideoTime > time;
+		}
+
+		public static bool operator <=(VideoKeyFrame lhs, double time)
+		{
+			return !(lhs.VideoTime > time);
+		}
+
+		public static bool operator ==(VideoKeyFrame lhs, double time)
+		{
+			return (lhs.VideoTime - time) < Double.Epsilon;
+		}
+
+		public static bool operator !=(VideoKeyFrame lhs, double time)
+		{
+			return !(lhs == time);
 		}
 	}
 }

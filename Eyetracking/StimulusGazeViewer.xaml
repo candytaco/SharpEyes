@@ -5,11 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Eyetracking"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
-        xmlns:sys="clr-namespace:System.Collections.Generic;assembly=mscorlib"
         mc:Ignorable="d"
         Title="Stimulus View" Height="450" Width="800"
-        DataContext="{Binding RelativeSource={RelativeSource Self}}"
-        Closing="Window_Closing">
+        Closing="Window_Closing"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}">
 
     <Window.CommandBindings>
         <!--For some reason the custom commands generate a false positive for "Value cannot be null." They work so ignore the squiggles.-->
@@ -24,10 +23,6 @@
         <CommandBinding x:Name="SaveFileCommand" Command="Save" Executed="SaveFileCommand_Executed"/>
         <CommandBinding x:Name="SaveFileAsCommand" Command="SaveAs" Executed="SaveFileAsCommand_Executed"/>
     </Window.CommandBindings>
-
-    <Window.Resources>
-        
-    </Window.Resources>
 
     <Window.TaskbarItemInfo>
         <TaskbarItemInfo x:Name="taskbarItemInfo"/>
@@ -89,8 +84,6 @@
                          Height="{Binding ElementName=GazeMarkerDiameterPicker, Path=Value}" 
                          Width="{Binding ElementName=GazeMarkerDiameterPicker, Path=Value}" Margin="0" 
 			             Stroke="#FF00BAFF" VerticalAlignment="Top" StrokeThickness="8" 
-                         Canvas.Top="{Binding gazeY}" 
-                         Canvas.Left="{Binding gazeX}" 
                          RenderTransformOrigin="0.5,0.5" Visibility="Hidden"/>
             </Canvas>
         </Viewbox>
@@ -121,12 +114,12 @@
             <Label Content="Gaze Marker Diameter" HorizontalAlignment="Left" Margin="0,79,0,0" VerticalAlignment="Top"/>
             <GroupBox Header="Keyframes" HorizontalAlignment="Left" Height="232" Margin="0,110,-0.2,0" VerticalAlignment="Top" Width="377">
                 <DataGrid Name="KeyframesDataGrid" HorizontalAlignment="Left" Height="212" VerticalAlignment="Top" Width="362" 
-                          Margin="0,0,0,0" AlternatingRowBackground="LightBlue" AlternationCount="2" AutoGenerateColumns="False">
+                          Margin="0,0,0,0" AutoGenerateColumns="False" ItemsSource="{Binding VideoKeyFrames}">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Stimulus time"/>
-                        <DataGridTextColumn Header="Gaze data index"/>
-                        <DataGridTextColumn Header="Gaze X"/>
-                        <DataGridTextColumn Header="Gaze Y"/>
+                        <DataGridTextColumn Header="Stimulus time" Binding="{Binding VideoTimeStamp}"/>
+                        <DataGridTextColumn Header="Gaze data index" Binding="{Binding DataIndex}"/>
+                        <DataGridTextColumn Header="Gaze X" Binding="{Binding GazeX, StringFormat={}{0:#.#}}"/>
+                        <DataGridTextColumn Header="Gaze Y" Binding="{Binding GazeY, StringFormat={}{0:#.#}}"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </GroupBox>

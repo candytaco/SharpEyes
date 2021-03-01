@@ -59,7 +59,11 @@ namespace Eyetracking
 		/// Values are milliseconds from start.
 		/// </summary>
 		private List<VideoKeyFrame> videoKeyFrames;
-		
+		public List<VideoKeyFrame> VideoKeyFrames
+		{
+			get => new List<VideoKeyFrame>(videoKeyFrames);
+		}
+
 		private NDArray gazeLocations = null;
 
 		/// <summary>
@@ -126,6 +130,7 @@ namespace Eyetracking
 		public StimulusGazeViewer()
 		{
 			timer = new DispatcherTimer();
+			videoKeyFrames = new List<VideoKeyFrame>();
 			InitializeComponent();
 		}
 
@@ -241,7 +246,7 @@ namespace Eyetracking
 				StatusText.Text = "Data start not set";
 				dataStartTime = null;
 				dataEndTime = null;
-				videoKeyFrames = null;
+				videoKeyFrames.Clear();
 			}
 		}
 
@@ -302,12 +307,7 @@ namespace Eyetracking
 		/// </summary>
 		private void AddKeyFrame()
 		{
-			if (dataStartTime.HasValue && (VideoMediaElement.Position.TotalMilliseconds >= dataStartTime.Value) && (VideoMediaElement.Position.TotalMilliseconds <= dataEndTime.Value))
-			{
-				videoKeyFrames.Add(new VideoKeyFrame(VideoMediaElement.Position.TotalMilliseconds,
-														 frameIndex.Value, (string)VideoTimeLabel.Content, gazeX, gazeY));
-				videoKeyFrames.Sort((lhs, rhs) => lhs.VideoTime.CompareTo(rhs.VideoTime));
-			}
+			AddKeyFrame(VideoMediaElement.Position.TotalMilliseconds);
 		}
 
 		/// <summary>
@@ -321,12 +321,23 @@ namespace Eyetracking
 				int? index = VideoTimeToGazeDataIndex(time);
 				if (!index.HasValue) return;
 				TimeSpan timeSpan = new TimeSpan((long)(10000 * time));
+				for (int i = 0; i < videoKeyFrames.Count; i++)
+				{
+					// if this frame already exists as a keyframe, remove the old one
+					if (videoKeyFrames[i].DataIndex == index.Value)
+					{
+						videoKeyFrames.RemoveAt(i);
+						break;
+					}
+				}
+
 				videoKeyFrames.Add(new VideoKeyFrame(time, index.Value, 
 														 string.Format("{0:00}:{1:00}:{2:00};{3:#00}", 
 																				timeSpan.Hours, timeSpan.Minutes,
 																				timeSpan.Seconds, timeSpan.Milliseconds / stimulusFrameDuration), 
 														 gazeLocations[index.Value, 0], gazeLocations[index.Value, 1]));
 				videoKeyFrames.Sort((lhs, rhs) => lhs.VideoTime.CompareTo(rhs.VideoTime));
+				KeyframesDataGrid.Items.Refresh();
 			}
 		}
 
@@ -438,10 +449,10 @@ namespace Eyetracking
 		private void SetCurrentAsDataStartButton_Click(object sender, RoutedEventArgs e)
 		{
 			dataStartTime = VideoMediaElement.Position.TotalMilliseconds;
-
-			videoKeyFrames = new List<VideoKeyFrame>();
-			AddKeyFrame(dataStartTime.Value);
 			dataEndTime = gazeLocations.shape[0] * eyetrackingFrameDuration + dataStartTime.Value;
+
+			videoKeyFrames.Clear();
+			AddKeyFrame(dataStartTime.Value);
 			if (dataEndTime.Value >= VideoMediaElement.NaturalDuration.TimeSpan.TotalMilliseconds)
 				AddKeyFrame(VideoMediaElement.NaturalDuration.TimeSpan.TotalMilliseconds);
 			else AddKeyFrame(dataEndTime.Value);
