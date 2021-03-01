@@ -189,6 +189,7 @@
     </Compile>
     <Compile Include="TemplatePupilFinder.cs" />
     <Compile Include="Templates.cs" />
+    <Compile Include="VideoKeyFrame.cs" />
     <Page Include="CalibrationParametersWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
