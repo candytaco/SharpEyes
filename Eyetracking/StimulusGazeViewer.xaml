@@ -101,7 +101,7 @@
                 <Image Name="FramesProcessedPreviewImage" Stretch="Fill"/>
             </Grid>
             <Slider x:Name="VideoSlider" VerticalAlignment="Top" Width="auto" Minimum="0" Maximum="100" LargeChange="10" 
-                    MouseDown="VideoSlider_MouseDown" MouseUp="VideoSlider_MouseUp" Value="5"
+                    MouseDown="VideoSlider_MouseDown" MouseUp="VideoSlider_MouseUp" Value="5" IsMoveToPointEnabled="True" MouseLeftButtonDown="VideoSlider_MouseDown"
 			        Thumb.DragCompleted="VideoSlider_DragCompleted" Thumb.DragStarted="VideoSlider_DragStarted"/>
             <Label x:Name="VideoTimeLabel" Content="00:00:00;00" HorizontalAlignment="Right" HorizontalContentAlignment="Right" Margin="0,14,0,0" VerticalAlignment="Top" Width="76"/>
             <TextBlock x:Name="XPositionText" HorizontalAlignment="Left" Margin="10,23,0,0" TextWrapping="Wrap" Text="X: 0" VerticalAlignment="Top" TextAlignment="Center"/>

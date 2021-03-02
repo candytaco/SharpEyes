@@ -127,6 +127,13 @@ namespace Eyetracking
 		private bool isMovingGaze = false;
 		private string gazeFileName = null;
 
+		/// <summary>
+		/// Default to not overwrite original file
+		/// </summary>
+		private string defaultSaveName => gazeFileName == null
+			? "gaze locations"
+			: Path.GetFileNameWithoutExtension(gazeFileName) + " corrected.npy";
+
 		public StimulusGazeViewer()
 		{
 			timer = new DispatcherTimer();
@@ -267,13 +274,13 @@ namespace Eyetracking
 
 		private void SaveGazeMenuItem_Click(object sender, RoutedEventArgs e)
 		{
-			if (gazeFileName == null)
+			if (defaultSaveName == null)
 			{
 				SaveGazeAsMenuItem_Click(sender, e);
 			}
 			else
 			{
-				Num.save(gazeFileName, gazeLocations);
+				Num.save(defaultSaveName, gazeLocations);
 			}
 		}
 
@@ -286,6 +293,7 @@ namespace Eyetracking
 		{
 			if (moveGazeButton.IsChecked.Value)
 			{
+				IsPlaying = false;
 				mouseMoveStartPoint = e.GetPosition(canvas);
 				gazeX = mouseMoveStartPoint.X;
 				gazeY = mouseMoveStartPoint.Y;
@@ -464,7 +472,7 @@ namespace Eyetracking
 		private void SetCurrentAsDataStartButton_Click(object sender, RoutedEventArgs e)
 		{
 			dataStartTime = VideoMediaElement.Position.TotalMilliseconds;
-			dataEndTime = gazeLocations.shape[0] * eyetrackingFrameDuration + dataStartTime.Value;
+			dataEndTime = (gazeLocations.shape[0] - 1) * eyetrackingFrameDuration + dataStartTime.Value;
 
 			videoKeyFrames.Clear();
 			AddKeyFrame(dataStartTime.Value);
@@ -513,11 +521,11 @@ namespace Eyetracking
 			{
 				Filter = "Numpy file (*.npy)|*.npy",
 				Title = "Save gaze as...",
-				FileName = Path.GetFileNameWithoutExtension(gazeFileName == null ? "gaze locations" : gazeFileName + " corrected")
+				FileName = defaultSaveName
 			};
 			if (saveFileDialog.ShowDialog() == true)
 			{
-				Num.save(gazeFileName, gazeLocations);
+				Num.save(saveFileDialog.FileName, gazeLocations);
 			}
 		}
 
