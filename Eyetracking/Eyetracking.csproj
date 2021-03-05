@@ -19,7 +19,7 @@
     </NuGetPackageImportStamp>
     <TargetFrameworkProfile />
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <PublishUrl>C:\Users\candytaco\OneDrive\Documents\Lab things\Eyetracking\Published\</PublishUrl>
+    <PublishUrl>C:\Users\candytaco\OneDrive\Documents\Lab things\SharpEyes\Publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
     <UpdateEnabled>false</UpdateEnabled>
@@ -29,8 +29,7 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <AutorunEnabled>true</AutorunEnabled>
-    <ApplicationRevision>1</ApplicationRevision>
+    <ApplicationRevision>2</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -181,6 +180,7 @@
       <DependentUpon>CalibrationParametersWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Calibrator.cs" />
+    <Compile Include="DrivingVideoParser.cs" />
     <Compile Include="EditableLabel.cs" />
     <Compile Include="HoughPupilFinder.cs" />
     <Compile Include="PupilFinder.cs" />

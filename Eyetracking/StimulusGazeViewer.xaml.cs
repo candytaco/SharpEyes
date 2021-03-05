@@ -490,9 +490,29 @@ namespace Eyetracking
 			UpdateDisplays(null, null);
 		}
 
-		private void AutoFindDataStartButton_Click(object sender, RoutedEventArgs e)
+		private async void AutoFindDataStartButton_Click(object sender, RoutedEventArgs e)
 		{
-			MessageBox.Show("Auto start finding not implemented yet");
+			MessageBox.Show("Auto start only works with driving videos");
+
+			progressBar.Visibility = Visibility.Visible;
+			progressBar.IsIndeterminate = true;
+			StatusText.Text = "Trying to find data start";
+			videoSource.PosFrames = 0;
+			int startTime = await DrivingVideoParser.FindStartTime(VideoNameStatus.Text);
+			if (startTime < 0)
+			{
+				MessageBox.Show("Start finding failed");
+				StatusText.Text = "Auto data start finding failed";
+			}
+			else
+			{
+				VideoMediaElement.Position = new TimeSpan(0, 0, 0, 0, startTime);
+				UpdateDisplays(null, null);
+				SetCurrentAsDataStartButton_Click(null, null);
+			}
+			progressBar.IsIndeterminate = false;
+			progressBar.Visibility = Visibility.Collapsed;
+
 		}
 
 		private void PlayPauseButton_Click(object sender, RoutedEventArgs e)
