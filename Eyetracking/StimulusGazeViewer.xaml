@@ -51,6 +51,7 @@
             <MenuItem Header="_File" Name="fileMenu">
                 <MenuItem Header="_Open Video" Name="openVideoMenuItem" Click="OpenVideoMenuItem_Click"></MenuItem>
                 <MenuItem Header="_Load Gaze" Name="loadGazeMenuItem" Click="LoadGazeMenuItem_Click" IsEnabled="False"/>
+                <MenuItem Header="Load Gaze 2" Name="loadGaze2MenuItem" Click="LoadGaze2MenuItem_Click" IsEnabled="False"/>
                 <Separator/>
                 <MenuItem Header="_Save Gaze" Name="saveGazeMenuItem" Click="SaveGazeMenuItem_Click" IsEnabled="False"/>
                 <MenuItem Header="_Save Gaze As" Name="saveGazeAsMenuItem" Click="SaveGazeAsMenuItem_Click" IsEnabled="False"/>
@@ -86,6 +87,12 @@
 				    Height="768" Width="1024">
                 <MediaElement Name="VideoMediaElement" Margin="0" LoadedBehavior="Manual" ScrubbingEnabled="True" UnloadedBehavior="Manual" MediaEnded="VideoMediaElement_MediaEnded"
                               Height="768" Width="1024"/>
+
+                <Ellipse x:Name="GazeEllipse2" Fill="Transparent" HorizontalAlignment="Left" 
+                         Height="{Binding ElementName=GazeMarkerDiameterPicker, Path=Value}" 
+                         Width="{Binding ElementName=GazeMarkerDiameterPicker, Path=Value}" Margin="0" 
+                         Stroke="DeepPink" VerticalAlignment="Top" StrokeThickness="12" 
+                         RenderTransformOrigin="0.5,0.5" Visibility="Hidden"/>
 
                 <Ellipse x:Name="GazeEllipse" Fill="Transparent" HorizontalAlignment="Left" 
                          Height="{Binding ElementName=GazeMarkerDiameterPicker, Path=Value}" 

@@ -3,6 +3,7 @@ using NumSharp;
 using OpenCvSharp;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,7 +18,7 @@ namespace Eyetracking
 	/// <summary>
 	/// Interaction logic for StimulusGazeViewer.xaml
 	/// </summary>
-	public partial class StimulusGazeViewer : Window
+	public partial class StimulusGazeViewer : Window, INotifyPropertyChanged
 	{
 		private DispatcherTimer timer;
 		private bool isPlaying = false;
@@ -101,6 +102,31 @@ namespace Eyetracking
 			}
 		}
 
+		private bool hasGaze2 = false;
+		private NDArray gaze2Locations = null;
+		private double _gaze2X = 0;
+		private double _gaze2Y = 0;
+
+		public double Gaze2X
+		{
+			get => _gaze2X;
+			set
+			{
+				_gaze2X = value;
+				Canvas.SetLeft(GazeEllipse2, value - GazeMarkerDiameterPicker.Value.Value / 2); // replaced by binding
+			}
+		}
+
+		public double Gaze2Y
+		{
+			get => _gaze2Y;
+			set
+			{
+				_gaze2Y = value;
+				Canvas.SetTop(GazeEllipse2, value - GazeMarkerDiameterPicker.Value.Value / 2); // replaced by binding
+			}
+		}
+
 		/// <summary>
 		/// Duration of a frame in the stimulus video in milliseconds
 		/// </summary>
@@ -126,6 +152,8 @@ namespace Eyetracking
 		/// </summary>
 		private bool isMovingGaze = false;
 		private string gazeFileName = null;
+
+		public event PropertyChangedEventHandler PropertyChanged;
 
 		/// <summary>
 		/// Default to not overwrite original file
@@ -192,12 +220,17 @@ namespace Eyetracking
 			dataEndTime = null;
 			isGazeLoaded = false;
 			gazeLocations = null;
+			gaze2Locations = null;
+			hasGaze2 = false;
 			videoKeyFrames.Clear();
 			KeyframesDataGrid.Items.Refresh();
 			GazeEllipse.Visibility = Visibility.Hidden;
+			GazeEllipse2.Visibility = Visibility.Hidden;
 			StatusText.Text = "Data not loaded";
 			gazeX = 0;
 			gazeY = 0;
+			Gaze2X = 0;
+			Gaze2Y = 0;
 		}
 
 		private void VideoOpened(object sender, RoutedEventArgs e)
@@ -241,6 +274,13 @@ namespace Eyetracking
 					{
 						gazeX = gazeLocations[frameIndex, 0];
 						gazeY = gazeLocations[frameIndex, 1];
+
+						if (hasGaze2)
+						{
+
+							Gaze2X = gaze2Locations[frameIndex, 0];
+							Gaze2Y = gaze2Locations[frameIndex, 1];
+						}
 					}
 				}
 			}
@@ -269,6 +309,7 @@ namespace Eyetracking
 				AddKeyFrameButton.IsEnabled = false;
 				PreviousKeyFrameButton.IsEnabled = false;
 				NextKeyFrameButton.IsEnabled = false;
+				loadGaze2MenuItem.IsEnabled = true;
 			}
 		}
 
@@ -485,6 +526,8 @@ namespace Eyetracking
 			AddKeyFrameButton.IsEnabled = true;
 
 			GazeEllipse.Visibility = Visibility.Visible;
+			if (hasGaze2)
+				GazeEllipse2.Visibility = Visibility.Visible;
 			StatusText.Text = String.Format("Data start " + VideoTimeLabel.Content);
 
 			UpdateDisplays(null, null);
@@ -666,5 +709,20 @@ namespace Eyetracking
 		{
 			AddKeyFrame();
 		}
+
+		private void LoadGaze2MenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			OpenFileDialog openFileDialog = new OpenFileDialog
+			{
+				Filter = "Numpy file (*.npy)|*.npy",
+				Title = "Load second gaze locations..."
+			};
+			if (openFileDialog.ShowDialog() == true)
+			{
+				gaze2Locations = Num.load(openFileDialog.FileName);
+				hasGaze2 = true;
+			}
+		}
 	}
 }
+		
