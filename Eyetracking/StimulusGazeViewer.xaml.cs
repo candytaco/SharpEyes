@@ -12,6 +12,7 @@ using System.Windows.Threading;
 using Num = NumSharp.np;
 using Point = System.Windows.Point;
 using Window = System.Windows.Window;
+using Sentry;
 
 namespace Eyetracking
 {
@@ -167,6 +168,7 @@ namespace Eyetracking
 			timer = new DispatcherTimer();
 			videoKeyFrames = new List<VideoKeyFrame>();
 			InitializeComponent();
+			SentrySdk.Init("https://4aa216608a894bd99da3daa7424c995d@o553633.ingest.sentry.io/5689896");
 		}
 
 		private void OpenVideoMenuItem_Click(object sender, RoutedEventArgs e)
