@@ -48,10 +48,10 @@ namespace Eyetracking
 		public static async Task<int> FindStartTime(string videoFileName)
 		{
 			VideoCapture videoFile = new VideoCapture(videoFileName);
-			return await FindStartTime(videoFile);
+			return await FindStartTime(videoFile, true);
 		}
 
-		public static async Task<int> FindStartTime(VideoCapture videoFile)
+		public static async Task<int> FindStartTime(VideoCapture videoFile, bool release)
 		{
 			if (!videoFile.IsOpened())
 				throw new IOException("File could not be opened");
@@ -82,7 +82,7 @@ namespace Eyetracking
 					else
 					{
 						Vec3b sumPatch = grayFrame[745, 762, 1000, 1018].Sum().ToVec3b();
-						if ((sumPatch.Item0 + sumPatch.Item1 + sumPatch.Item2) == 0)
+						if ((sumPatch.Item0 + sumPatch.Item1 + sumPatch.Item2) - 137 * 18 * 18 == 0) // the pixels are all 137
 						{
 							// previous frame is start
 							startTime = videoFile.PosMsec - 1000.0 / videoFile.Fps;
@@ -93,7 +93,8 @@ namespace Eyetracking
 					success = videoFile.Read(rawFrame);
 				}
 
-				videoFile.Release();
+				if (release)
+					videoFile.Release();
 
 				return (int)startTime;
 			});
