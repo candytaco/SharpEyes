@@ -667,6 +667,8 @@ namespace Eyetracking
 												{
 													ReadTimestampButton.IsEnabled = true;
 													LoadSavedTimeStampsButton.IsEnabled = true;
+													if (AutoSaveCheckBox.IsChecked.Value)
+														pupilFinder.SaveTimestamps();
 												};
 				pupilFinder.Seek(0);
 				pupilFinder.ParseTimeStamps();
@@ -704,7 +706,7 @@ namespace Eyetracking
 				frames = pupilFinder.frameCount - pupilFinder.CurrentFrameNumber - 1;
 			}
 
-			pupilFinder.FindPupils(frames);
+			pupilFinder.FindPupils(frames, AutoPausePupilFindingCheckBox.IsChecked.Value ? ConfidenceThresholdPicker.Value.Value : 0);
 		}
 
 		private void FindPupilsButton_Click(object sender, RoutedEventArgs e)

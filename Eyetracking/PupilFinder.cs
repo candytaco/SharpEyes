@@ -227,7 +227,8 @@ namespace Eyetracking
 		/// Find pupils in some set of frames. Must be overridden in child classes.
 		/// </summary>
 		/// <param name="Frames"> number of frames from current to find pupils for </param>
-		public virtual void FindPupils(int Frames)
+		/// <param name="threshold"> confidence threshold at which to auto-pause pupil finding</param>
+		public virtual void FindPupils(int Frames, double threshold = 0)
 		{
 			if (!isTimestampParsed)
 			{

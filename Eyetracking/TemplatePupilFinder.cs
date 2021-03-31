@@ -136,7 +136,7 @@ namespace Eyetracking
 			NumTemplates--;
 		}
 
-		public override void FindPupils(int Frames)
+		public override void FindPupils(int Frames, double threshold = 0)
 		{
 			base.FindPupils(Frames);
 			DateTime start = DateTime.Now;
@@ -146,6 +146,9 @@ namespace Eyetracking
 				WorkerReportsProgress = true,
 				WorkerSupportsCancellation = true
 			};
+			
+			double cumulativeConfidence;
+			int frames;
 
 			int framesProcessed = 0;
 			worker.DoWork += delegate (object sender, DoWorkEventArgs args)
@@ -215,6 +218,14 @@ namespace Eyetracking
 						args.Cancel = true;
 						break;
 					}
+
+					// stop if average confidence for the past 10 frames drops below threshold
+					cumulativeConfidence = 0;
+					frames = f >= 10 ? f : 10;
+					for (int i = 0; i < frames; i++)
+						cumulativeConfidence += pupilLocations[CurrentFrameNumber - i, 3];
+					if (cumulativeConfidence < threshold * frames)
+						break;
 				}
 			};
 
