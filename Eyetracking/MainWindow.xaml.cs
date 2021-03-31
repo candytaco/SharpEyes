@@ -297,6 +297,7 @@ namespace Eyetracking
 			pupilFinder = TemplatePupilFindingRadioButton.IsChecked.Value ? new TemplatePupilFinder(videoFileName, progressBar, taskbarItemInfo, SetStatus, UpdateDisplays, OnFramesProcessed)
 																		  : (PupilFinder)new HoughPupilFinder(videoFileName, progressBar, taskbarItemInfo, SetStatus, UpdateDisplays, OnFramesProcessed);
 			RadiusPickerValuesChanged(null, null);
+			isPupilManuallySetOnThisFrame = false;
 
 			VideoNameStatus.Text = videoFileName;
 			VideoDurationStatus.Text = FramesToDurationString(pupilFinder.frameCount, pupilFinder.fps);
@@ -883,6 +884,13 @@ namespace Eyetracking
 		{
 			UpdatePupilFindingButtons(false);
 			UpdateFramesProcessedPreviewImage();
+			if (AutoSaveCheckBox.IsChecked.Value)
+			{
+				pupilFinder.SavePupilLocations();
+				pupilFinder.SaveTimestamps();
+				if (pupilFinder is TemplatePupilFinder templatePupilFinder)
+					templatePupilFinder.SaveTemplates();
+			}
 		}
 
 		private void ExponentialFadeFramePicker_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)

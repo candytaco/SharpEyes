@@ -203,7 +203,8 @@
 					<CheckBox Name="FindPupilsAllFramesCheckBox" Content="All Frames" HorizontalAlignment="Left" Margin="91,65,0,0" VerticalAlignment="Top" IsChecked="False" Checked="FindPupilsAllFramesCheckBox_Checked" Unchecked="FindPupilsAllFramesCheckBox_Checked"/>
 					<Button Name="StepBackButton" Content="Step back" HorizontalAlignment="Left" Margin="102,87,0,0" VerticalAlignment="Top" Width="75" Click="StepBackButton_Click" IsEnabled="False"/>
 					<Button Name="ResetButton" Content="Reset" HorizontalAlignment="Left" Margin="119,10,0,0" VerticalAlignment="Top" Width="75" Click="ResetButton_Click"/>
-				</Grid>
+                    <CheckBox Name="AutoSaveCheckBox" Content="Auto Save" HorizontalAlignment="Left" IsChecked="True" Margin="119,36,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.208,0.342"/>
+                </Grid>
 			</TabItem>
 			<TabItem Header="Image Pre-filtering">
 				<Grid Background="#FFE5E5E5">
