@@ -22,7 +22,7 @@ namespace Eyetracking
 			
 		}
 
-		public override void FindPupils(int Frames, double threshold = 0)
+		public override void FindPupils(int Frames, double threshold = 0, int thresholdFrames = 0)
 		{
 			base.FindPupils(Frames);
 			DateTime start = DateTime.Now;

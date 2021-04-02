@@ -30,6 +30,18 @@ namespace Eyetracking
 		public static readonly RoutedUICommand Left = new RoutedUICommand("Left", "Left", typeof(EyetrackerCommands),
 																		  new InputGestureCollection() { new KeyGesture(Key.Left) });
 
+		public static readonly RoutedUICommand BackConfidenceFrames = new RoutedUICommand("BackConfidenceFrames", "BackConfidenceFrames", typeof(EyetrackerCommands),
+																		  new InputGestureCollection() { new KeyGesture(Key.Left, ModifierKeys.Alt) });
+
+		public static readonly RoutedUICommand BackFindPupilFrames = new RoutedUICommand("BackFindPupilFrames", "BackFindPupilFrames", typeof(EyetrackerCommands),
+																		  new InputGestureCollection() { new KeyGesture(Key.Left, ModifierKeys.Control) });
+
+		public static readonly RoutedUICommand ForwardConfidenceFrames = new RoutedUICommand("ForwardConfidenceFrames", "ForwardConfidenceFrames", typeof(EyetrackerCommands),
+																		  new InputGestureCollection() { new KeyGesture(Key.Right, ModifierKeys.Alt) });
+
+		public static readonly RoutedUICommand ForwardFindPupilFrames = new RoutedUICommand("ForwardFindPupilFrames", "ForwardFindPupilFrames", typeof(EyetrackerCommands),
+																		  new InputGestureCollection() { new KeyGesture(Key.Right, ModifierKeys.Control) });
+
 		public static readonly RoutedUICommand Up = new RoutedUICommand("Up", "Up", typeof(EyetrackerCommands),
 																		  new InputGestureCollection() { new KeyGesture(Key.Up) });
 
@@ -663,12 +675,14 @@ namespace Eyetracking
 			{
 				ReadTimestampButton.IsEnabled = false;
 				LoadSavedTimeStampsButton.IsEnabled = false;
-				pupilFinder.OnTimeStampsFound += delegate ()
+				pupilFinder.OnTimeStampsFound += delegate (bool warn, string message)
 												{
 													ReadTimestampButton.IsEnabled = true;
 													LoadSavedTimeStampsButton.IsEnabled = true;
 													if (AutoSaveCheckBox.IsChecked.Value)
 														pupilFinder.SaveTimestamps();
+													if (warn)
+														MessageBox.Show(message, "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
 												};
 				pupilFinder.Seek(0);
 				pupilFinder.ParseTimeStamps();
@@ -706,7 +720,8 @@ namespace Eyetracking
 				frames = pupilFinder.frameCount - pupilFinder.CurrentFrameNumber - 1;
 			}
 
-			pupilFinder.FindPupils(frames, AutoPausePupilFindingCheckBox.IsChecked.Value ? ConfidenceThresholdPicker.Value.Value : 0);
+			pupilFinder.FindPupils(frames, AutoPausePupilFindingCheckBox.IsChecked.Value ? ConfidenceThresholdPicker.Value.Value : 0,
+								   AutoPausePupilFindingCheckBox.IsChecked.Value ? ConfidenceThresholdFramesPicker.Value.Value : 0);
 		}
 
 		private void FindPupilsButton_Click(object sender, RoutedEventArgs e)
@@ -882,7 +897,7 @@ namespace Eyetracking
 		/// <summary>
 		/// Called when a chunk of frames is processed
 		/// </summary>
-		public void OnFramesProcessed()
+		public void OnFramesProcessed(bool warn, string message)
 		{
 			UpdatePupilFindingButtons(false);
 			UpdateFramesProcessedPreviewImage();
@@ -893,6 +908,8 @@ namespace Eyetracking
 				if (pupilFinder is TemplatePupilFinder templatePupilFinder)
 					templatePupilFinder.SaveTemplates();
 			}
+			if (warn)
+				MessageBox.Show(message, "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
 		}
 
 		private void ExponentialFadeFramePicker_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -1257,7 +1274,32 @@ namespace Eyetracking
             stimulusGazeViewer.Show();
         }
 
-        private void UpdateFramesProcessedPreviewImage()
+		private void GoBackNumThresholdFramesButton_Click(object sender, RoutedEventArgs e)
+		{
+			UpdateVideoTime(pupilFinder.CurrentFrameNumber - ConfidenceThresholdFramesPicker.Value.Value);
+		}
+
+		private void BackConfidenceFrames_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			GoBackNumThresholdFramesButton_Click(null, null);
+		}
+
+		private void BackFindPupilFrames_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			StepBackButton_Click(null, null);
+		}
+
+		private void ForwardConfidenceFrames_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			UpdateVideoTime(pupilFinder.CurrentFrameNumber + ConfidenceThresholdFramesPicker.Value.Value);
+		}
+
+		private void ForwardFindPupilFrames_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			UpdateVideoTime(pupilFinder.CurrentFrameNumber + FramesToProcessPicker.Value.Value);
+		}
+
+		private void UpdateFramesProcessedPreviewImage()
 		{
 			FramesProcessedPreviewImage.Source = (pupilFinder == null) ? null : pupilFinder.GetFramesProcessedPreviewImage((int)PreviewImageGrid.ActualWidth);
 		}

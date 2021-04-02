@@ -19,6 +19,10 @@
         <CommandBinding x:Name="DecreasePupilSizeCommand" Command="local:EyetrackerCommands.DecreasePupilSize" Executed="DecreasePupilSizeCommand_Executed"/>
         <CommandBinding x:Name="DrawWindowCommand" Command="local:EyetrackerCommands.DrawWindow" Executed="DrawWindowCommand_Executed"/>
         <CommandBinding x:Name="MovePupilCommand" Command="local:EyetrackerCommands.MovePupil" Executed="MovePupilCommand_Executed"/>
+        <CommandBinding x:Name="BackConfidenceFrames" Command="local:EyetrackerCommands.BackConfidenceFrames" Executed="BackConfidenceFrames_Executed"/>
+        <CommandBinding x:Name="BackFindPupilFrames" Command="local:EyetrackerCommands.BackFindPupilFrames" Executed="BackFindPupilFrames_Executed"/>
+        <CommandBinding x:Name="ForwardConfidenceFrames" Command="local:EyetrackerCommands.ForwardConfidenceFrames" Executed="ForwardConfidenceFrames_Executed"/>
+        <CommandBinding x:Name="ForwardFindPupilFrames" Command="local:EyetrackerCommands.ForwardFindPupilFrames" Executed="ForwardFindPupilFrames_Executed"/>
 
         <CommandBinding x:Name="OpenVideoCommand" Command="Open" Executed="OpenVideoCommand_Executed"/>
         <CommandBinding x:Name="NewFileCommand" Command="New" Executed="NewFileCommand_Executed"/>
@@ -150,7 +154,7 @@
                         </Grid>
                     </GroupBox>
 
-                    <xctk:IntegerUpDown Name="FramesToProcessPicker" Value="120" Increment="1" Minimum="1" Height="24" Margin="10,87,263.4,253" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="75" MinHeight="26"/>
+                    <xctk:IntegerUpDown Name="FramesToProcessPicker" Value="120" Increment="30" Minimum="1" Height="24" Margin="10,87,263.4,253" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="75" MinHeight="26"/>
                     <Button x:Name="LoadSavedTimeStampsButton" Content="Load timestamps" HorizontalAlignment="Left" Margin="10,34,0,0" VerticalAlignment="Top" Width="Auto" Click="LoadSavedDataMenuItem_Click" IsEnabled="False"/>
                     <TabControl HorizontalAlignment="Left" Height="220" Margin="10,165,0,0" VerticalAlignment="Top" Width="339" BorderThickness="0">
                         <TabControl.Resources>
@@ -188,7 +192,11 @@
                                 <xctk:IntegerUpDown x:Name="NRecentTemplatesPicker" Value="16" Increment="1" Minimum="1" Height="24" Margin="48,135,0,0"  Visibility="Hidden"
 													ValueChanged="NRecentTemplatesPicker_ValueChanged" VerticalAlignment="Top" HorizontalAlignment="Left" MinWidth="75" MinHeight="26"/>
                                 <CheckBox Name="AutoPausePupilFindingCheckBox" Content="Pause when confidence is below" HorizontalAlignment="Left" Margin="13,166,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.281,0.026"/>
-                                <xctk:DoubleUpDown x:Name="ConfidenceThresholdPicker" Value="0.925" Height="24" Width="75" Minimum="0" Maximum="1" Increment="0.005" Margin="48,186,212.2,4.4"/>
+                                <xctk:DoubleUpDown x:Name="ConfidenceThresholdPicker" Value="0.925" Height="24" Width="75" Minimum="0" Maximum="1" Increment="0.005" Margin="13,186,247.2,4.4"/>
+                                <TextBlock HorizontalAlignment="Left" Margin="95,190,0,0" TextWrapping="Wrap" Text="for" VerticalAlignment="Top"/>
+                                <xctk:IntegerUpDown x:Name="ConfidenceThresholdFramesPicker" Value="10" Height="24" Width="40" Minimum="0" Maximum="60" Increment="1" Margin="115,186,180.2,4.4"/>
+                                <TextBlock HorizontalAlignment="Left" Margin="160,190,0,0" TextWrapping="Wrap" Text="frames" VerticalAlignment="Top"/>
+                                <Button Name="GoBackNumThresholdFramesButton" Content="&lt;Back" HorizontalAlignment="Left" Margin="201,186,0,0" VerticalAlignment="Top" Width="Auto" Height="24" Click="GoBackNumThresholdFramesButton_Click"/>
                             </Grid>
                         </TabItem>
                         <TabItem Header="TabItem">

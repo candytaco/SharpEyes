@@ -27,7 +27,7 @@ namespace Eyetracking
 	/// FramesProcessed is called on every frame. This is called only once
 	/// per click of the Find Frames button.
 	/// </summary>
-	public delegate void FramesProcessedDelegate();
+	public delegate void FramesProcessedDelegate(bool error = false, string message = null);
 
 	/// <summary>
 	/// Delegate to be called for cancelling pupil finding
@@ -225,10 +225,12 @@ namespace Eyetracking
 
 		/// <summary>
 		/// Find pupils in some set of frames. Must be overridden in child classes.
+		/// Will auto-pause if average confidence is below the threshold for the specified number of frames
 		/// </summary>
 		/// <param name="Frames"> number of frames from current to find pupils for </param>
 		/// <param name="threshold"> confidence threshold at which to auto-pause pupil finding</param>
-		public virtual void FindPupils(int Frames, double threshold = 0)
+		/// <param name="thresholdFrames"> confidence threshold duration at which to auto pause pupil finding</param>
+		public virtual void FindPupils(int Frames, double threshold = 0, int thresholdFrames = 0)
 		{
 			if (!isTimestampParsed)
 			{
@@ -295,7 +297,24 @@ namespace Eyetracking
 				CurrentFrameNumber = 0;
 				taskbar.ProgressState = System.Windows.Shell.TaskbarItemProgressState.None;
 				isTimestampParsed = true;
-				OnTimeStampsFound();
+
+				bool warn = false;
+				string message = null;
+				int i = 0;
+				int lastTime = timeStamps[i, 3] + 1000 * (timeStamps[i, 2] + 60 * timeStamps[i, 1] + 3600 * timeStamps[i, 0]);
+				int thisTime;
+				for (i = 1; i < timeStamps.shape[0]; i++)
+				{
+					thisTime = timeStamps[i, 3] + 1000 * (timeStamps[i, 2] + 60 * timeStamps[i, 1] + 3600 * timeStamps[i, 0]);
+					if (thisTime <= lastTime)   // timestamps should always increment
+					{
+						message = "Parsed timestamps are not incrementing";
+						warn = true;
+						break;
+					}
+				}
+
+				OnTimeStampsFound(warn, message);
 			};
 
 			taskbar.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Normal;

@@ -136,7 +136,7 @@ namespace Eyetracking
 			NumTemplates--;
 		}
 
-		public override void FindPupils(int Frames, double threshold = 0)
+		public override void FindPupils(int Frames, double threshold = 0, int thresholdFrames = 0)
 		{
 			base.FindPupils(Frames);
 			DateTime start = DateTime.Now;
@@ -221,7 +221,7 @@ namespace Eyetracking
 
 					// stop if average confidence for the past 10 frames drops below threshold
 					cumulativeConfidence = 0;
-					frames = f >= 10 ? f : 10;
+					frames = f >= thresholdFrames ? f : thresholdFrames;
 					for (int i = 0; i < frames; i++)
 						cumulativeConfidence += pupilLocations[CurrentFrameNumber - i, 3];
 					if (cumulativeConfidence < threshold * frames)

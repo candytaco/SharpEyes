@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Eyetracking"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
-        Title="Stimulus View" Height="450" Width="800"
+        Title="Stimulus View" Height="550" Width="800"
         Closing="Window_Closing"
         DataContext="{Binding RelativeSource={RelativeSource Self}}">
 
@@ -126,7 +126,7 @@
             <Label Content="Eyetracking FPS" HorizontalAlignment="Left" Margin="35,48,0,0" VerticalAlignment="Top"/>
             <xctk:IntegerUpDown x:Name="GazeMarkerDiameterPicker" Value="204" Increment="1" Minimum="1" Maximum="500" Height="24" Margin="132,79,0,0" ValueChanged="GazeMarkerDiameterPicker_ValueChanged" VerticalAlignment="Top" HorizontalAlignment="Left" MinWidth="45" MinHeight="26" Width="45"/>
             <Label Content="Gaze Marker Diameter" HorizontalAlignment="Left" Margin="0,79,0,0" VerticalAlignment="Top"/>
-            <GroupBox Header="Keyframes" Margin="0,142,0,0.4">
+            <GroupBox Header="Keyframes" Margin="0,170,0,0.4">
                 <DataGrid Name="KeyframesDataGrid" SelectionMode="Single" MouseDoubleClick="KeyframesDataGrid_MouseDoubleClick"
                           Margin="0,0,0,0" AutoGenerateColumns="False" ItemsSource="{Binding VideoKeyFrames}">
                     <DataGrid.Columns>
@@ -137,7 +137,9 @@
                     </DataGrid.Columns>
                 </DataGrid>
             </GroupBox>
-            <Button Content="Add Keyframe" Name="AddKeyFrameButton" HorizontalAlignment="Left" Margin="0,118,0,0" VerticalAlignment="Top" Width="135" Click="AddKeyFrameButton_Click" IsEnabled="False"/>
+            <Button Content="Add Keyframe" Name="AddKeyFrameButton" HorizontalAlignment="Left" Margin="0,146,0,0" VerticalAlignment="Top" Width="135" Click="AddKeyFrameButton_Click" IsEnabled="False"/>
+            <xctk:IntegerUpDown x:Name="NumFramesToDisplayPicker" Value="10" Increment="1" Minimum="1" Maximum="60" Height="24" Margin="132,110,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" MinWidth="45" MinHeight="26" Width="45" ValueChanged="NumFramesToDisplayPicker_ValueChanged"/>
+            <Label Content="Trail length (frames)" HorizontalAlignment="Left" Margin="10,110,0,0" VerticalAlignment="Top"/>
         </Grid>
 
         <StatusBar Margin="0,0,0,0" VerticalAlignment="Bottom" Height="21" Grid.Row="4" Grid.ColumnSpan="2">

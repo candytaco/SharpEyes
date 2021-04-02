@@ -13,6 +13,8 @@ using Num = NumSharp.np;
 using Point = System.Windows.Point;
 using Window = System.Windows.Window;
 using Sentry;
+using System.Windows.Shapes;
+using System.Windows.Media;
 
 namespace Eyetracking
 {
@@ -44,6 +46,8 @@ namespace Eyetracking
 				}
 			}
 		}
+
+		public int GazeMarkerDiameter => GazeMarkerDiameterPicker.Value.Value;
 
 		/// <summary>
 		/// Start time of data in the stimulus video, in milliseconds
@@ -128,6 +132,8 @@ namespace Eyetracking
 			}
 		}
 
+		private List<Ellipse> trailEllipses;
+
 		/// <summary>
 		/// Duration of a frame in the stimulus video in milliseconds
 		/// </summary>
@@ -161,12 +167,13 @@ namespace Eyetracking
 		/// </summary>
 		private string defaultSaveName => gazeFileName == null
 			? "gaze locations"
-			: Path.GetFileNameWithoutExtension(gazeFileName) + " corrected.npy";
+			: System.IO.Path.GetFileNameWithoutExtension(gazeFileName) + " corrected.npy";
 
 		public StimulusGazeViewer()
 		{
 			timer = new DispatcherTimer();
 			videoKeyFrames = new List<VideoKeyFrame>();
+			trailEllipses = new List<Ellipse>();
 			InitializeComponent();
 			SentrySdk.Init("https://4aa216608a894bd99da3daa7424c995d@o553633.ingest.sentry.io/5689896");
 		}
@@ -228,6 +235,8 @@ namespace Eyetracking
 			KeyframesDataGrid.Items.Refresh();
 			GazeEllipse.Visibility = Visibility.Hidden;
 			GazeEllipse2.Visibility = Visibility.Hidden;
+			foreach (Ellipse ellipse in trailEllipses)
+				ellipse.Visibility = Visibility.Hidden;
 			StatusText.Text = "Data not loaded";
 			gazeX = 0;
 			gazeY = 0;
@@ -282,6 +291,20 @@ namespace Eyetracking
 
 							Gaze2X = gaze2Locations[frameIndex, 0];
 							Gaze2Y = gaze2Locations[frameIndex, 1];
+						}
+
+						if (trailEllipses.Count > 0)
+						{
+							for (int i = -1 * trailEllipses.Count; i < 0; i++)
+							{
+								if (frameIndex + i >= 0)
+								{
+									if (trailEllipses[trailEllipses.Count + i].Visibility != Visibility.Visible)
+										trailEllipses[trailEllipses.Count + i].Visibility = Visibility.Visible;
+									Canvas.SetLeft(trailEllipses[trailEllipses.Count + i], gazeLocations[frameIndex + i, 0] - GazeMarkerDiameterPicker.Value.Value / 2);
+									Canvas.SetTop(trailEllipses[trailEllipses.Count + i], gazeLocations[frameIndex + i, 1] - GazeMarkerDiameterPicker.Value.Value / 2);
+								}
+							}
 						}
 					}
 				}
@@ -519,6 +542,7 @@ namespace Eyetracking
 
 			videoKeyFrames.Clear();
 			AddKeyFrame(dataStartTime.Value);
+			AddKeyFrame(dataStartTime.Value + 1000 * 37 * 2);	// add the end of the eyetracking sequence as a keyframe, since that's still guaranteed to be good
 			if (dataEndTime.Value >= VideoMediaElement.NaturalDuration.TimeSpan.TotalMilliseconds)
 				AddKeyFrame(VideoMediaElement.NaturalDuration.TimeSpan.TotalMilliseconds);
 			else AddKeyFrame(dataEndTime.Value);
@@ -653,6 +677,16 @@ namespace Eyetracking
 
 		private void GazeMarkerDiameterPicker_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
 		{
+			//foreach (UIElement child in canvas.Children)
+			//{
+			//	if (child is Ellipse ellipse)
+			//	{
+			//		if (ellipse.Name == "GazeEllipse" || ellipse.Name == "GazeEllipse2")
+			//			break;	// these two already have their sizes bound to the picker value
+			//		ellipse.Width = GazeMarkerDiameterPicker.Value.Value;
+			//		ellipse.Height = GazeMarkerDiameterPicker.Value.Value;
+			//	}
+			//}
 		}
 
 		private void PreviousFrameButton_Click(object sender, RoutedEventArgs e)
@@ -723,6 +757,45 @@ namespace Eyetracking
 			{
 				gaze2Locations = Num.load(openFileDialog.FileName);
 				hasGaze2 = true;
+			}
+		}
+
+		private void NumFramesToDisplayPicker_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+		{
+			// if there are existing ones, remove them first
+			if (trailEllipses.Count > 0)
+			{
+				foreach (Ellipse ellipse in trailEllipses)
+					canvas.Children.Remove(ellipse);
+				trailEllipses.Clear();
+			}
+
+			// num - 1 because we consider the current frame one to be part of the train
+			int opacityStepSize = 64 / NumFramesToDisplayPicker.Value.Value;
+			byte opacity = 64;
+			for (byte i = 0; i < NumFramesToDisplayPicker.Value.Value - 1; i ++)
+			{
+				opacity -= (byte)opacityStepSize;
+				Color color = new Color()
+				{
+					R = 0,
+					G = 186,
+					B = 255,
+					A = opacity
+				};
+				Ellipse ellipse = new Ellipse()
+				{
+					Stroke = new SolidColorBrush(color),
+					StrokeThickness = 8 + i * 4,
+					Width = GazeMarkerDiameterPicker.Value.Value,
+					Height = GazeMarkerDiameterPicker.Value.Value
+				};
+				ellipse.SetBinding(Ellipse.HeightProperty, "GazeMarkerDiameter");
+				ellipse.SetBinding(Ellipse.WidthProperty, "GazeMarkerDiameter");
+				canvas.Children.Add(ellipse);
+				trailEllipses.Add(ellipse);
+				if (!dataStartTime.HasValue)
+					ellipse.Visibility = Visibility.Hidden;
 			}
 		}
 	}
