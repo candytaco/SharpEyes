@@ -1299,6 +1299,16 @@ namespace Eyetracking
 			UpdateVideoTime(pupilFinder.CurrentFrameNumber + FramesToProcessPicker.Value.Value);
 		}
 
+		private void HelpMenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			System.Diagnostics.Process.Start("https://github.com/candytaco/SharpEyes/wiki/Stimulus-Gaze-Viewer");
+		}
+
+		private void ReportBugmenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			System.Diagnostics.Process.Start("https://github.com/candytaco/SharpEyes/issues/new/choose");
+		}
+
 		private void UpdateFramesProcessedPreviewImage()
 		{
 			FramesProcessedPreviewImage.Source = (pupilFinder == null) ? null : pupilFinder.GetFramesProcessedPreviewImage((int)PreviewImageGrid.ActualWidth);

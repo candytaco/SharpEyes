@@ -63,6 +63,8 @@
             <MenuItem Header="_Tools" Name="toolsMenu">
             </MenuItem>
             <MenuItem Header="_Help" Name="helpMenu">
+                <MenuItem Header="_Help" Name="HelpMenuItem" Click="HelpMenuitem_Click" />
+                <MenuItem Header="_Report bug" Name="ReportBugmenuItem" Click="ReportBugmenuItem_Click" />
                 <MenuItem Header="_About" Name="AboutMenuItem" Click="AboutMenuItem_Click" />
             </MenuItem>
         </Menu>

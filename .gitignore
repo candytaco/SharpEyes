@@ -348,3 +348,9 @@ healthchecksdb
 
 # Backup folder for Package Reference Convert tool in Visual Studio 2017
 MigrationBackup/
+
+icons8-iris-scan-96.png
+
+Installer-Win32_64.zip
+
+Standalone-Win32_64.zip

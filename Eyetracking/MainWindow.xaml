@@ -70,6 +70,8 @@
                 <MenuItem Header="_Stimulus view" Name="StimulusViewMenuItem" Click="StimulusViewMenuItem_Click"/>
             </MenuItem>
             <MenuItem Header="_Help" Name="helpMenu">
+                <MenuItem Header="_Help" Name="HelpMenuItem" Click="HelpMenuItem_Click" />
+                <MenuItem Header="_Report bug" Name="ReportBugmenuItem" Click="ReportBugmenuItem_Click" />
                 <MenuItem Header="_About" Name="AboutMenuItem" Click="AboutMenuItem_Click" />
             </MenuItem>
         </Menu>

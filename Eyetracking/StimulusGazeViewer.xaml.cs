@@ -786,7 +786,7 @@ namespace Eyetracking
 				Ellipse ellipse = new Ellipse()
 				{
 					Stroke = new SolidColorBrush(color),
-					StrokeThickness = 8 + i * 4,
+					StrokeThickness = 10 + i * 4,
 					Width = GazeMarkerDiameterPicker.Value.Value,
 					Height = GazeMarkerDiameterPicker.Value.Value
 				};
@@ -797,6 +797,16 @@ namespace Eyetracking
 				if (!dataStartTime.HasValue)
 					ellipse.Visibility = Visibility.Hidden;
 			}
+		}
+
+		private void HelpMenuitem_Click(object sender, RoutedEventArgs e)
+		{
+			System.Diagnostics.Process.Start("https://github.com/candytaco/SharpEyes/wiki/Stimulus-Gaze-Viewer");
+		}
+
+		private void ReportBugmenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			System.Diagnostics.Process.Start("https://github.com/candytaco/SharpEyes/issues/new/choose");
 		}
 	}
 }
