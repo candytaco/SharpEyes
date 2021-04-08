@@ -227,10 +227,10 @@ namespace Eyetracking
 		/// Find pupils in some set of frames. Must be overridden in child classes.
 		/// Will auto-pause if average confidence is below the threshold for the specified number of frames
 		/// </summary>
-		/// <param name="Frames"> number of frames from current to find pupils for </param>
+		/// <param name="frames"> number of frames from current to find pupils for </param>
 		/// <param name="threshold"> confidence threshold at which to auto-pause pupil finding</param>
 		/// <param name="thresholdFrames"> confidence threshold duration at which to auto pause pupil finding</param>
-		public virtual void FindPupils(int Frames, double threshold = 0, int thresholdFrames = 0)
+		public virtual void FindPupils(int frames, double threshold = 0, int thresholdFrames = 0)
 		{
 			if (!isTimestampParsed)
 			{

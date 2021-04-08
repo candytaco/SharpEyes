@@ -50,6 +50,22 @@ namespace Eyetracking
 
 		public bool IsUsingCustomTemplates { get { return storedPupilSize != null; } }
 
+		/// <summary>
+		/// Used for averaging across multiple matches. Is a n x 4 array, in which n is the
+		/// number of best matches to average. The columns are [x, y, radius, confidence].
+		/// The final value will be a weighted average of these top matches.
+		/// </summary>
+		private double[,] topMatches = null;
+
+		public int NumMatches
+		{
+			get => topMatches?.Length / 4 ?? 1;	// .length on a 2D array is num elements
+			set
+			{
+				topMatches = value > 1 ? new double[value, 4] : null;
+			}
+		}
+
 		public TemplatePupilFinder(string videoFileName, System.Windows.Controls.ProgressBar progressBar, System.Windows.Shell.TaskbarItemInfo taskbar,
 								   SetStatusDelegate setStatus, FrameProcessedDelegate updateFrame, FramesProcessedDelegate framesProcessed)
 			: base(videoFileName, progressBar, taskbar, setStatus, updateFrame, framesProcessed)
@@ -171,24 +187,84 @@ namespace Eyetracking
 							matchResults[i].MinMaxLoc(out minVal, out maxVal, out minLocation, out maxLocation);
 							lock (templateLock)
 							{
-								if (maxVal > bestCorrelationOnThisFrame)
+								if (NumMatches == 1)	// only need highest match and so write directly
 								{
-									if (storedPupilSize == null)	// case auto-generated templates
+									if (maxVal > bestCorrelationOnThisFrame)
 									{
-										pupilLocations[CurrentFrameNumber, 0] = maxLocation.X + left + maxRadius;
-										pupilLocations[CurrentFrameNumber, 1] = maxLocation.Y + top + maxRadius;
-										pupilLocations[CurrentFrameNumber, 2] = i + minRadius;
+										if (storedPupilSize == null) // case auto-generated templates
+										{
+											pupilLocations[CurrentFrameNumber, 0] = maxLocation.X + left + maxRadius;
+											pupilLocations[CurrentFrameNumber, 1] = maxLocation.Y + top + maxRadius;
+											pupilLocations[CurrentFrameNumber, 2] = i + minRadius;
+										}
+										else // custom templates that may have different sizes. I was going to use ternary ops because slick but it would make three of the same comparisons
+										{
+											pupilLocations[CurrentFrameNumber, 0] =
+												maxLocation.X + left + templates[i].Width / 2;
+											pupilLocations[CurrentFrameNumber, 1] =
+												maxLocation.Y + top + templates[i].Height / 2;
+											pupilLocations[CurrentFrameNumber, 2] = storedPupilSize[i];
+										}
+
+										bestCorrelationOnThisFrame = maxVal;
 									}
-									else	// custom templates that may have different sizes. I was going to use ternary ops because slick but it would make three of the same comparisons
+								}
+								else	// have to store values to intermediate and then do weighted average
+								{
+									for (int j = 0; j < NumMatches; j++)
 									{
-										pupilLocations[CurrentFrameNumber, 0] = maxLocation.X + left + templates[i].Width / 2;
-										pupilLocations[CurrentFrameNumber, 1] = maxLocation.Y + top + templates[i].Height / 2;
-										pupilLocations[CurrentFrameNumber, 2] = storedPupilSize[i];
+										// look over existing stored matches, and if this is better than any
+										// immediately overwrite that one
+										if (maxVal > topMatches[j, 3])
+										{
+											if (storedPupilSize == null) // case auto-generated templates
+											{
+												topMatches[j, 0] = maxLocation.X + left + maxRadius;
+												topMatches[j, 1] = maxLocation.Y + top + maxRadius;
+												topMatches[j, 2] = i + minRadius;
+											}
+											else // custom templates that may have different sizes. I was going to use ternary ops because slick but it would make three of the same comparisons
+											{
+												topMatches[j, 0] =
+													maxLocation.X + left + templates[i].Width / 2;
+												topMatches[j, 1] =
+													maxLocation.Y + top + templates[i].Height / 2;
+												topMatches[j, 2] = storedPupilSize[i];
+											}
+
+											topMatches[j, 3] = maxVal;
+											break;
+										}
 									}
-									bestCorrelationOnThisFrame = maxVal;
 								}
 							}
 						});
+
+						if (NumMatches > 1) // calculate weighted average
+						{
+							pupilLocations[CurrentFrameNumber, 0] =
+								pupilLocations[CurrentFrameNumber, 1] =
+									pupilLocations[CurrentFrameNumber, 2] = 0;
+							double sum = 0;
+							for (int j = 0; j < NumMatches; j++)
+							{
+								// we still only store single hishest value as the confidence value
+								if (topMatches[j, 3] > bestCorrelationOnThisFrame)
+									bestCorrelationOnThisFrame = topMatches[j, 3];
+								sum += topMatches[j, 3];
+								pupilLocations[CurrentFrameNumber, 0] += topMatches[j, 0] * topMatches[j, 3];
+								pupilLocations[CurrentFrameNumber, 1] += topMatches[j, 1] * topMatches[j, 3];
+								pupilLocations[CurrentFrameNumber, 2] += topMatches[j, 2] * topMatches[j, 3];
+							}
+							pupilLocations[CurrentFrameNumber, 0] /= sum;
+							pupilLocations[CurrentFrameNumber, 1] /= sum;
+							pupilLocations[CurrentFrameNumber, 2] /= sum;
+
+							for (int j = 0; j < NumMatches; j++)
+							for (int k = 0; k < 4; k++)
+								topMatches[j, k] = -1;
+						}
+
 						pupilLocations[CurrentFrameNumber, 3] = bestCorrelationOnThisFrame;
 						bestCorrelationOnThisFrame = -1;
 					}
@@ -242,7 +318,7 @@ namespace Eyetracking
 				progressBar.Value = 0;
 				SetStatus(string.Format("Idle.{3} {0} frames processed in {1:c} ({2} fps)", framesProcessed, elapsed, (int)(Frames / elapsed.TotalSeconds), 
 																							e.Cancelled ? "Pupil finding cancelled." : ""));
-				this.Dispatcher.Invoke(OnFramesPupilsProcessed);
+				this.Dispatcher.Invoke(OnFramesPupilsProcessed, false, null);
 				taskbar.ProgressState = System.Windows.Shell.TaskbarItemProgressState.None;
 				CancelPupilFinding -= worker.CancelAsync;
 			};

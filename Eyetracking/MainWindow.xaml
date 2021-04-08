@@ -158,7 +158,7 @@
 
                     <xctk:IntegerUpDown Name="FramesToProcessPicker" Value="120" Increment="30" Minimum="1" Height="24" Margin="10,87,263.4,253" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="75" MinHeight="26"/>
                     <Button x:Name="LoadSavedTimeStampsButton" Content="Load timestamps" HorizontalAlignment="Left" Margin="10,34,0,0" VerticalAlignment="Top" Width="Auto" Click="LoadSavedDataMenuItem_Click" IsEnabled="False"/>
-                    <TabControl HorizontalAlignment="Left" Height="220" Margin="10,165,0,0" VerticalAlignment="Top" Width="339" BorderThickness="0">
+                    <TabControl HorizontalAlignment="Left" Height="275" Margin="10,165,0,0" VerticalAlignment="Top" Width="339" BorderThickness="0">
                         <TabControl.Resources>
                             <Style TargetType="TabItem">
                                 <Setter Property="Template">
@@ -171,7 +171,7 @@
                             </Style>
                         </TabControl.Resources>
                         <TabItem Header="TabItem">
-                            <Grid Background="#FFE5E5E5">
+                            <Grid Background="#FFE5E5E5" Margin="0,0,0.2,0">
                                 <Label Content="Template pupil finding options" HorizontalAlignment="Left" VerticalAlignment="Top" />
                                 <Button Name="UseImageAsTemplateButton" Content="Add current as template" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="auto" Click="UseImageAsTemplateButton_Click"/>
                                 <Button Name="ResetTemplatesButton" Content="Reset to default templates" HorizontalAlignment="Left" Margin="10,71,0,0" VerticalAlignment="Top" Width="auto" Click="ResetTemplatesButton_Click" IsEnabled="False"/>
@@ -186,19 +186,22 @@
                                 <Label Name="TemplatePreviewNumberLabel" Content="0/0" HorizontalAlignment="Center" Margin="223,139,57.2,0" VerticalAlignment="Top" Width="Auto" Height="28" />
                                 <CheckBox Name="AutoAddCustomTemplateCheckBox" Content="Auto add" HorizontalAlignment="Left" Margin="10,51,0,0" VerticalAlignment="Top" 
 										  ToolTip="Automatically add a manually selected pupil as a template if FInd Pupils is clicked?" IsChecked="False"/>
-                                <Label Content="Use" HorizontalAlignment="Left" Margin="13,105,0,0" VerticalAlignment="Top"/>
-                                <ComboBox Name="TemplateCountComboBox" HorizontalAlignment="Left" Margin="48,108,0,0" VerticalAlignment="Top" Width="auto" SelectedIndex="0" SelectionChanged="TemplateCountComboBox_SelectionChanged">
+                                <Label Content="Use" HorizontalAlignment="Left" Margin="13,95,0,0" VerticalAlignment="Top"/>
+                                <ComboBox Name="TemplateCountComboBox" HorizontalAlignment="Left" Margin="48,97,0,0" VerticalAlignment="Top" Width="auto" SelectedIndex="0" SelectionChanged="TemplateCountComboBox_SelectionChanged">
                                     <ComboBoxItem Content="All templates"/>
                                     <ComboBoxItem Content="N recent templates"/>
                                 </ComboBox>
-                                <xctk:IntegerUpDown x:Name="NRecentTemplatesPicker" Value="16" Increment="1" Minimum="1" Height="24" Margin="48,135,0,0"  Visibility="Hidden"
+                                <xctk:IntegerUpDown x:Name="NRecentTemplatesPicker" Value="16" Increment="1" Minimum="1" Height="24" Margin="48,124,0,0"  Visibility="Visible"
 													ValueChanged="NRecentTemplatesPicker_ValueChanged" VerticalAlignment="Top" HorizontalAlignment="Left" MinWidth="75" MinHeight="26"/>
-                                <CheckBox Name="AutoPausePupilFindingCheckBox" Content="Pause when confidence is below" HorizontalAlignment="Left" Margin="13,166,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.281,0.026"/>
-                                <xctk:DoubleUpDown x:Name="ConfidenceThresholdPicker" Value="0.925" Height="24" Width="75" Minimum="0" Maximum="1" Increment="0.005" Margin="13,186,247.2,4.4"/>
-                                <TextBlock HorizontalAlignment="Left" Margin="95,190,0,0" TextWrapping="Wrap" Text="for" VerticalAlignment="Top"/>
-                                <xctk:IntegerUpDown x:Name="ConfidenceThresholdFramesPicker" Value="10" Height="24" Width="40" Minimum="0" Maximum="60" Increment="1" Margin="115,186,180.2,4.4"/>
-                                <TextBlock HorizontalAlignment="Left" Margin="160,190,0,0" TextWrapping="Wrap" Text="frames" VerticalAlignment="Top"/>
-                                <Button Name="GoBackNumThresholdFramesButton" Content="&lt;Back" HorizontalAlignment="Left" Margin="201,186,0,0" VerticalAlignment="Top" Width="Auto" Height="24" Click="GoBackNumThresholdFramesButton_Click"/>
+                                <CheckBox Name="AutoPausePupilFindingCheckBox" Content="Pause when confidence is below" HorizontalAlignment="Left" Margin="10,203,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.281,0.026"/>
+                                <xctk:DoubleUpDown x:Name="ConfidenceThresholdPicker" Value="0.925" Height="24" Width="75" Minimum="0" Maximum="1" Increment="0.005" Margin="10,214,250,12.4"/>
+                                <TextBlock HorizontalAlignment="Left" Margin="90,228,0,0" TextWrapping="Wrap" Text="for" VerticalAlignment="Top"/>
+                                <xctk:IntegerUpDown x:Name="ConfidenceThresholdFramesPicker" Value="10" Height="24" Width="40" Minimum="0" Maximum="60" Increment="1" Margin="110,215,185,11.4"/>
+                                <TextBlock HorizontalAlignment="Left" Margin="155,228,0,0" TextWrapping="Wrap" Text="frames" VerticalAlignment="Top"/>
+                                <Button Name="GoBackNumThresholdFramesButton" Content="&lt;Back" HorizontalAlignment="Left" Margin="196,225,0,0" VerticalAlignment="Top" Width="Auto" Height="24" Click="GoBackNumThresholdFramesButton_Click"/>
+                                <xctk:IntegerUpDown x:Name="NumMatchesPicker" Value="1" Height="24" Width="40" Minimum="1" Maximum="16" Increment="1" Margin="61,165,234,80.6" ValueChanged="NumMatchesPicker_ValueChanged"/>
+                                <Label Content="Match" HorizontalAlignment="Left" Margin="13,163,0,0" VerticalAlignment="Top"/>
+                                <Label Name="TemplatesLabel"  Content="template" HorizontalAlignment="Left" Margin="106,164,0,0" VerticalAlignment="Top"/>
                             </Grid>
                         </TabItem>
                         <TabItem Header="TabItem">

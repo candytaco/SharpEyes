@@ -203,7 +203,13 @@
     <Compile Include="Calibrator.cs" />
     <Compile Include="DrivingVideoParser.cs" />
     <Compile Include="EditableLabel.cs" />
+    <Compile Include="EyetrackerCommands.cs" />
     <Compile Include="HoughPupilFinder.cs" />
+    <Compile Include="MainWindow.MenuItems.cs" />
+    <Compile Include="MainWindow.PupilFindingTab.cs" />
+    <Compile Include="MainWindow.StaticMethods.cs" />
+    <Compile Include="MainWindow.VideoCanvas.cs" />
+    <Compile Include="MainWindow.VideoPlayback.cs" />
     <Compile Include="PupilFinder.cs" />
     <Compile Include="RBF2D.cs" />
     <Compile Include="StimulusGazeViewer.xaml.cs">
