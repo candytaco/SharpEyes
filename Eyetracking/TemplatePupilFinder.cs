@@ -182,9 +182,7 @@ namespace Eyetracking
 						Parallel.For(startIndex, templates.Count, i =>
 						{
 							Cv2.MatchTemplate(filteredFrame[top, bottom, left, right], templates[i], matchResults[i], TemplateMatchModes.CCoeffNormed);
-							double minVal, maxVal;
-							Point minLocation, maxLocation;
-							matchResults[i].MinMaxLoc(out minVal, out maxVal, out minLocation, out maxLocation);
+							matchResults[i].MinMaxLoc(out double minVal, out double maxVal, out Point minLocation, out Point maxLocation);
 							lock (templateLock)
 							{
 								if (NumMatches == 1)	// only need highest match and so write directly
@@ -271,9 +269,7 @@ namespace Eyetracking
 					else
 					{
 						Cv2.MatchTemplate(grayFrame[top, bottom, left, right], templates[0], matchResults[0], TemplateMatchModes.CCoeffNormed);
-						double minVal, maxVal;
-						Point minLocation, maxLocation;
-						matchResults[0].MinMaxLoc(out minVal, out maxVal, out minLocation, out maxLocation);
+						matchResults[0].MinMaxLoc(out double minVal, out double maxVal, out Point minLocation, out Point maxLocation);
 						pupilLocations[CurrentFrameNumber, 0] = maxLocation.X + left + templates[0].Width / 2;
 						pupilLocations[CurrentFrameNumber, 1] = maxLocation.Y + top + templates[0].Height / 2;
 						pupilLocations[CurrentFrameNumber, 2] = storedPupilSize[0];
