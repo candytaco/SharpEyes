@@ -296,7 +296,7 @@ namespace Eyetracking
 					frames = f >= thresholdFrames ? f : thresholdFrames;
 					for (int i = 0; i < frames; i++)
 						cumulativeConfidence += pupilLocations[CurrentFrameNumber - i, 3];
-					if (cumulativeConfidence < threshold * frames)
+					if (cumulativeConfidence < threshold * frames && f >= frames)
 						break;
 				}
 			};

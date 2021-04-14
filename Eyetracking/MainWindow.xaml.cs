@@ -224,6 +224,7 @@ namespace Eyetracking
 			ReadTimestampButton.IsEnabled = true;
 			LoadSavedTimeStampsButton.IsEnabled = true;
 			saveEyetrackingMenuItem.IsEnabled = true;
+			AutoAddCustomTemplateCheckBox.IsChecked = false;
 
 			// force update displays because
 			PupilX = PupilX;
