@@ -111,7 +111,7 @@ namespace Eyetracking
 				}
 				// during moving pupil, we deep the drawn pupil at 50% transparency
 				if (editingState != EditingState.MovingPupil)
-					PupilEllipse.Stroke.Opacity = transparency;
+					PupilEllipse.Stroke.Opacity = transparency * 0.75;
 			}
 		}
 
@@ -410,7 +410,7 @@ namespace Eyetracking
 			{
 				ReadTimestampButton.IsEnabled = false;
 				LoadSavedTimeStampsButton.IsEnabled = false;
-				pupilFinder.OnTimeStampsFound += delegate (bool warn, string message)
+				pupilFinder.OnTimeStampsFound += delegate (bool warn, string message, bool stepback)
 												{
 													ReadTimestampButton.IsEnabled = true;
 													LoadSavedTimeStampsButton.IsEnabled = true;
@@ -559,7 +559,7 @@ namespace Eyetracking
 		/// <summary>
 		/// Called when a chunk of frames is processed
 		/// </summary>
-		public void OnFramesProcessed(bool warn, string message)
+		public void OnFramesProcessed(bool warn, string message, bool stepBack)
 		{
 			UpdatePupilFindingButtons(false);
 			UpdateFramesProcessedPreviewImage();
@@ -572,6 +572,8 @@ namespace Eyetracking
 			}
 			if (warn)
 				MessageBox.Show(message, "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+			if (stepBack)
+				UpdateVideoTime(pupilFinder.CurrentFrameNumber - ConfidenceThresholdFramesPicker.Value.Value / 2); // don't fully step back because we want the bad frames in saccades
 		}
 
 		private void ExponentialFadeFramePicker_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)

@@ -166,12 +166,14 @@ namespace Eyetracking
 			double cumulativeConfidence;
 			int frames;
 
-			int framesProcessed = 0;
+			int framesProcessed = 0;	// number of frames actually processed
+			bool stepBack = false;		// do we need to step back because the confidence fell?
 			worker.DoWork += delegate (object sender, DoWorkEventArgs args)
 			{
 				// TODO: perhaps parallelize over frames rather than templates
 				object templateLock = new object();
-				for (int f = 0; f < Frames; f++)
+				int f = 0;
+				for (; f < Frames; f++)
 				{
 					ReadGrayscaleFrame();
 					if (NumTemplates > 1)
@@ -181,11 +183,13 @@ namespace Eyetracking
 
 						Parallel.For(startIndex, templates.Count, i =>
 						{
-							Cv2.MatchTemplate(filteredFrame[top, bottom, left, right], templates[i], matchResults[i], TemplateMatchModes.CCoeffNormed);
-							matchResults[i].MinMaxLoc(out double minVal, out double maxVal, out Point minLocation, out Point maxLocation);
+							Cv2.MatchTemplate(filteredFrame[top, bottom, left, right], templates[i], matchResults[i],
+								TemplateMatchModes.CCoeffNormed);
+							matchResults[i].MinMaxLoc(out double minVal, out double maxVal, out Point minLocation,
+								out Point maxLocation);
 							lock (templateLock)
 							{
-								if (NumMatches == 1)	// only need highest match and so write directly
+								if (NumMatches == 1) // only need highest match and so write directly
 								{
 									if (maxVal > bestCorrelationOnThisFrame)
 									{
@@ -207,7 +211,7 @@ namespace Eyetracking
 										bestCorrelationOnThisFrame = maxVal;
 									}
 								}
-								else	// have to store values to intermediate and then do weighted average
+								else // have to store values to intermediate and then do weighted average
 								{
 									for (int j = 0; j < NumMatches; j++)
 									{
@@ -254,6 +258,7 @@ namespace Eyetracking
 								pupilLocations[CurrentFrameNumber, 1] += topMatches[j, 1] * topMatches[j, 3];
 								pupilLocations[CurrentFrameNumber, 2] += topMatches[j, 2] * topMatches[j, 3];
 							}
+
 							pupilLocations[CurrentFrameNumber, 0] /= sum;
 							pupilLocations[CurrentFrameNumber, 1] /= sum;
 							pupilLocations[CurrentFrameNumber, 2] /= sum;
@@ -268,8 +273,10 @@ namespace Eyetracking
 					}
 					else
 					{
-						Cv2.MatchTemplate(grayFrame[top, bottom, left, right], templates[0], matchResults[0], TemplateMatchModes.CCoeffNormed);
-						matchResults[0].MinMaxLoc(out double minVal, out double maxVal, out Point minLocation, out Point maxLocation);
+						Cv2.MatchTemplate(grayFrame[top, bottom, left, right], templates[0], matchResults[0],
+							TemplateMatchModes.CCoeffNormed);
+						matchResults[0].MinMaxLoc(out double minVal, out double maxVal, out Point minLocation,
+							out Point maxLocation);
 						pupilLocations[CurrentFrameNumber, 0] = maxLocation.X + left + templates[0].Width / 2;
 						pupilLocations[CurrentFrameNumber, 1] = maxLocation.Y + top + templates[0].Height / 2;
 						pupilLocations[CurrentFrameNumber, 2] = storedPupilSize[0];
@@ -280,24 +287,26 @@ namespace Eyetracking
 					isAnyFrameProcessed = true;
 					framesProcessed++;
 
-					this.Dispatcher.Invoke(() =>
-					{
-						UpdateFrame();
-					});
-					((BackgroundWorker)sender).ReportProgress((f + 1) * 100 / Frames);
+					this.Dispatcher.Invoke(() => { UpdateFrame(); });
+					((BackgroundWorker) sender).ReportProgress((f + 1) * 100 / Frames);
 					if (worker.CancellationPending)
 					{
 						args.Cancel = true;
 						break;
 					}
 
-					// stop if average confidence for the past 10 frames drops below threshold
+					// stop if average confidence for the past n frames drops below threshold
 					cumulativeConfidence = 0;
-					frames = f >= thresholdFrames ? f : thresholdFrames;
-					for (int i = 0; i < frames; i++)
-						cumulativeConfidence += pupilLocations[CurrentFrameNumber - i, 3];
-					if (cumulativeConfidence < threshold * frames && f >= frames)
-						break;
+					if (f >= thresholdFrames)
+					{
+						for (int i = 0; i < thresholdFrames; i++)
+							cumulativeConfidence += pupilLocations[CurrentFrameNumber - i, 3];
+						if (cumulativeConfidence < threshold * thresholdFrames)
+						{
+							stepBack = true;
+							break;
+						}
+					}
 				}
 			};
 
@@ -312,9 +321,14 @@ namespace Eyetracking
 			{
 				TimeSpan elapsed = DateTime.Now - start;
 				progressBar.Value = 0;
-				SetStatus(string.Format("Idle.{3} {0} frames processed in {1:c} ({2} fps)", framesProcessed, elapsed, (int)(Frames / elapsed.TotalSeconds), 
-																							e.Cancelled ? "Pupil finding cancelled." : ""));
-				this.Dispatcher.Invoke(OnFramesPupilsProcessed, false, null);
+				string additionalMessage = "";
+				if (stepBack)
+					additionalMessage = "Confidence fell below threshold";
+				else if (e.Cancelled)
+					additionalMessage = "Pupil finding cancelled";
+				SetStatus(string.Format("Idle.{3} {0} frames processed in {1:c} ({2} fps)", framesProcessed, elapsed, (int)(framesProcessed / elapsed.TotalSeconds), 
+																							additionalMessage));
+				this.Dispatcher.Invoke(OnFramesPupilsProcessed, false, null, stepBack);
 				taskbar.ProgressState = System.Windows.Shell.TaskbarItemProgressState.None;
 				CancelPupilFinding -= worker.CancelAsync;
 			};

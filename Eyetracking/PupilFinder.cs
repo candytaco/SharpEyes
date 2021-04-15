@@ -23,11 +23,14 @@ namespace Eyetracking
 	public delegate void FrameProcessedDelegate();
 
 	/// <summary>
-	/// Delegate for things to do when a chunk of frames is processed.
+	///  Delegate for things to do when a chunk of frames is processed.
 	/// FramesProcessed is called on every frame. This is called only once
 	/// per click of the Find Frames button.
 	/// </summary>
-	public delegate void FramesProcessedDelegate(bool error = false, string message = null);
+	/// <param name="error">Did an error stop frame finding?</param>
+	/// <param name="message">Any message to display?</param>
+	/// <param name="stepBack">Do we need to step back to when confidence was still above the threshold?</param>
+	public delegate void FramesProcessedDelegate(bool error = false, string message = null, bool stepBack = false);
 
 	/// <summary>
 	/// Delegate to be called for cancelling pupil finding
