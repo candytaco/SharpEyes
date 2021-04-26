@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:Eyetracking"
         mc:Ignorable="d"
         Title="SharpEyes" Height="650" Width="1000" Icon="icons8-iris-scan-96.ico"
-		Closing="Window_Closing">
+		Closing="Window_Closing" DataContext="{Binding RelativeSource={RelativeSource Self}}">
     <Window.CommandBindings>
         <CommandBinding x:Name="OpenEyetrackingDataCommand" Command="local:EyetrackerCommands.OpenEyetrackingData" Executed="OpenEyetrackingDataCommand_Executed"/>
         <CommandBinding x:Name="RightCommand" Command="local:EyetrackerCommands.Right" Executed="NextFrameCommand_Executed"/>
@@ -37,6 +37,12 @@
         <KeyBinding Modifiers="Control" Key="O" Command="Open"/>
         <KeyBinding Modifiers="Control" Key="N" Command="New"/>
         <KeyBinding Modifiers="Control+Shift" Key="S" Command="SaveAs"/>
+        <KeyBinding Key="F1" Command="local:EyetrackerCommands.Left"/>
+        <KeyBinding Key="F2" Command="local:EyetrackerCommands.Right"/>
+        <KeyBinding Key="F1" Modifiers="Alt" Command="local:EyetrackerCommands.BackConfidenceFrames"/>
+        <KeyBinding Key="F2" Modifiers="Alt" Command="local:EyetrackerCommands.ForwardConfidenceFrames"/>
+        <KeyBinding Key="F1" Modifiers="Ctrl" Command="local:EyetrackerCommands.BackFindPupilFrames"/>
+        <KeyBinding Key="F2" Modifiers="Ctrl" Command="local:EyetrackerCommands.ForwardFindPupilFrames"/>
     </Window.InputBindings>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -278,8 +284,23 @@
                 <Grid Background="#FFE5E5E5">
                     <Button Name="MarkInButton" Content="Mark In" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75"/>
                     <Button Name="MarkOutButton" Content="Mark Out" HorizontalAlignment="Left" Margin="90,10,0,0" VerticalAlignment="Top" Width="75"/>
-                    <Button Name="OpenCalibrationParametersButton" Content="Calibration Parameters" HorizontalAlignment="Left" Margin="10,267,0,0" VerticalAlignment="Top" Width="125"/>
-                    <Button Name="CalibrateButton" Content="Calibrate" HorizontalAlignment="Left" Margin="10,291,0,0" VerticalAlignment="Top" Width="75"/>
+                    <Button Name="OpenCalibrationParametersButton" Content="Calibration Parameters" HorizontalAlignment="Left" Margin="10,267,0,0" 
+                            VerticalAlignment="Top" Width="125" Click="OpenCalibrationParametersButton_Click"/>
+                    <Button Name="CalibrateButton" Content="Calibrate" HorizontalAlignment="Left" Margin="10,291,0,0" 
+                            Click="CalibrateButton_Click" VerticalAlignment="Top" Width="75"/>
+                    <Label Content="Calibration start" HorizontalAlignment="Left" Margin="10,34,0,0" VerticalAlignment="Top"/>
+                    <TextBox Name="CalibrationStartTextBox" HorizontalAlignment="Left" VerticalContentAlignment="Center"
+                             Height="24" Margin="109,34,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"
+                             PreviewTextInput="CalibrationStartTextBox_PreviewTextInput">
+                        <TextBox.Text>
+                            <Binding Path="CalibrationStartTime"
+                                     UpdateSourceTrigger="PropertyChanged">
+                                <Binding.ValidationRules>
+                                    <local:TimestampRule/>
+                                </Binding.ValidationRules>
+                            </Binding>
+                        </TextBox.Text>
+                    </TextBox>
 
                 </Grid>
             </TabItem>

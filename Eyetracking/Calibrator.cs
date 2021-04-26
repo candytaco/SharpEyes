@@ -10,6 +10,7 @@ using System.Windows;
 
 namespace Eyetracking
 {
+	public delegate void OnCalibrationFinishedDelegate();
 	/// <summary>
 	/// Performs the actual math for mapping between eyetracking video space to stimulus frames space
 	/// </summary>
@@ -18,7 +19,7 @@ namespace Eyetracking
 		/// <summary>
 		/// Description of the calibration sequence
 		/// </summary>
-		private CalibrationParameters calibrationParameters;
+		public CalibrationParameters calibrationParameters;
 		
 		/// <summary>
 		/// Averaged positions of the pupil at the calibration points
@@ -27,6 +28,13 @@ namespace Eyetracking
 		private List<Point> calibrationPositions = null;
 
 		private RBF2D xInterpolator = null, yInterpolator = null;
+
+		public OnCalibrationFinishedDelegate OnCalibrationFinished;
+
+		public Calibrator()
+		{
+			calibrationParameters = new CalibrationParameters();
+		}
 
 		public Calibrator(CalibrationParameters parameters)
 		{
@@ -39,11 +47,15 @@ namespace Eyetracking
 			calibrationPositions = positions;
 		}
 
-		public void Calibrate()
+		public async void Calibrate()
 		{
 			Calibrate(this.calibrationPositions);
 		}
 
+		/// <summary>
+		/// Performs the calibration
+		/// </summary>
+		/// <param name="positions">list of gaze positions in of calibration points in order in which they were presented</param>
 		public void Calibrate(List<Point> positions)
 		{
 			calibrationPositions = positions;

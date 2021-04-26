@@ -49,22 +49,37 @@ namespace Eyetracking
 				regularizers.Add(logSpaceRegularizers ? Math.Pow(10, regularizer) : regularizer);
 			}
 
+			object parallelLock = new object();
 			foreach (double baseRadius in Num.linspace(baseRadiusRange.Item1, baseRadiusRange.Item2, numBaseRadii))
 				for (int numLayers = numLayersRange.Item1; numLayers < numLayersRange.Item2 + 1; numLayers++)
-					foreach (double regularizer in regularizers)
+					Parallel.ForEach(regularizers, (double regularizer) => 
 					{
-						RBF2D RBF = new RBF2D(x, y, value);
-						RBF.baseRadius = baseRadius;
-						RBF.numLayers = numLayers;
-						RBF.regularizer = regularizer;
-						double error = RBF.CrossValidate();
-						if (error < bestError)
+						RBF2D RBF = new RBF2D(x, y, value)
 						{
-							best = RBF;
-							bestError = error;
+							baseRadius = baseRadius,
+							numLayers = numLayers,
+							regularizer = regularizer
+						};
+						double error = RBF.CrossValidate();
+						lock (parallelLock)
+						{
+							if (error < bestError)
+							{
+								best = RBF;
+								bestError = error;
+							}
 						}
-					}
+					});
+					
 			return best;
+		}
+
+		public static async Task<RBF2D> SearchHyperparametersAsync(double[] x, double[] y, double[] value, Tuple<double, double> baseRadiusRange, int numBaseRadii,
+			Tuple<int, int> numLayersRange, Tuple<double, double> regularizerRange, int numRegularizers, bool logSpaceRegularizers)
+		{
+			return await Task.Run(() => SearchHyperparameters(x, y, value, baseRadiusRange, numBaseRadii, numLayersRange,
+				regularizerRange,
+				numRegularizers, logSpaceRegularizers));
 		}
 
 		private alglib.rbfmodel RBFModel;

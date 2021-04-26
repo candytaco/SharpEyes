@@ -2,8 +2,10 @@
 using Sentry;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -17,13 +19,35 @@ namespace Eyetracking
 		DrawingWindow,
 		MovingPupil
 	}
-	
+
+	public class TimestampRule : ValidationRule
+	{
+		public TimestampRule()
+		{
+		}
+
+		public override ValidationResult Validate(object value, CultureInfo cultureInfo)
+		{
+			try
+			{
+				string timestamp = (string)value;
+				if (!Regex.Match(timestamp, "[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}.[0-9]{1,3}").Success)
+					return new ValidationResult(false, "Invalid timestamp");
+				return ValidationResult.ValidResult;
+			}
+			catch (Exception e)
+			{
+				return new ValidationResult(false, $"{e.Message}");
+			}
+		}
+	}
+
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>
 	public partial class MainWindow : System.Windows.Window
 	{
-		// video play related stuff
+		// == video play related stuff ==
 		private PupilFinder pupilFinder = null;
 		private bool isPlaying = false;
 		private DispatcherTimer timer;
@@ -31,7 +55,7 @@ namespace Eyetracking
 		private int framesPerHour, framesPerMinute;
 
 
-		// eyetracking setup related stuff
+		// == eyetracking setup related stuff ==
 		private bool isEditingStarted = false;  // generic flag for indicating whether the window/pupil edit has begun with a mouseclick
 		private System.Windows.Point mouseMoveStartPoint;
 		private bool isMovingSearchWindow = false;
@@ -168,6 +192,10 @@ namespace Eyetracking
 		{
 			get => pupilFinder.videoFileName != null;
 		}
+
+		// == mapping from eyetracking video space to stimulus video space ==
+		private Calibrator calibrator = null;
+		public string CalibrationStartTime { get; set; } = "00:00:00.000";
 
 		public MainWindow()
 		{
@@ -812,6 +840,50 @@ namespace Eyetracking
 			catch (NullReferenceException)	// initialization time gets this
 			{
 			}
+		}
+
+		private void OpenCalibrationParametersButton_Click(object sender, RoutedEventArgs e)
+		{
+			if (calibrator == null)
+				calibrator = new Calibrator()
+				{
+					OnCalibrationFinished = this.OnCalibrationFinished
+				};
+
+			CalibrationParametersWindow calibrationParametersWindow =
+				new CalibrationParametersWindow(calibrator.calibrationParameters);
+
+			calibrationParametersWindow.ShowDialog();
+		}
+
+		private void CalibrationStartTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+		{
+			e.Handled = Regex.Match(e.Text, "[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}.[0-9]{1,3}").Success;
+		}
+
+		private async void CalibrateButton_Click(object sender, RoutedEventArgs e)
+		{
+			if (calibrator == null)
+				calibrator = new Calibrator()
+				{
+					OnCalibrationFinished = this.OnCalibrationFinished
+				};
+
+			calibrator.Calibrate(GetEyetrackingCalibrationPositions(calibrator.calibrationParameters));
+		}
+
+		private List<Point> GetEyetrackingCalibrationPositions(CalibrationParameters parameters)
+		{
+			List<Point> gazePositions = new List<Point>();
+
+			// TODO: get positions
+
+			return gazePositions;
+		}
+
+		private void OnCalibrationFinished()
+		{
+
 		}
 
 		private void UpdateFramesProcessedPreviewImage()
