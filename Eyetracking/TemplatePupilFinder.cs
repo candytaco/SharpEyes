@@ -166,6 +166,8 @@ namespace Eyetracking
 
 		private BitmapImage GetTemplateFromList(int index, List<Mat> templatesList)
 		{
+			if (templatesList.Count < 1) return null;
+
 			if (index < 0) index = 0;
 			if (index >= templatesList.Count) index = templatesList.Count - 1;
 			MemoryStream memory = new MemoryStream();
@@ -492,7 +494,7 @@ namespace Eyetracking
 					matchResults.Add(new Mat());
 				}
 
-				// remaining files, if any are antitemplates
+				// remaining files, if any, are antitemplates
 				int numAntiTemplates = dataFile.Entries.Count - NumTemplates - 1;
 				if (numAntiTemplates > 0)
 				{

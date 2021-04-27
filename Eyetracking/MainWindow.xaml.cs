@@ -141,33 +141,6 @@ namespace Eyetracking
 			}
 		}
 
-		private int _templatePreviewIndex = -1;
-		/// <summary>
-		/// Template preview
-		/// </summary>
-		private int TemplatePreviewIndex
-		{
-			get => _templatePreviewIndex;
-			set
-			{
-				if (pupilFinder is TemplatePupilFinder templatePupilFinder)
-				{
-					_templatePreviewIndex = value;
-					if (_templatePreviewIndex < 0)
-					{
-						_templatePreviewIndex = 0;
-					}
-					else if (_templatePreviewIndex >= templatePupilFinder.NumTemplates)
-					{
-						_templatePreviewIndex = templatePupilFinder.NumTemplates - 1;
-					}
-
-					TemplatePreviewNumberLabel.Content = String.Format("{0}/{1}", _templatePreviewIndex + 1, templatePupilFinder.NumTemplates);
-					TemplatePreviewImage.Source = templatePupilFinder.GetTemplateImage(_templatePreviewIndex);
-				}
-			}
-		}
-
 		public bool IsPlaying
 		{
 			get => isPlaying; 

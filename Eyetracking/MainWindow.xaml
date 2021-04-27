@@ -183,15 +183,15 @@
                                 <Label Content="Template pupil finding options" HorizontalAlignment="Left" VerticalAlignment="Top" />
                                 <Button Name="UseImageAsTemplateButton" Content="Add current as template" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="auto" Click="UseImageAsTemplateButton_Click"/>
                                 <Button Name="ResetTemplatesButton" Content="Reset to default templates" HorizontalAlignment="Left" Margin="10,71,0,0" VerticalAlignment="Top" Width="auto" Click="ResetTemplatesButton_Click" IsEnabled="False"/>
-                                <GroupBox Header="Template Preview" HorizontalAlignment="Left" Height="133" Margin="176,4,0,0" VerticalAlignment="Top" Width="149">
+                                <GroupBox Header="Template Preview" HorizontalAlignment="Left" Height="133" Margin="176,29,0,0" VerticalAlignment="Top" Width="149">
                                     <Grid>
                                         <Image Name="TemplatePreviewImage"  Margin="0,0,0,0" Stretch="Uniform"/>
                                         <Button Name="DeleteTemplateButton" Content="Delete" HorizontalAlignment="Right" Margin="0,0,4,4" VerticalAlignment="Bottom" Width="auto" Click="DeleteTemplateButton_Click" Visibility="Hidden"/>
                                     </Grid>
                                 </GroupBox>
-                                <Button Name="PreviousTemplateButton" Content="Prev" HorizontalAlignment="Left" Margin="176,142,0,0" VerticalAlignment="Top" Width="42" Click="PreviousTemplateButton_Click"/>
-                                <Button Name="NextTemplateButton" Content="Next" HorizontalAlignment="Left" Margin="283,142,0,0" VerticalAlignment="Top" Width="42" Click="NextTemplateButton_Click"/>
-                                <Label Name="TemplatePreviewNumberLabel" Content="0/0" HorizontalAlignment="Center" Margin="223,139,57.2,0" VerticalAlignment="Top" Width="Auto" Height="28" />
+                                <Button Name="PreviousTemplateButton" Content="Prev" HorizontalAlignment="Left" Margin="176,167,0,0" VerticalAlignment="Top" Width="42" Click="PreviousTemplateButton_Click"/>
+                                <Button Name="NextTemplateButton" Content="Next" HorizontalAlignment="Left" Margin="283,167,0,0" VerticalAlignment="Top" Width="42" Click="NextTemplateButton_Click"/>
+                                <Label Name="TemplatePreviewNumberLabel" Content="0/0" HorizontalAlignment="Center" Margin="237,164,71.2,0" VerticalAlignment="Top" Width="Auto" Height="28" />
                                 <CheckBox Name="AutoAddCustomTemplateCheckBox" Content="Auto add" HorizontalAlignment="Left" Margin="10,51,0,0" VerticalAlignment="Top" 
 										  ToolTip="Automatically add a manually selected pupil as a template if FInd Pupils is clicked?" IsChecked="False"/>
                                 <Label Content="Use" HorizontalAlignment="Left" Margin="13,95,0,0" VerticalAlignment="Top"/>
@@ -220,6 +220,12 @@
                                     <ComboBoxItem Content="Normed correlation coefficient"/>
                                 </ComboBox>
                                 <Button x:Name="UseImageAsAntiTemplateButton" Content="Add current as anti template" HorizontalAlignment="Left" Margin="10,277,0,0" VerticalAlignment="Top" Width="auto" Click="UseImageAsAntiTemplateButton_Click"/>
+                                <ComboBox x:Name="ShowTemplatesComboBox" HorizontalAlignment="Left" Margin="235,7,0,0" VerticalAlignment="Top" Width="90" SelectedIndex="0" SelectionChanged="ShowTemplatesComboBox_SelectionChanged">
+                                    <ComboBoxItem Content="Templates"/>
+                                    <ComboBoxItem Content="Anti-templates"/>
+                                </ComboBox>
+                                <Label Content="Use" HorizontalAlignment="Left" Margin="13,95,0,0" VerticalAlignment="Top"/>
+                                <Label Content="Preview" HorizontalAlignment="Left" Margin="184,5,0,0" VerticalAlignment="Top"/>
                             </Grid>
                         </TabItem>
                         <TabItem Header="TabItem">
