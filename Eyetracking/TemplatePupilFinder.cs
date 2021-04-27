@@ -23,6 +23,12 @@ namespace Eyetracking
 		private double bestCorrelationOnThisFrame = -1;
 		public int NumTemplates { get; private set; } = 0;
 
+		/// <summary>
+		/// Templates for rejecting matches
+		/// </summary>
+		public List<Mat> antiTemplates { get; private set; }
+		public List<Mat> antiResults { get; private set; }
+
 		public string autoTemplatesFileName
 		{
 			get
@@ -198,8 +204,7 @@ namespace Eyetracking
 							}
 							else if (TemplateMatchMode == TemplateMatchModes.SqDiff)
 							{
-
-								maxVal = templates[i].Width * templates[i].Height * 255 * 255 - minVal;
+								maxVal = filteredFrame.Width * filteredFrame.Height * 255 * 255 - minVal;
 								maxLocation = minLocation;
 							}
 
