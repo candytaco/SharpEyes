@@ -457,6 +457,12 @@ namespace Eyetracking
 						using (Stream stream = templateEntry.Open())
 							templates[i].WriteToStream(stream);
 					}
+					for (int i = 0; i < NumAntiTemplates; i++)
+					{
+						ZipArchiveEntry templateEntry = dataFile.CreateEntry(string.Format("anti-template{0}.png", i));
+						using (Stream stream = templateEntry.Open())
+							antiTemplates[i].WriteToStream(stream);
+					}
 				}
 			}
 		}
@@ -484,6 +490,26 @@ namespace Eyetracking
 						templates.Add(Mat.FromStream(decompressed, ImreadModes.Grayscale));
 					}
 					matchResults.Add(new Mat());
+				}
+
+				// remaining files, if any are antitemplates
+				int numAntiTemplates = dataFile.Entries.Count - NumTemplates - 1;
+				if (numAntiTemplates > 0)
+				{
+					antiTemplates = new List<Mat>(numAntiTemplates);
+					antiResults = new List<Mat>(numAntiTemplates);
+					for (int i = 0; i < numAntiTemplates; i++)
+					{
+						ZipArchiveEntry templateEntry = dataFile.GetEntry(string.Format("anti-template{0}.png", i));
+						using (Stream stream = templateEntry.Open())
+						{
+							MemoryStream decompressed = new MemoryStream();
+							stream.CopyTo(decompressed);
+							decompressed.Position = 0;
+							antiTemplates.Add(Mat.FromStream(decompressed, ImreadModes.Grayscale));
+						}
+						antiResults.Add(new Mat());
+					}
 				}
 			}
 		}
