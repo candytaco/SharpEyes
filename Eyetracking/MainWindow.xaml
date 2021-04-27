@@ -23,6 +23,7 @@
         <CommandBinding x:Name="BackFindPupilFrames" Command="local:EyetrackerCommands.BackFindPupilFrames" Executed="BackFindPupilFrames_Executed"/>
         <CommandBinding x:Name="ForwardConfidenceFrames" Command="local:EyetrackerCommands.ForwardConfidenceFrames" Executed="ForwardConfidenceFrames_Executed"/>
         <CommandBinding x:Name="ForwardFindPupilFrames" Command="local:EyetrackerCommands.ForwardFindPupilFrames" Executed="ForwardFindPupilFrames_Executed"/>
+        <CommandBinding x:Name="AddTemplate" Command="local:EyetrackerCommands.AddTemplate" Executed="AddTemplate_Executed"/>
 
         <CommandBinding x:Name="OpenVideoCommand" Command="Open" Executed="OpenVideoCommand_Executed"/>
         <CommandBinding x:Name="NewFileCommand" Command="New" Executed="NewFileCommand_Executed"/>
@@ -43,6 +44,7 @@
         <KeyBinding Key="F2" Modifiers="Alt" Command="local:EyetrackerCommands.ForwardConfidenceFrames"/>
         <KeyBinding Key="F1" Modifiers="Ctrl" Command="local:EyetrackerCommands.BackFindPupilFrames"/>
         <KeyBinding Key="F2" Modifiers="Ctrl" Command="local:EyetrackerCommands.ForwardFindPupilFrames"/>
+        <KeyBinding Key="F3" Command="local:EyetrackerCommands.AddTemplate"/>
     </Window.InputBindings>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -177,7 +179,7 @@
                             </Style>
                         </TabControl.Resources>
                         <TabItem Header="TabItem">
-                            <Grid Background="#FFE5E5E5" Margin="0,0,0.2,0">
+                            <Grid Background="#FFE5E5E5" Margin="0,0,0.2,-46.4">
                                 <Label Content="Template pupil finding options" HorizontalAlignment="Left" VerticalAlignment="Top" />
                                 <Button Name="UseImageAsTemplateButton" Content="Add current as template" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top" Width="auto" Click="UseImageAsTemplateButton_Click"/>
                                 <Button Name="ResetTemplatesButton" Content="Reset to default templates" HorizontalAlignment="Left" Margin="10,71,0,0" VerticalAlignment="Top" Width="auto" Click="ResetTemplatesButton_Click" IsEnabled="False"/>
@@ -199,15 +201,24 @@
                                 </ComboBox>
                                 <xctk:IntegerUpDown x:Name="NRecentTemplatesPicker" Value="16" Increment="1" Minimum="1" Height="24" Margin="48,124,0,0"  Visibility="Visible"
 													ValueChanged="NRecentTemplatesPicker_ValueChanged" VerticalAlignment="Top" HorizontalAlignment="Left" MinWidth="75" MinHeight="26"/>
-                                <CheckBox Name="AutoPausePupilFindingCheckBox" Content="Pause when confidence is below" HorizontalAlignment="Left" Margin="10,203,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.281,0.026"/>
+                                <CheckBox Name="AutoPausePupilFindingCheckBox" Content="Pause when confidence is below" HorizontalAlignment="Left" Margin="10,227,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.281,0.026"/>
                                 <xctk:DoubleUpDown x:Name="ConfidenceThresholdPicker" Value="0.925" Height="24" Width="75" Minimum="0" Maximum="1" Increment="0.005" Margin="10,214,250,12.4"/>
-                                <TextBlock HorizontalAlignment="Left" Margin="90,228,0,0" TextWrapping="Wrap" Text="for" VerticalAlignment="Top"/>
+                                <TextBlock HorizontalAlignment="Left" Margin="91,250,0,0" TextWrapping="Wrap" Text="for" VerticalAlignment="Top"/>
                                 <xctk:IntegerUpDown x:Name="ConfidenceThresholdFramesPicker" Value="10" Height="24" Width="40" Minimum="0" Maximum="60" Increment="1" Margin="110,215,185,11.4"/>
-                                <TextBlock HorizontalAlignment="Left" Margin="155,228,0,0" TextWrapping="Wrap" Text="frames" VerticalAlignment="Top"/>
-                                <Button Name="GoBackNumThresholdFramesButton" Content="&lt;Back" HorizontalAlignment="Left" Margin="196,225,0,0" VerticalAlignment="Top" Width="Auto" Height="24" Click="GoBackNumThresholdFramesButton_Click"/>
-                                <xctk:IntegerUpDown x:Name="NumMatchesPicker" Value="1" Height="24" Width="40" Minimum="1" Maximum="16" Increment="1" Margin="61,165,234,80.6" ValueChanged="NumMatchesPicker_ValueChanged"/>
+                                <TextBlock HorizontalAlignment="Left" Margin="157,250,0,0" TextWrapping="Wrap" Text="frames" VerticalAlignment="Top"/>
+                                <Button Name="GoBackNumThresholdFramesButton" Content="&lt;Back" HorizontalAlignment="Left" Margin="198,247,0,0" VerticalAlignment="Top" Width="Auto" Height="24" Click="GoBackNumThresholdFramesButton_Click"/>
+                                <xctk:IntegerUpDown x:Name="NumMatchesPicker" Value="1" Height="24" Width="40" Minimum="1" Maximum="16" Increment="1" Margin="61,164,234,128" ValueChanged="NumMatchesPicker_ValueChanged"/>
                                 <Label Content="Match" HorizontalAlignment="Left" Margin="13,163,0,0" VerticalAlignment="Top"/>
                                 <Label Name="TemplatesLabel"  Content="template" HorizontalAlignment="Left" Margin="106,164,0,0" VerticalAlignment="Top"/>
+                                <Label Content="Match Mode" HorizontalAlignment="Left" Margin="13,191,0,0" VerticalAlignment="Top"/>
+                                <ComboBox x:Name="MatchModeComboBox" HorizontalAlignment="Left" Margin="91,194,0,0" VerticalAlignment="Top" Width="202" SelectedIndex="5" SelectionChanged="MatchModeComboBox_SelectionChanged">
+                                    <ComboBoxItem Content="Square Difference"/>
+                                    <ComboBoxItem Content="Normed Square Difference"/>
+                                    <ComboBoxItem Content="Cross-correlation"/>
+                                    <ComboBoxItem Content="Normed Cross-correlation"/>
+                                    <ComboBoxItem Content="Correlation coefficient"/>
+                                    <ComboBoxItem Content="Normed correlation coefficient"/>
+                                </ComboBox>
                             </Grid>
                         </TabItem>
                         <TabItem Header="TabItem">
@@ -322,6 +333,7 @@
             <TextBlock x:Name="ConfidenceText" HorizontalAlignment="Left" Margin="10,71,0,0" TextWrapping="Wrap" Text="Confidence: 0" VerticalAlignment="Top" TextAlignment="Center"/>
             <CheckBox x:Name="ShowFilteredVideoButton" Content="Show filtered video" HorizontalAlignment="Right" Margin="0,62,4,0" VerticalAlignment="Top" IsChecked="False" 
 					  Checked="ShowFilteredVideoButton_Checked" Unchecked="ShowFilteredVideoButton_Checked"/>
+            <CheckBox x:Name="ShowPupilOpacityCheckBox" Content="Variable transparency overlay" HorizontalAlignment="Right" Margin="0,62,142.8,0" VerticalAlignment="Top" IsChecked="False" />
 
         </Grid>
 

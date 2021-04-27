@@ -57,6 +57,8 @@ namespace Eyetracking
 		/// </summary>
 		private double[,] topMatches = null;
 
+		public TemplateMatchModes TemplateMatchMode = TemplateMatchModes.CCoeffNormed;
+
 		public int NumMatches
 		{
 			get => topMatches?.Length / 4 ?? 1;	// .length on a 2D array is num elements
@@ -184,9 +186,23 @@ namespace Eyetracking
 						Parallel.For(startIndex, templates.Count, i =>
 						{
 							Cv2.MatchTemplate(filteredFrame[top, bottom, left, right], templates[i], matchResults[i],
-								TemplateMatchModes.CCoeffNormed);
+								TemplateMatchMode);
 							matchResults[i].MinMaxLoc(out double minVal, out double maxVal, out Point minLocation,
 								out Point maxLocation);
+
+							// square difference uses minimum value as best
+							if (TemplateMatchMode == TemplateMatchModes.SqDiffNormed)
+							{
+								maxVal = 1 - minVal;
+								maxLocation = minLocation;
+							}
+							else if (TemplateMatchMode == TemplateMatchModes.SqDiff)
+							{
+
+								maxVal = templates[i].Width * templates[i].Height * 255 * 255 - minVal;
+								maxLocation = minLocation;
+							}
+
 							lock (templateLock)
 							{
 								if (NumMatches == 1) // only need highest match and so write directly

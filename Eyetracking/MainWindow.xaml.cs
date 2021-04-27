@@ -10,6 +10,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using OpenCvSharp;
+using Point = System.Windows.Point;
 
 namespace Eyetracking
 {
@@ -135,7 +137,7 @@ namespace Eyetracking
 				}
 				// during moving pupil, we deep the drawn pupil at 50% transparency
 				if (editingState != EditingState.MovingPupil)
-					PupilEllipse.Stroke.Opacity = transparency * 0.75;
+					PupilEllipse.Stroke.Opacity = ShowPupilOpacityCheckBox.IsChecked.Value ? transparency * 0.75 : 0.75;
 			}
 		}
 
@@ -222,7 +224,8 @@ namespace Eyetracking
 				pupilFinder = new TemplatePupilFinder(videoFileName, progressBar, taskbarItemInfo, SetStatus,
 					UpdateDisplays, OnFramesProcessed)
 				{
-					NumMatches = NumMatchesPicker.Value.Value
+					NumMatches = NumMatchesPicker.Value.Value,
+					TemplateMatchMode = (TemplateMatchModes) MatchModeComboBox.SelectedIndex
 				};
 			else
 				pupilFinder = new HoughPupilFinder(videoFileName, progressBar, taskbarItemInfo, SetStatus, UpdateDisplays, OnFramesProcessed);
@@ -436,6 +439,10 @@ namespace Eyetracking
 		{
 			if (pupilFinder != null)
 			{
+				if (pupilFinder.isTimestampParsed && MessageBox.Show("Timestamps are already parsed. Redo?", "Existing timestamps", MessageBoxButton.OKCancel) == MessageBoxResult.Cancel)
+					return;
+
+
 				ReadTimestampButton.IsEnabled = false;
 				LoadSavedTimeStampsButton.IsEnabled = false;
 				pupilFinder.OnTimeStampsFound += delegate (bool warn, string message, bool stepback)
@@ -884,6 +891,17 @@ namespace Eyetracking
 		private void OnCalibrationFinished()
 		{
 
+		}
+
+		private void MatchModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			if (pupilFinder is TemplatePupilFinder templatePupilFinder)
+				templatePupilFinder.TemplateMatchMode = (TemplateMatchModes)MatchModeComboBox.SelectedIndex;
+		}
+
+		private void AddTemplate_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			UseImageAsTemplateButton_Click(null, null);
 		}
 
 		private void UpdateFramesProcessedPreviewImage()

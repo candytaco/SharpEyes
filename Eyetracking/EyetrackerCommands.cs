@@ -45,5 +45,8 @@ namespace Eyetracking
 
 		public static readonly RoutedUICommand MovePupil = new RoutedUICommand("Move pupil", "Move pupil", typeof(EyetrackerCommands),
 			new InputGestureCollection() { new KeyGesture(Key.V, ModifierKeys.Alt) });
+
+		public static readonly RoutedUICommand AddTemplate =
+			new RoutedUICommand("Add Template", "Add Template", typeof(EyetrackerCommands));
 	};
 }
