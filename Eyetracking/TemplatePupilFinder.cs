@@ -28,6 +28,7 @@ namespace Eyetracking
 		/// </summary>
 		public List<Mat> antiTemplates { get; private set; }
 		public List<Mat> antiResults { get; private set; }
+		public int NumAntiTemplates => antiTemplates.Count;
 
 		public string autoTemplatesFileName
 		{
@@ -82,6 +83,9 @@ namespace Eyetracking
 				LoadTemplates(autoTemplatesFileName);
 			else
 				MakeTemplates();
+
+			antiTemplates = new List<Mat>();
+			antiResults = new List<Mat>();
 		}
 
 		public void MakeTemplates()
@@ -127,16 +131,45 @@ namespace Eyetracking
 		}
 
 		/// <summary>
+		/// Adds a segment of the image to use as a rejection template
+		/// </summary>
+		/// <param name="top"></param>
+		/// <param name="bottom"></param>
+		/// <param name="left"></param>
+		/// <param name="right"></param>
+		public void AddImageSegmentAsAntiTemplate(int top, int bottom, int left, int right)
+		{
+			if (filteredFrame.Width < 1)
+			{
+				_currentFrameNumber--;
+				ReadGrayscaleFrame();
+			}
+			antiTemplates.Add(new Mat(bottom - top, right - left, MatType.CV_8UC1));
+			antiResults.Add(new Mat());
+			filteredFrame[top, bottom, left, right].CopyTo(antiTemplates[antiTemplates.Count - 1]);
+		}
+
+		/// <summary>
 		/// Gets a bitmap of the template for display
 		/// </summary>
 		/// <param name="index">index of the template to display. if outside of bounds, will return first template</param>
 		/// <returns>The first template, if using automated templates, or the template image picked from the video</returns>
 		public BitmapImage GetTemplateImage(int index = 0)
 		{
+			return GetTemplateFromList(index, templates);
+		}
+
+		public BitmapImage GetAntiTemplateImage(int index = 0)
+		{
+			return GetTemplateFromList(index, antiTemplates);
+		}
+
+		private BitmapImage GetTemplateFromList(int index, List<Mat> templatesList)
+		{
 			if (index < 0) index = 0;
-			if (index >= NumTemplates) index = NumTemplates - 1;
+			if (index >= templatesList.Count) index = templatesList.Count - 1;
 			MemoryStream memory = new MemoryStream();
-			templates[index].ToBitmap().Save(memory, ImageFormat.Bmp);
+			templatesList[index].ToBitmap().Save(memory, ImageFormat.Bmp);
 			memory.Position = 0;
 			BitmapImage image = new BitmapImage();
 			image.BeginInit();
@@ -158,6 +191,14 @@ namespace Eyetracking
 			templates.RemoveAt(index);
 			matchResults.RemoveAt(index);
 			NumTemplates--;
+		}
+
+		public void RemoveAntiTemplate(int index)
+		{
+			if (index < 0 || index >= NumAntiTemplates) return;
+
+			antiTemplates.RemoveAt(index);
+			antiResults.RemoveAt(index);
 		}
 
 		public override void FindPupils(int Frames, double threshold = 0, int thresholdFrames = 0)
@@ -186,9 +227,18 @@ namespace Eyetracking
 					ReadGrayscaleFrame();
 					if (NumTemplates > 1)
 					{
+						// match negative templates
+						Parallel.For(0, NumAntiTemplates, i =>
+						{
+							Cv2.MatchTemplate(filteredFrame[top, bottom, left, right], antiTemplates[i],
+								antiResults[i], TemplateMatchMode);
+						});
+
+
 						int startIndex = NumActiveTemplates == 0 ? 0 : templates.Count - NumActiveTemplates;
 						if (startIndex < 0) startIndex = 0;
 
+						// match positive templates
 						Parallel.For(startIndex, templates.Count, i =>
 						{
 							Cv2.MatchTemplate(filteredFrame[top, bottom, left, right], templates[i], matchResults[i],
@@ -197,16 +247,46 @@ namespace Eyetracking
 								out Point maxLocation);
 
 							// square difference uses minimum value as best
-							if (TemplateMatchMode == TemplateMatchModes.SqDiffNormed)
+							switch (TemplateMatchMode)
 							{
-								maxVal = 1 - minVal;
-								maxLocation = minLocation;
+								case TemplateMatchModes.SqDiff:
+									maxVal = filteredFrame.Width * filteredFrame.Height * 255 * 255 - minVal;
+									maxLocation = minLocation;
+									break;
+								case TemplateMatchModes.SqDiffNormed:
+									maxVal = 1 - minVal;
+									maxLocation = minLocation;
+									break;
+								default:
+									break;
 							}
-							else if (TemplateMatchMode == TemplateMatchModes.SqDiff)
+
+							// if there are negative templates, subtract the value of the best anti-match
+							// at this best match
+							double maxAntiMatch = 0;
+							double thisAntiValue;
+							int x, y;	// indexes into the antimatch results, which may be of difference sizes because template
+							for (int j = 0; j < NumAntiTemplates; j++)
 							{
-								maxVal = filteredFrame.Width * filteredFrame.Height * 255 * 255 - minVal;
-								maxLocation = minLocation;
+								x = maxLocation.X + (templates[i].Width - antiTemplates[j].Width);
+								y = maxLocation.Y + (templates[i].Height - antiTemplates[j].Height);
+								switch (TemplateMatchMode)
+								{
+									case TemplateMatchModes.SqDiff:
+										thisAntiValue = filteredFrame.Width * filteredFrame.Height * 255 * 255 - antiResults[j].At<double>(y, x);
+										break;
+									case TemplateMatchModes.SqDiffNormed:
+										thisAntiValue = 1 - antiResults[j].At<double>(y, x);
+										break;
+									default:
+										thisAntiValue = antiResults[j].At<double>(y, x);
+										break;
+								}
+
+								if (thisAntiValue > maxAntiMatch)
+									maxAntiMatch = thisAntiValue;
 							}
+							maxVal -= maxAntiMatch;
 
 							lock (templateLock)
 							{
@@ -223,9 +303,9 @@ namespace Eyetracking
 										else // custom templates that may have different sizes. I was going to use ternary ops because slick but it would make three of the same comparisons
 										{
 											pupilLocations[CurrentFrameNumber, 0] =
-												maxLocation.X + left + templates[i].Width / 2;
+												maxLocation.X + left + templates[i].Width / 2.0;
 											pupilLocations[CurrentFrameNumber, 1] =
-												maxLocation.Y + top + templates[i].Height / 2;
+												maxLocation.Y + top + templates[i].Height / 2.0;
 											pupilLocations[CurrentFrameNumber, 2] = storedPupilSize[i];
 										}
 
@@ -249,9 +329,9 @@ namespace Eyetracking
 											else // custom templates that may have different sizes. I was going to use ternary ops because slick but it would make three of the same comparisons
 											{
 												topMatches[j, 0] =
-													maxLocation.X + left + templates[i].Width / 2;
+													maxLocation.X + left + templates[i].Width / 2.0;
 												topMatches[j, 1] =
-													maxLocation.Y + top + templates[i].Height / 2;
+													maxLocation.Y + top + templates[i].Height / 2.0;
 												topMatches[j, 2] = storedPupilSize[i];
 											}
 
@@ -298,8 +378,8 @@ namespace Eyetracking
 							TemplateMatchModes.CCoeffNormed);
 						matchResults[0].MinMaxLoc(out double minVal, out double maxVal, out Point minLocation,
 							out Point maxLocation);
-						pupilLocations[CurrentFrameNumber, 0] = maxLocation.X + left + templates[0].Width / 2;
-						pupilLocations[CurrentFrameNumber, 1] = maxLocation.Y + top + templates[0].Height / 2;
+						pupilLocations[CurrentFrameNumber, 0] = maxLocation.X + left + templates[0].Width / 2.0;
+						pupilLocations[CurrentFrameNumber, 1] = maxLocation.Y + top + templates[0].Height / 2.0;
 						pupilLocations[CurrentFrameNumber, 2] = storedPupilSize[0];
 						pupilLocations[CurrentFrameNumber, 3] = maxVal;
 					}

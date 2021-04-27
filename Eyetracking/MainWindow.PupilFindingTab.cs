@@ -123,5 +123,17 @@ namespace Eyetracking
 		{
 			UpdateVideoTime(pupilFinder.CurrentFrameNumber - ConfidenceThresholdFramesPicker.Value.Value);
 		}
+
+		private void UseImageAsAntiTemplateButton_Click(object sender, RoutedEventArgs e)
+		{
+			if (pupilFinder is TemplatePupilFinder templatePupilFinder)
+			{
+				int top = (int)(PupilY - PupilRadius * 1.5);
+				int bottom = (int)(PupilY + PupilRadius * 1.5 + 2);
+				int left = (int)(PupilX - PupilRadius * 1.5);
+				int right = (int)(PupilX + PupilRadius * 1.5 + 2);
+				templatePupilFinder.AddImageSegmentAsAntiTemplate(top, bottom, left, right);
+			}
+		}
 	}
 }
