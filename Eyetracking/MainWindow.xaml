@@ -191,7 +191,7 @@
                                 </GroupBox>
                                 <Button Name="PreviousTemplateButton" Content="Prev" HorizontalAlignment="Left" Margin="176,167,0,0" VerticalAlignment="Top" Width="42" Click="PreviousTemplateButton_Click"/>
                                 <Button Name="NextTemplateButton" Content="Next" HorizontalAlignment="Left" Margin="283,167,0,0" VerticalAlignment="Top" Width="42" Click="NextTemplateButton_Click"/>
-                                <Label Name="TemplatePreviewNumberLabel" Content="0/0" HorizontalAlignment="Center" Margin="237,164,71.2,0" VerticalAlignment="Top" Width="Auto" Height="28" />
+                                <Label Name="TemplatePreviewNumberLabel" Content="0/0" HorizontalAlignment="Center" HorizontalContentAlignment="Center" Margin="218,164,52.2,0" VerticalAlignment="Top" Width="65" Height="28" />
                                 <CheckBox Name="AutoAddCustomTemplateCheckBox" Content="Auto add" HorizontalAlignment="Left" Margin="10,51,0,0" VerticalAlignment="Top" 
 										  ToolTip="Automatically add a manually selected pupil as a template if FInd Pupils is clicked?" IsChecked="False"/>
                                 <Label Content="Use" HorizontalAlignment="Left" Margin="13,95,0,0" VerticalAlignment="Top"/>
