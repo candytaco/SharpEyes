@@ -66,7 +66,6 @@ namespace Eyetracking
 				case EditingState.MovingPupil:
 					PupilX = e.GetPosition(canvas).X / videoScaleFactor;
 					PupilY = e.GetPosition(canvas).Y / videoScaleFactor;
-					UpdatePupilPositionData();
 					break;
 				default:
 					return;

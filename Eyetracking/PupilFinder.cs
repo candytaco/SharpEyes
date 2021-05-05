@@ -478,14 +478,14 @@ namespace Eyetracking
 			pupilLocations[startFrame, 3] = 2;  // mark manual adjustment
 			double fade;
 			double dD = Math.Sqrt(dX * dX + dY * dY);
-			int numFramesToUpdate = (updateMode == ManualUpdateMode.Exponential) ? frameDecay : (int)(frameDecay / Math.Log(dD));
+			int numFramesToUpdate = (updateMode == ManualUpdateMode.Linear) ? frameDecay : (int)(frameDecay / Math.Log(dD));
 			for (int i = 0; i < numFramesToUpdate; i++)
 			{
 				if (i + startFrame >= frameCount)
 					break;
 				if (pupilLocations[i + startFrame, 0] == Num.NaN)
 					break;	// don't update auto values if they don't exist
-				fade = (updateMode == ManualUpdateMode.Exponential) ? dD * Math.Exp(i / frameDecay) : (double)(frameDecay - i) / frameDecay;
+				fade = (updateMode == ManualUpdateMode.Exponential) ? dD * Math.Exp(-1 * (double)i / frameDecay) : (double)(frameDecay - i) / frameDecay;
 				pupilLocations[i + startFrame, 0] += fade * dX;
 				pupilLocations[i + startFrame, 1] += fade * dY;
 				pupilLocations[i + startFrame, 2] += fade * dR;
