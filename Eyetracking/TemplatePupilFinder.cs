@@ -266,22 +266,28 @@ namespace Eyetracking
 							// if there are negative templates, subtract the value of the best anti-match
 							// at this best match
 							double maxAntiMatch = 0;
-							double thisAntiValue;
+							double thisAntiValue, antiValue;
 							int x, y;	// indexes into the antimatch results, which may be of difference sizes because template
 							for (int j = 0; j < NumAntiTemplates; j++)
 							{
 								x = maxLocation.X + (templates[i].Width - antiTemplates[j].Width);
 								y = maxLocation.Y + (templates[i].Height - antiTemplates[j].Height);
+								lock (antiResults[j])
+								{
+									antiValue = antiResults[j].At<double>(y, x);
+								}
+
 								switch (TemplateMatchMode)
 								{
 									case TemplateMatchModes.SqDiff:
-										thisAntiValue = filteredFrame.Width * filteredFrame.Height * 255 * 255 - antiResults[j].At<double>(y, x);
+										thisAntiValue = filteredFrame.Width * filteredFrame.Height * 255 * 255 -
+										                antiValue;
 										break;
 									case TemplateMatchModes.SqDiffNormed:
-										thisAntiValue = 1 - antiResults[j].At<double>(y, x);
+										thisAntiValue = 1 - antiValue;
 										break;
 									default:
-										thisAntiValue = antiResults[j].At<double>(y, x);
+										thisAntiValue = antiValue;
 										break;
 								}
 
