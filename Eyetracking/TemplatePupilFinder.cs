@@ -18,7 +18,7 @@ namespace Eyetracking
 		/// <summary>
 		/// Templates for a dark pupil on a light background
 		/// </summary>
-		public List<Mat> templates { get; private set; }
+		public List<Template> templates { get; private set; }
 		public List<Mat> matchResults { get; private set; }
 		private double bestCorrelationOnThisFrame = -1;
 		public int NumTemplates { get; private set; } = 0;
@@ -26,7 +26,7 @@ namespace Eyetracking
 		/// <summary>
 		/// Templates for rejecting matches
 		/// </summary>
-		public List<Mat> antiTemplates { get; private set; }
+		public List<Template> antiTemplates { get; private set; }
 		public List<Mat> antiResults { get; private set; }
 		public int NumAntiTemplates => antiTemplates.Count;
 
@@ -84,20 +84,22 @@ namespace Eyetracking
 			else
 				MakeTemplates();
 
-			antiTemplates = new List<Mat>();
+			antiTemplates = new List<Template>();
 			antiResults = new List<Mat>();
 		}
 
 		public void MakeTemplates()
 		{
 			NumTemplates = maxRadius - minRadius + 1;
-			templates = new List<Mat>(NumTemplates);
+			templates = new List<Template>(NumTemplates);
 			matchResults = new List<Mat>(NumTemplates);
 			for (int i = 0; i < NumTemplates; i++)
 			{
-				templates.Add(new Mat(maxRadius * 2 + 1, maxRadius * 2 + 1, MatType.CV_8UC1, 255));
+				Mat template = new Mat(maxRadius * 2 + 1, maxRadius * 2 + 1, MatType.CV_8UC1, 255);
+				Cv2.Circle(template, maxRadius + 1, maxRadius + 1, i + minRadius, 0, -1);   // negative thickness == filled
+				templates.Add(new Template(template));
 				matchResults.Add(new Mat());
-				Cv2.Circle(templates[i], maxRadius + 1, maxRadius + 1, i + minRadius, 0, -1);   // negative thickness == filled
+				
 			}
 			storedPupilSize = null;
 		}
@@ -124,10 +126,13 @@ namespace Eyetracking
 				_currentFrameNumber--;
 				ReadGrayscaleFrame();
 			}
-			templates.Add(new Mat(bottom - top, right - left, MatType.CV_8UC1));
+			// TODO: check edge of image and set center accordingly
+			Mat template = new Mat(bottom - top, right - left, MatType.CV_8UC1);
+			filteredFrame[top, bottom, left, right].CopyTo(template);
+			templates.Add(new Template(template));
 			storedPupilSize.Add(radius);
 			matchResults.Add(new Mat());
-			filteredFrame[top, bottom, left, right].CopyTo(templates[NumTemplates++]);
+			
 		}
 
 		/// <summary>
@@ -144,9 +149,10 @@ namespace Eyetracking
 				_currentFrameNumber--;
 				ReadGrayscaleFrame();
 			}
-			antiTemplates.Add(new Mat(bottom - top, right - left, MatType.CV_8UC1));
+			Mat template = new Mat(bottom - top, right - left, MatType.CV_8UC1);
+			filteredFrame[top, bottom, left, right].CopyTo(template);
+			antiTemplates.Add(new Template(template));
 			antiResults.Add(new Mat());
-			filteredFrame[top, bottom, left, right].CopyTo(antiTemplates[antiTemplates.Count - 1]);
 		}
 
 		/// <summary>
@@ -164,14 +170,14 @@ namespace Eyetracking
 			return GetTemplateFromList(index, antiTemplates);
 		}
 
-		private BitmapImage GetTemplateFromList(int index, List<Mat> templatesList)
+		private BitmapImage GetTemplateFromList(int index, List<Template> templatesList)
 		{
 			if (templatesList.Count < 1) return null;
 
 			if (index < 0) index = 0;
 			if (index >= templatesList.Count) index = templatesList.Count - 1;
 			MemoryStream memory = new MemoryStream();
-			templatesList[index].ToBitmap().Save(memory, ImageFormat.Bmp);
+			templatesList[index].Image.ToBitmap().Save(memory, ImageFormat.Bmp);
 			memory.Position = 0;
 			BitmapImage image = new BitmapImage();
 			image.BeginInit();
@@ -232,7 +238,7 @@ namespace Eyetracking
 						// match negative templates
 						Parallel.For(0, NumAntiTemplates, i =>
 						{
-							Cv2.MatchTemplate(filteredFrame[top, bottom, left, right], antiTemplates[i],
+							Cv2.MatchTemplate(filteredFrame[top, bottom, left, right], antiTemplates[i].Image,
 								antiResults[i], TemplateMatchMode);
 						});
 
@@ -243,7 +249,7 @@ namespace Eyetracking
 						// match positive templates
 						Parallel.For(startIndex, templates.Count, i =>
 						{
-							Cv2.MatchTemplate(filteredFrame[top, bottom, left, right], templates[i], matchResults[i],
+							Cv2.MatchTemplate(filteredFrame[top, bottom, left, right], templates[i].Image, matchResults[i],
 								TemplateMatchMode);
 							matchResults[i].MinMaxLoc(out double minVal, out double maxVal, out Point minLocation,
 								out Point maxLocation);
@@ -382,7 +388,7 @@ namespace Eyetracking
 					}
 					else
 					{
-						Cv2.MatchTemplate(grayFrame[top, bottom, left, right], templates[0], matchResults[0],
+						Cv2.MatchTemplate(grayFrame[top, bottom, left, right], templates[0].Image, matchResults[0],
 							TemplateMatchModes.CCoeffNormed);
 						matchResults[0].MinMaxLoc(out double minVal, out double maxVal, out Point minLocation,
 							out Point maxLocation);
@@ -447,6 +453,7 @@ namespace Eyetracking
 			worker.RunWorkerAsync();
 		}
 
+		// TODO: save out image template objects with x,y info
 		public void SaveTemplates(string fileName = null)
 		{
 			if (IsUsingCustomTemplates)
@@ -463,13 +470,13 @@ namespace Eyetracking
 					{
 						ZipArchiveEntry templateEntry = dataFile.CreateEntry(string.Format("template{0}.png", i));
 						using (Stream stream = templateEntry.Open())
-							templates[i].WriteToStream(stream);
+							templates[i].Image.WriteToStream(stream);
 					}
 					for (int i = 0; i < NumAntiTemplates; i++)
 					{
 						ZipArchiveEntry templateEntry = dataFile.CreateEntry(string.Format("anti-template{0}.png", i));
 						using (Stream stream = templateEntry.Open())
-							antiTemplates[i].WriteToStream(stream);
+							antiTemplates[i].Image.WriteToStream(stream);
 					}
 				}
 			}
@@ -485,7 +492,7 @@ namespace Eyetracking
 				using (Stream stream = pupilLocationEntry.Open())
 					storedPupilSize = (List<double>)formatter.Deserialize(stream);
 				NumTemplates = storedPupilSize.Count;
-				templates = new List<Mat>(NumTemplates);
+				templates = new List<Template>(NumTemplates);
 				matchResults = new List<Mat>(NumTemplates);
 				for (int i = 0; i < NumTemplates; i++)
 				{
@@ -495,7 +502,7 @@ namespace Eyetracking
 						MemoryStream decompressed = new MemoryStream();
 						stream.CopyTo(decompressed);
 						decompressed.Position = 0;
-						templates.Add(Mat.FromStream(decompressed, ImreadModes.Grayscale));
+						templates.Add(new Template(Mat.FromStream(decompressed, ImreadModes.Grayscale)));
 					}
 					matchResults.Add(new Mat());
 				}
@@ -504,7 +511,7 @@ namespace Eyetracking
 				int numAntiTemplates = dataFile.Entries.Count - NumTemplates - 1;
 				if (numAntiTemplates > 0)
 				{
-					antiTemplates = new List<Mat>(numAntiTemplates);
+					antiTemplates = new List<Template>(numAntiTemplates);
 					antiResults = new List<Mat>(numAntiTemplates);
 					for (int i = 0; i < numAntiTemplates; i++)
 					{
@@ -514,7 +521,7 @@ namespace Eyetracking
 							MemoryStream decompressed = new MemoryStream();
 							stream.CopyTo(decompressed);
 							decompressed.Position = 0;
-							antiTemplates.Add(Mat.FromStream(decompressed, ImreadModes.Grayscale));
+							antiTemplates.Add(new Template(Mat.FromStream(decompressed, ImreadModes.Grayscale)));
 						}
 						antiResults.Add(new Mat());
 					}

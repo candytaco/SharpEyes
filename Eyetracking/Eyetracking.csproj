@@ -215,6 +215,7 @@
     <Compile Include="StimulusGazeViewer.xaml.cs">
       <DependentUpon>StimulusGazeViewer.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Template.cs" />
     <Compile Include="TemplatePupilFinder.cs" />
     <Compile Include="Templates.cs" />
     <Compile Include="VideoKeyFrame.cs" />
