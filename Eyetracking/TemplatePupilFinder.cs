@@ -135,6 +135,9 @@ namespace Eyetracking
 			Mat template = new Mat(bottom - top - deltaTop - deltaBottom, right - left - deltaLeft - deltaRight, MatType.CV_8UC1);
 			filteredFrame[top + deltaTop, bottom - deltaBottom, left + deltaLeft, right - deltaRight].CopyTo(template);
 			templates.Add(new Template(template, radius, (double)template.Width / 2 - deltaLeft + deltaRight, (double)template.Height / 2 - deltaTop + deltaBottom));
+
+			NumTemplates++;
+
 			matchResults.Add(new Mat());
 			
 		}
