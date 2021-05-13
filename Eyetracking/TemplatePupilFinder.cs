@@ -9,6 +9,8 @@ using System.Windows.Media.Imaging;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Windows;
+using Point = OpenCvSharp.Point;
 
 namespace Eyetracking
 {
@@ -41,21 +43,15 @@ namespace Eyetracking
 		}
 
 		/// <summary>
-		/// Because there is an option to use a part of a frame as a template,
-		/// there is no good way to determine pupil size if that is the case. So we store
-		/// the values from those custom templates here and apply it onwards.
-		/// The nullable-ness of a List also doubles as an indicator of whether we are using
-		/// custom templates. If null, we are using generated templates.
-		/// </summary>
-		private List<double> storedPupilSize = null;
-
-		/// <summary>
 		/// How many of the templates to actually use, since more accurate templates may be added
 		/// throughout the run. If 0, use all.
 		/// </summary>
 		public int NumActiveTemplates = 0;
 
-		public bool IsUsingCustomTemplates { get { return storedPupilSize != null; } }
+		/// <summary>
+		/// Are we using custom templates?
+		/// </summary>
+		public bool IsUsingCustomTemplates { get; private set; }
 
 		/// <summary>
 		/// Used for averaging across multiple matches. Is a n x 4 array, in which n is the
@@ -97,29 +93,29 @@ namespace Eyetracking
 			{
 				Mat template = new Mat(maxRadius * 2 + 1, maxRadius * 2 + 1, MatType.CV_8UC1, 255);
 				Cv2.Circle(template, maxRadius + 1, maxRadius + 1, i + minRadius, 0, -1);   // negative thickness == filled
-				templates.Add(new Template(template));
+				templates.Add(new Template(template, minRadius + i));
 				matchResults.Add(new Mat());
 				
 			}
-			storedPupilSize = null;
+			IsUsingCustomTemplates = false;
 		}
 
 		/// <summary>
-		/// Adds a segment of the image as a template
+		/// Adds a segment of the image as a template. Will crop template to image bounds if needed.
 		/// </summary>
-		/// <param name="top"></param>
-		/// <param name="bottom"></param>
-		/// <param name="left"></param>
-		/// <param name="right"></param>
-		/// <param name="radius"></param>
+		/// <param name="top">desired top index of image segment</param>
+		/// <param name="bottom">desired bottom index of image segment</param>
+		/// <param name="left">desired left index of image segment</param>
+		/// <param name="right">desired right index of image segment</param>
+		/// <param name="radius">radius</param>
 		public void AddImageSegmentAsTemplate(int top, int bottom, int left, int right, double radius)
 		{
-			if (storedPupilSize == null)
+			if (!IsUsingCustomTemplates)
 			{
 				templates.Clear();
 				matchResults.Clear();
 				NumTemplates = 0;
-				storedPupilSize = new List<double>();
+				IsUsingCustomTemplates = true;
 			}
 			if (filteredFrame.Width < 1)
 			{
@@ -127,10 +123,18 @@ namespace Eyetracking
 				ReadGrayscaleFrame();
 			}
 			// TODO: check edge of image and set center accordingly
-			Mat template = new Mat(bottom - top, right - left, MatType.CV_8UC1);
-			filteredFrame[top, bottom, left, right].CopyTo(template);
-			templates.Add(new Template(template));
-			storedPupilSize.Add(radius);
+
+			int deltaTop = top < 0 ? -1 * top : 0;
+			int deltaBottom = bottom > filteredFrame.Height ? bottom - filteredFrame.Height : 0;
+			int deltaLeft = left < 0 ? -1 * left : 0;
+			int deltaRight = right > filteredFrame.Width ? right - filteredFrame.Width : 0;
+
+			if ((deltaTop > 0 && deltaBottom > 0) || (deltaLeft > 0 && deltaRight > 0))
+				throw new ArgumentOutOfRangeException();	// only one of each pair should be out side of the image...
+
+			Mat template = new Mat(bottom - top - deltaTop - deltaBottom, right - left - deltaLeft - deltaRight, MatType.CV_8UC1);
+			filteredFrame[top + deltaTop, bottom - deltaBottom, left + deltaLeft, right - deltaRight].CopyTo(template);
+			templates.Add(new Template(template, radius, (double)template.Width / 2 - deltaLeft + deltaRight, (double)template.Height / 2 - deltaTop + deltaBottom));
 			matchResults.Add(new Mat());
 			
 		}
@@ -151,7 +155,7 @@ namespace Eyetracking
 			}
 			Mat template = new Mat(bottom - top, right - left, MatType.CV_8UC1);
 			filteredFrame[top, bottom, left, right].CopyTo(template);
-			antiTemplates.Add(new Template(template));
+			antiTemplates.Add(new Template(template, null));
 			antiResults.Add(new Mat());
 		}
 
@@ -193,9 +197,8 @@ namespace Eyetracking
 		/// <param name="index"></param>
 		public void RemoveTemplate(int index)
 		{
-			if (storedPupilSize == null || index < 0 || index >= NumTemplates) return;
+			if (!IsUsingCustomTemplates || index < 0 || index >= NumTemplates) return;
 
-			storedPupilSize.RemoveAt(index);
 			templates.RemoveAt(index);
 			matchResults.RemoveAt(index);
 			NumTemplates--;
@@ -247,8 +250,10 @@ namespace Eyetracking
 						if (startIndex < 0) startIndex = 0;
 
 						// match positive templates
-						Parallel.For(startIndex, templates.Count, i =>
+						Parallel.For(startIndex, templates.Count, index =>
 						{
+							int i = (int)index;	// because Parallel.For uses a long, and that cannot be implicitly cast to int to index into lists
+
 							Cv2.MatchTemplate(filteredFrame[top, bottom, left, right], templates[i].Image, matchResults[i],
 								TemplateMatchMode);
 							matchResults[i].MinMaxLoc(out double minVal, out double maxVal, out Point minLocation,
@@ -308,7 +313,7 @@ namespace Eyetracking
 								{
 									if (maxVal > bestCorrelationOnThisFrame)
 									{
-										if (storedPupilSize == null) // case auto-generated templates
+										if (!IsUsingCustomTemplates) // case auto-generated templates
 										{
 											pupilLocations[CurrentFrameNumber, 0] = maxLocation.X + left + maxRadius;
 											pupilLocations[CurrentFrameNumber, 1] = maxLocation.Y + top + maxRadius;
@@ -317,10 +322,10 @@ namespace Eyetracking
 										else // custom templates that may have different sizes. I was going to use ternary ops because slick but it would make three of the same comparisons
 										{
 											pupilLocations[CurrentFrameNumber, 0] =
-												maxLocation.X + left + templates[i].Width / 2.0;
+												maxLocation.X + left + templates[i].X;
 											pupilLocations[CurrentFrameNumber, 1] =
-												maxLocation.Y + top + templates[i].Height / 2.0;
-											pupilLocations[CurrentFrameNumber, 2] = storedPupilSize[i];
+												maxLocation.Y + top + templates[i].Y;
+											pupilLocations[CurrentFrameNumber, 2] = templates[i].Radius.Value;
 										}
 
 										bestCorrelationOnThisFrame = maxVal;
@@ -334,7 +339,7 @@ namespace Eyetracking
 										// immediately overwrite that one
 										if (maxVal > topMatches[j, 3])
 										{
-											if (storedPupilSize == null) // case auto-generated templates
+											if (!IsUsingCustomTemplates) // case auto-generated templates
 											{
 												topMatches[j, 0] = maxLocation.X + left + maxRadius;
 												topMatches[j, 1] = maxLocation.Y + top + maxRadius;
@@ -343,10 +348,10 @@ namespace Eyetracking
 											else // custom templates that may have different sizes. I was going to use ternary ops because slick but it would make three of the same comparisons
 											{
 												topMatches[j, 0] =
-													maxLocation.X + left + templates[i].Width / 2.0;
+													maxLocation.X + left + templates[i].X;
 												topMatches[j, 1] =
-													maxLocation.Y + top + templates[i].Height / 2.0;
-												topMatches[j, 2] = storedPupilSize[i];
+													maxLocation.Y + top + templates[i].Y;
+												topMatches[j, 2] = templates[i].Radius.Value;
 											}
 
 											topMatches[j, 3] = maxVal;
@@ -392,9 +397,9 @@ namespace Eyetracking
 							TemplateMatchModes.CCoeffNormed);
 						matchResults[0].MinMaxLoc(out double minVal, out double maxVal, out Point minLocation,
 							out Point maxLocation);
-						pupilLocations[CurrentFrameNumber, 0] = maxLocation.X + left + templates[0].Width / 2.0;
-						pupilLocations[CurrentFrameNumber, 1] = maxLocation.Y + top + templates[0].Height / 2.0;
-						pupilLocations[CurrentFrameNumber, 2] = storedPupilSize[0];
+						pupilLocations[CurrentFrameNumber, 0] = maxLocation.X + left + templates[0].X;
+						pupilLocations[CurrentFrameNumber, 1] = maxLocation.Y + top + templates[0].Y;
+						pupilLocations[CurrentFrameNumber, 2] = templates[0].Radius.Value;
 						pupilLocations[CurrentFrameNumber, 3] = maxVal;
 					}
 
@@ -453,7 +458,6 @@ namespace Eyetracking
 			worker.RunWorkerAsync();
 		}
 
-		// TODO: save out image template objects with x,y info
 		public void SaveTemplates(string fileName = null)
 		{
 			if (IsUsingCustomTemplates)
@@ -463,18 +467,33 @@ namespace Eyetracking
 				using (ZipArchive dataFile = new ZipArchive(fileStream, ZipArchiveMode.Create, true))
 				{
 					BinaryFormatter formatter = new BinaryFormatter();
-					ZipArchiveEntry pupilLocationEntry = dataFile.CreateEntry("storeedPupilSizes.list");
-					using (Stream stream = pupilLocationEntry.Open())
-						formatter.Serialize(stream, storedPupilSize);
+
+					// because opencvsharp objects are not directly serializable, we break the template objects apart
+					List<double> pupilSizes = new List<double>();
+					List<Tuple<double, double>> centers = new List<Tuple<double, double>>();
+					for (int i = 0; i < templates.Count; i++)
+					{
+						pupilSizes.Add(templates[i].Radius.Value);
+						centers.Add(new Tuple<double, double>(templates[i].X, templates[i].Y));
+					}
+
+					ZipArchiveEntry pupilRadiusEntry = dataFile.CreateEntry("pupil radii.list");
+					using (Stream stream = pupilRadiusEntry.Open())
+						formatter.Serialize(stream, pupilSizes);
+
+					ZipArchiveEntry pupilCentersEntry = dataFile.CreateEntry("pupil centers.list");
+					using (Stream stream = pupilCentersEntry.Open())
+						formatter.Serialize(stream, centers);
+
 					for (int i = 0; i < NumTemplates; i++)
 					{
-						ZipArchiveEntry templateEntry = dataFile.CreateEntry(string.Format("template{0}.png", i));
+						ZipArchiveEntry templateEntry = dataFile.CreateEntry(string.Format("template {0}.png", i));
 						using (Stream stream = templateEntry.Open())
 							templates[i].Image.WriteToStream(stream);
 					}
 					for (int i = 0; i < NumAntiTemplates; i++)
 					{
-						ZipArchiveEntry templateEntry = dataFile.CreateEntry(string.Format("anti-template{0}.png", i));
+						ZipArchiveEntry templateEntry = dataFile.CreateEntry(string.Format("anti-template {0}.png", i));
 						using (Stream stream = templateEntry.Open())
 							antiTemplates[i].Image.WriteToStream(stream);
 					}
@@ -484,49 +503,118 @@ namespace Eyetracking
 
 		public void LoadTemplates(string fileName)
 		{
-			using (FileStream fileStream = new FileStream(fileName, FileMode.Open))
-			using (ZipArchive dataFile = new ZipArchive(fileStream, ZipArchiveMode.Read, true))
+			try
 			{
-				BinaryFormatter formatter = new BinaryFormatter();
-				ZipArchiveEntry pupilLocationEntry = dataFile.GetEntry("storeedPupilSizes.list");
-				using (Stream stream = pupilLocationEntry.Open())
-					storedPupilSize = (List<double>)formatter.Deserialize(stream);
-				NumTemplates = storedPupilSize.Count;
-				templates = new List<Template>(NumTemplates);
-				matchResults = new List<Mat>(NumTemplates);
-				for (int i = 0; i < NumTemplates; i++)
+				using (FileStream fileStream = new FileStream(fileName, FileMode.Open))
+				using (ZipArchive dataFile = new ZipArchive(fileStream, ZipArchiveMode.Read, true))
 				{
-					ZipArchiveEntry templateEntry = dataFile.GetEntry(string.Format("template{0}.png", i));
-					using (Stream stream = templateEntry.Open())
+					ZipArchiveEntry radiiEntry = dataFile.GetEntry("pupil radii.list");
+					if (radiiEntry != null)
 					{
-						MemoryStream decompressed = new MemoryStream();
-						stream.CopyTo(decompressed);
-						decompressed.Position = 0;
-						templates.Add(new Template(Mat.FromStream(decompressed, ImreadModes.Grayscale)));
+						templates = new List<Template>();
+						antiTemplates = new List<Template>();
+
+						List<double> pupilSizes;
+						List<Tuple<double, double>> centers = new List<Tuple<double, double>>();
+
+						BinaryFormatter formatter = new BinaryFormatter();
+						using (Stream stream = radiiEntry.Open())
+							pupilSizes = (List<double>) formatter.Deserialize(stream);
+
+						ZipArchiveEntry centersEntry = dataFile.GetEntry("pupil centers.list");
+						using (Stream stream = centersEntry.Open())
+							centers = (List<Tuple<double, double>>) formatter.Deserialize(stream);
+
+						NumTemplates = pupilSizes.Count;
+
+						for (int i = 0; i < NumTemplates; i++)
+						{
+							ZipArchiveEntry templateEntry = dataFile.GetEntry(string.Format("template {0}.png", i));
+							using (Stream stream = templateEntry.Open())
+							{
+								MemoryStream decompressed = new MemoryStream();
+								stream.CopyTo(decompressed);
+								decompressed.Position = 0;
+								templates.Add(new Template(Mat.FromStream(decompressed, ImreadModes.Grayscale), pupilSizes[i], centers[i].Item1, centers[i].Item2));
+							}
+						}
+
+						// remaining files, if any, are antitemplates
+						int numAntiTemplates = dataFile.Entries.Count - NumTemplates - 2;
+						antiTemplates = new List<Template>(numAntiTemplates);
+						for (int i = 0; i < numAntiTemplates; i++)
+						{
+							ZipArchiveEntry templateEntry = dataFile.GetEntry(string.Format("anti-template {0}.png", i));
+							using (Stream stream = templateEntry.Open())
+							{
+								MemoryStream decompressed = new MemoryStream();
+								stream.CopyTo(decompressed);
+								decompressed.Position = 0;
+								antiTemplates.Add(new Template(Mat.FromStream(decompressed, ImreadModes.Grayscale), null));
+							}
+						}
 					}
-					matchResults.Add(new Mat());
+					else LoadTemplatesLegacy(dataFile); // legacy format
 				}
 
-				// remaining files, if any, are antitemplates
-				int numAntiTemplates = dataFile.Entries.Count - NumTemplates - 1;
-				if (numAntiTemplates > 0)
+				IsUsingCustomTemplates = true;
+
+				matchResults = new List<Mat>(NumTemplates);
+				for (int i = 0; i < NumTemplates; i++)
+					matchResults.Add(new Mat());
+
+				antiResults = new List<Mat>(antiTemplates.Count);
+				for (int i = 0; i < antiTemplates.Count; i++)
+					antiResults.Add(new Mat());
+			}
+			catch (InvalidDataException)
+			{
+				MessageBox.Show("Corrupt templates data file");
+			}
+		}
+
+		/// <summary>
+		/// Loads template data stored in the format prior to switching to Template objects.
+		/// To be called by <see cref="LoadTemplates(string)"/> when it determines that it's a legacy save file
+		/// </summary>
+		/// <param name="dataFile">already opened ziparchive</param>
+		private void LoadTemplatesLegacy(ZipArchive dataFile)
+		{
+			BinaryFormatter formatter = new BinaryFormatter();
+			ZipArchiveEntry pupilLocationEntry = dataFile.GetEntry("storeedPupilSizes.list");
+
+			List<double> storedPupilSize;
+			using (Stream stream = pupilLocationEntry.Open())
+				storedPupilSize = (List<double>)formatter.Deserialize(stream);
+			NumTemplates = storedPupilSize.Count;
+			templates = new List<Template>(NumTemplates);
+			for (int i = 0; i < NumTemplates; i++)
+			{
+				ZipArchiveEntry templateEntry = dataFile.GetEntry(string.Format("template{0}.png", i));
+				using (Stream stream = templateEntry.Open())
 				{
-					antiTemplates = new List<Template>(numAntiTemplates);
-					antiResults = new List<Mat>(numAntiTemplates);
-					for (int i = 0; i < numAntiTemplates; i++)
-					{
-						ZipArchiveEntry templateEntry = dataFile.GetEntry(string.Format("anti-template{0}.png", i));
-						using (Stream stream = templateEntry.Open())
-						{
-							MemoryStream decompressed = new MemoryStream();
-							stream.CopyTo(decompressed);
-							decompressed.Position = 0;
-							antiTemplates.Add(new Template(Mat.FromStream(decompressed, ImreadModes.Grayscale)));
-						}
-						antiResults.Add(new Mat());
-					}
+					MemoryStream decompressed = new MemoryStream();
+					stream.CopyTo(decompressed);
+					decompressed.Position = 0;
+					templates.Add(new Template(Mat.FromStream(decompressed, ImreadModes.Grayscale), storedPupilSize[i]));
 				}
 			}
+
+			// remaining files, if any, are antitemplates
+			int numAntiTemplates = dataFile.Entries.Count - NumTemplates - 1;
+			antiTemplates = new List<Template>(numAntiTemplates);
+			for (int i = 0; i < numAntiTemplates; i++)
+			{
+				ZipArchiveEntry templateEntry = dataFile.GetEntry(string.Format("anti-template{0}.png", i));
+				using (Stream stream = templateEntry.Open())
+				{
+					MemoryStream decompressed = new MemoryStream();
+					stream.CopyTo(decompressed);
+					decompressed.Position = 0;
+					antiTemplates.Add(new Template(Mat.FromStream(decompressed, ImreadModes.Grayscale), null));
+				}
+			}
+			
 		}
 	}
 }

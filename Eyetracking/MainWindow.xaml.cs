@@ -176,8 +176,6 @@ namespace Eyetracking
 		{
 			InitializeComponent();
 
-			//SentrySdk.Init("https://4aa216608a894bd99da3daa7424c995d@o553633.ingest.sentry.io/5689896");
-
 			Canvas.SetLeft(SearchWindowRectangle, 0);
 			Canvas.SetTop(SearchWindowRectangle, 0);
 
