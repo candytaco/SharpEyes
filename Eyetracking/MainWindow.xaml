@@ -300,8 +300,8 @@
             </TabItem>
             <TabItem Header="Calibration">
                 <Grid Background="#FFE5E5E5">
-                    <Button Name="MarkInButton" Content="Mark In" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75"/>
-                    <Button Name="MarkOutButton" Content="Mark Out" HorizontalAlignment="Left" Margin="90,10,0,0" VerticalAlignment="Top" Width="75"/>
+                    <Button Name="MarkInButton" Content="Mark In" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75" Click="MarkInButton_Click"/>
+                    <Button Name="MarkOutButton" Content="Mark Out" HorizontalAlignment="Left" Margin="90,10,0,0" VerticalAlignment="Top" Width="75" Click="MarkOutButton_Click"/>
                     <Button Name="OpenCalibrationParametersButton" Content="Calibration Parameters" HorizontalAlignment="Left" Margin="10,267,0,0" 
                             VerticalAlignment="Top" Width="125" Click="OpenCalibrationParametersButton_Click"/>
                     <Button Name="CalibrateButton" Content="Calibrate" HorizontalAlignment="Left" Margin="10,291,0,0" 
@@ -319,6 +319,7 @@
                             </Binding>
                         </TextBox.Text>
                     </TextBox>
+                    <TextBlock Name="CalibrationErrorTextBlock"  HorizontalAlignment="Left" Margin="10,315,0,0" TextWrapping="Wrap" Text="Min RMS error" VerticalAlignment="Top"/>
 
                 </Grid>
             </TabItem>

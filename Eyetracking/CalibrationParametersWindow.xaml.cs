@@ -26,7 +26,7 @@ namespace Eyetracking
 	/// </summary>
 	public partial class CalibrationParametersWindow : Window
 	{
-		private CalibrationParameters calibrationParameters;
+		public CalibrationParameters calibrationParameters { get; private set; }
 
 		public CalibrationParametersWindow(CalibrationParameters parameters)
 		{

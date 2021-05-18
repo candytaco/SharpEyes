@@ -2,6 +2,7 @@
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing.Imaging;
 using System.IO;
@@ -48,6 +49,30 @@ namespace Eyetracking
 
 	internal abstract class PupilFinder : DispatcherObject
 	{
+		/// <summary>
+		/// Median function, since numsharp does not implement a median
+		/// </summary>
+		/// <param name="list"></param>
+		/// <returns></returns>
+		public static double Median(double[] list)
+		{
+			Array.Sort(list);
+			int middle = list.Length / 2;
+			return (list.Length % 2 != 0) ? (double)list[middle] : ((double)list[middle] + (double)list[middle - 1]) / 2;
+		}
+
+		/// <summary>
+		/// Overloaded median for a list of double. Take that, python.
+		/// </summary>
+		/// <param name="list"></param>
+		/// <returns></returns>
+		public static double Median(List<double> list)
+		{
+			list.Sort();
+			int middle = list.Count / 2;
+			return (list.Count % 2 != 0) ? (double)list[middle] : ((double)list[middle] + (double)list[middle - 1]) / 2;
+		}
+
 		// video information
 		public string videoFileName { get; private set; }
 		public string autoTimestampFileName
@@ -524,6 +549,45 @@ namespace Eyetracking
 		{
 			pupilLocations = Num.zeros((frameCount, 4), NPTypeCode.Double);
 			pupilLocations *= Num.NaN;    // use -1 to indicate pupil not yet found on this frame
+		}
+
+		/// <summary>
+		/// Returns the timestamp for a frame. We do this instead of making timestamps public
+		/// to prevent modifications
+		/// </summary>
+		/// <param name="frameNumber"></param>
+		/// <returns>tuple of <hour, minutes, seconds, milliseconds> timestamp</hour></returns>
+		public Tuple<int, int, int, int> GetTimestampForFrame(int frameNumber)
+		{
+			return new Tuple<int, int, int, int>(timeStamps[frameNumber, 0],
+												 timeStamps[frameNumber, 1],
+												 timeStamps[frameNumber, 2],
+												 timeStamps[frameNumber, 3]);
+		}
+
+		/// <summary>
+		/// Gets the median pupil location for a given range of frames
+		/// </summary>
+		/// <param name="startFrame"></param>
+		/// <param name="endFrame"></param>
+		/// <returns></returns>
+		public System.Windows.Point GetMedianPupilLocation(int startFrame, int endFrame)
+		{
+			if (startFrame < 0 || endFrame < 0 || endFrame < startFrame)
+				throw new ArgumentOutOfRangeException();
+
+			List<double> xPositions = new List<double>();
+			List<double> yPositions = new List<double>();
+			for (int i = startFrame; i < endFrame; i++)
+			{
+				double x = pupilLocations[i, 0];
+				double y = pupilLocations[i, 1];
+				if (Double.IsNaN(x)) continue;
+				xPositions.Add(x);
+				yPositions.Add(y);
+			}
+
+			return new System.Windows.Point(Median(xPositions), Median(yPositions));
 		}
 	}
 }

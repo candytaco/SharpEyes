@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 
 // Note: try not to use NumSharp data structures in these classes
@@ -31,9 +32,19 @@ namespace Eyetracking
 
 		public OnCalibrationFinishedDelegate OnCalibrationFinished;
 
+		public double MinRMSError
+		{
+			get
+			{
+				if (xInterpolator == null) return 0;
+				return Math.Sqrt(xInterpolator.RMSError * xInterpolator.RMSError +
+				                 yInterpolator.RMSError * yInterpolator.RMSError);
+			}
+		}
+
 		public Calibrator()
 		{
-			calibrationParameters = new CalibrationParameters();
+			calibrationParameters = CalibrationParameters.GetDefault35PointCalibrationParameters();
 		}
 
 		public Calibrator(CalibrationParameters parameters)
@@ -48,7 +59,7 @@ namespace Eyetracking
 		}
 
 		public async void Calibrate()
-		{
+		{ 
 			Calibrate(this.calibrationPositions);
 		}
 
@@ -56,7 +67,7 @@ namespace Eyetracking
 		/// Performs the calibration
 		/// </summary>
 		/// <param name="positions">list of gaze positions in of calibration points in order in which they were presented</param>
-		public void Calibrate(List<Point> positions)
+		public async void Calibrate(List<Point> positions)
 		{
 			calibrationPositions = positions;
 			double[] pupilX = new double[positions.Count];
@@ -75,12 +86,22 @@ namespace Eyetracking
 			}
 
 			//
-			xInterpolator = RBF2D.SearchHyperparameters(pupilX, pupilY, screenX, calibrationParameters.baseRadiusRange, calibrationParameters.numBaseRadii,
-													calibrationParameters.numLayersRange, calibrationParameters.regularizerRange, calibrationParameters.numRegularizers,
-													calibrationParameters.logSpaceRegularizers);
-			yInterpolator = RBF2D.SearchHyperparameters(pupilX, pupilY, screenY, calibrationParameters.baseRadiusRange, calibrationParameters.numBaseRadii,
-													calibrationParameters.numLayersRange, calibrationParameters.regularizerRange, calibrationParameters.numRegularizers,
-													calibrationParameters.logSpaceRegularizers);
+			await Task.Run(() =>
+			{
+				xInterpolator = RBF2D.SearchHyperparameters(pupilX, pupilY, screenX,
+					calibrationParameters.baseRadiusRange, calibrationParameters.numBaseRadii,
+					calibrationParameters.numLayersRange, calibrationParameters.regularizerRange,
+					calibrationParameters.numRegularizers,
+					calibrationParameters.logSpaceRegularizers);
+				yInterpolator = RBF2D.SearchHyperparameters(pupilX, pupilY, screenY,
+					calibrationParameters.baseRadiusRange, calibrationParameters.numBaseRadii,
+					calibrationParameters.numLayersRange, calibrationParameters.regularizerRange,
+					calibrationParameters.numRegularizers,
+					calibrationParameters.logSpaceRegularizers);
+
+			});
+
+			OnCalibrationFinished();
 		}
 	}
 }

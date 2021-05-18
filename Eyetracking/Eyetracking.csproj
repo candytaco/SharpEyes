@@ -30,7 +30,7 @@
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>1</ApplicationRevision>
-    <ApplicationVersion>0.4.2.%2a</ApplicationVersion>
+    <ApplicationVersion>0.5.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -205,6 +205,7 @@
     <Compile Include="EditableLabel.cs" />
     <Compile Include="EyetrackerCommands.cs" />
     <Compile Include="HoughPupilFinder.cs" />
+    <Compile Include="MainWindow.CalibrationTab.cs" />
     <Compile Include="MainWindow.MenuItems.cs" />
     <Compile Include="MainWindow.PupilFindingTab.cs" />
     <Compile Include="MainWindow.StaticMethods.cs" />

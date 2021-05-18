@@ -820,49 +820,7 @@ namespace Eyetracking
 			}
 		}
 
-		private void OpenCalibrationParametersButton_Click(object sender, RoutedEventArgs e)
-		{
-			if (calibrator == null)
-				calibrator = new Calibrator()
-				{
-					OnCalibrationFinished = this.OnCalibrationFinished
-				};
-
-			CalibrationParametersWindow calibrationParametersWindow =
-				new CalibrationParametersWindow(calibrator.calibrationParameters);
-
-			calibrationParametersWindow.ShowDialog();
-		}
-
-		private void CalibrationStartTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
-		{
-			e.Handled = Regex.Match(e.Text, "[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}.[0-9]{1,3}").Success;
-		}
-
-		private async void CalibrateButton_Click(object sender, RoutedEventArgs e)
-		{
-			if (calibrator == null)
-				calibrator = new Calibrator()
-				{
-					OnCalibrationFinished = this.OnCalibrationFinished
-				};
-
-			calibrator.Calibrate(GetEyetrackingCalibrationPositions(calibrator.calibrationParameters));
-		}
-
-		private List<Point> GetEyetrackingCalibrationPositions(CalibrationParameters parameters)
-		{
-			List<Point> gazePositions = new List<Point>();
-
-			// TODO: get positions
-
-			return gazePositions;
-		}
-
-		private void OnCalibrationFinished()
-		{
-
-		}
+		
 
 		private void MatchModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
@@ -874,6 +832,7 @@ namespace Eyetracking
 		{
 			UseImageAsTemplateButton_Click(null, null);
 		}
+
 
 		private void UpdateFramesProcessedPreviewImage()
 		{

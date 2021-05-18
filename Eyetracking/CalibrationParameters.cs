@@ -17,42 +17,64 @@ namespace Eyetracking
 		/// <summary>
 		/// List of calibration points in screen space
 		/// </summary>
-		public List<Point> calibrationPoints;
+		public List<Point> calibrationPoints { get; set; }
 
 		/// <summary>
 		/// List of the points in the order that they are presented. Indentified by index in <see cref="calibrationPoints"/>
 		/// </summary>
-		public List<int> calibrationSequence;
+		public List<int> calibrationSequence { get; set; }
 
 		/// <summary>
 		/// How long is the fixation at each point
 		/// </summary>
-		public double calibrationDuration = 2.0;
+		public double calibrationDuration { get; set; } = 2.0;
+
+		/// <summary>
+		/// Seconds between the start of the calibration sequence and the presentation of the first point
+		/// Because in driving, the first TTL starts the sequence, and the first point is presented on the 2nd TTL
+		/// </summary>
+		public double calibrationStartDelay { get; set; } = 2.0;
+
+		/// <summary>
+		/// Convenience property to convert the start delay to a frame count
+		/// </summary>
+		public int calibrationStartDelayFrames => (int) (calibrationStartDelay * eyetrackingFPS);
 
 		/// <summary>
 		/// DPI Scaling factor. See Unreal Engine
 		/// </summary>
-		public double DPIUnscaleFactor = 1.0;
+		public double DPIUnscaleFactor { get; set; } = 1.0;
 
 		/// <summary>
 		/// Default amount of time to discard from beginning of each point
 		/// to account for saccade time
 		/// </summary>
-		public double calibrationPointStartDelaySeconds = 1 / 6.0;
+		public double calibrationPointStartDelaySeconds { get; set; } = 1 / 6.0;
 
 		/// <summary>
 		/// Framerate of eyetracking videos
 		/// </summary>
-		public int eyetrackingFPS = 60;
+		public int eyetrackingFPS { get; set; } = 60;
 
 		/// <summary>
-		/// Conversion from delay in seconds to frames
+		/// Conversion for delay in seconds to frames
 		/// </summary>
 		public int calibrationPointStartDelayFrames
 		{
 			get
 			{
 				return (int)(calibrationPointStartDelaySeconds * eyetrackingFPS);
+			}
+		}
+
+		/// <summary>
+		/// Conversion for fixation duration from seconds to frames 
+		/// </summary>
+		public int calibrationDurationFrames
+		{
+			get
+			{
+				return (int) (calibrationDuration * eyetrackingFPS);
 			}
 		}
 
@@ -108,14 +130,12 @@ namespace Eyetracking
 
 			int ySpace = (int)(height / numVertical / DPIUnscaleFactor);
 			int xSpace = (int)(width / numHorizontal / DPIUnscaleFactor);
-			int xStart = -numHorizontal / 2;
-			int yStart = -numVertical / 2;
 
 			int x, y;
-			for (int i = 0; i < numHorizontal / 2 + 1; i++)
+			for (int i = -numHorizontal / 2; i < numHorizontal / 2 + 1; i++)
 			{
 				x = width / 2 + i * xSpace;
-				for (int j = 0; j < numVertical / 2 + 1; j++)
+				for (int j = -numVertical / 2; j < numVertical / 2 + 1; j++)
 				{
 					y = height / 2 + j * ySpace;
 					points.Add(new Point(x, y));
