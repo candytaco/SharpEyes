@@ -31,8 +31,12 @@ namespace Eyetracking
 		public CalibrationParametersWindow(CalibrationParameters parameters)
 		{
 			calibrationParameters = parameters;
-			// TODO: Create data bindings between calibration parameters object and UI
 			InitializeComponent();
+		}
+
+		private void CloseButton_Click(object sender, RoutedEventArgs e)
+		{
+			Close();
 		}
 	}
 }

@@ -289,6 +289,9 @@ namespace Eyetracking
 			pupilFinder.Seek(0);
 			saveAllMenuItem.IsEnabled = true;
 
+			CalibrateButton.IsEnabled = false;
+			MapPupilToGazeButton.IsEnabled = false;
+
 			UpdateFramesProcessedPreviewImage();
 		}
 
@@ -819,8 +822,7 @@ namespace Eyetracking
 			{
 			}
 		}
-
-		
+	
 
 		private void MatchModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
@@ -833,6 +835,10 @@ namespace Eyetracking
 			UseImageAsTemplateButton_Click(null, null);
 		}
 
+		private void StimulusViewWithGazeMenuitem_Click(object sender, RoutedEventArgs e)
+		{
+			OpenStimulusVideoWithGaze();
+		}
 
 		private void UpdateFramesProcessedPreviewImage()
 		{

@@ -80,7 +80,29 @@ namespace Eyetracking
 			get => VideoTimeToGazeDataIndex(VideoMediaElement.Position.TotalMilliseconds);
 		}
 
-		private bool isGazeLoaded = false; // extra because checking gazeLocations != null throws a NullReferenceException....
+		private bool _isGazeLoaded = false;
+
+		private bool isGazeLoaded // extra because checking gazeLocations != null throws a NullReferenceException....
+		{
+			get => _isGazeLoaded;
+			set
+			{
+				_isGazeLoaded = value;
+
+				SetCurrentAsDataStartButton.IsEnabled = true;
+				AutoFindDataStartButton.IsEnabled = true;
+				EyetrackingFPSPicker_ValueChanged(null, null);
+				GazeEllipse.Visibility = Visibility.Hidden;
+				StatusText.Text = "Data start not set";
+				dataStartTime = null;
+				dataEndTime = null;
+				videoKeyFrames.Clear();
+				AddKeyFrameButton.IsEnabled = false;
+				PreviousKeyFrameButton.IsEnabled = false;
+				NextKeyFrameButton.IsEnabled = false;
+				loadGaze2MenuItem.IsEnabled = true;
+			}
+		}
 
 		private double _gazeX = 0;
 		private double _gazeY = 0;
@@ -176,6 +198,24 @@ namespace Eyetracking
 			trailEllipses = new List<Ellipse>();
 			InitializeComponent();
 			SentrySdk.Init("https://4aa216608a894bd99da3daa7424c995d@o553633.ingest.sentry.io/5689896");
+		}
+
+		/// <summary>
+		/// Initialize with a known video and gaze position
+		/// </summary>
+		/// <param name="videoFileName"></param>
+		/// <param name="gazePositions"></param>
+		public StimulusGazeViewer(string videoFileName, NDArray gazePositions)
+		{
+			timer = new DispatcherTimer();
+			videoKeyFrames = new List<VideoKeyFrame>();
+			trailEllipses = new List<Ellipse>();
+			InitializeComponent();
+			SentrySdk.Init("https://4aa216608a894bd99da3daa7424c995d@o553633.ingest.sentry.io/5689896");
+
+			LoadVideoFile(videoFileName);
+			gazeLocations = gazePositions;
+			isGazeLoaded = true;
 		}
 
 		private void OpenVideoMenuItem_Click(object sender, RoutedEventArgs e)
@@ -322,19 +362,7 @@ namespace Eyetracking
 			{
 				gazeLocations = Num.load(openFileDialog.FileName);
 				isGazeLoaded = true;
-				SetCurrentAsDataStartButton.IsEnabled = true;
-				AutoFindDataStartButton.IsEnabled = true;
-				EyetrackingFPSPicker_ValueChanged(null, null);
 				gazeFileName = openFileDialog.FileName;
-				GazeEllipse.Visibility = Visibility.Hidden;
-				StatusText.Text = "Data start not set";
-				dataStartTime = null;
-				dataEndTime = null;
-				videoKeyFrames.Clear();
-				AddKeyFrameButton.IsEnabled = false;
-				PreviousKeyFrameButton.IsEnabled = false;
-				NextKeyFrameButton.IsEnabled = false;
-				loadGaze2MenuItem.IsEnabled = true;
 			}
 		}
 

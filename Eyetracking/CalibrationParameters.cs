@@ -8,6 +8,19 @@ using System.Windows;
 namespace Eyetracking
 {
 	/// <summary>
+	/// Convenience index with an int property for easier data binding
+	/// </summary>
+	public struct CalibrationIndex
+	{
+		public int Index { get; set; }
+
+		public CalibrationIndex(int index)
+		{
+			Index = index;
+		}
+	}
+
+	/// <summary>
 	/// A struct that stores information about the eyetracking calibration sequence
 	/// </summary>
 	public class CalibrationParameters
@@ -22,7 +35,7 @@ namespace Eyetracking
 		/// <summary>
 		/// List of the points in the order that they are presented. Indentified by index in <see cref="calibrationPoints"/>
 		/// </summary>
-		public List<int> calibrationSequence { get; set; }
+		public List<CalibrationIndex> calibrationSequence { get; set; }
 
 		/// <summary>
 		/// How long is the fixation at each point
@@ -83,45 +96,53 @@ namespace Eyetracking
 		/// <summary>
 		/// Minimum base radius for RBF
 		/// </summary>
-		public double minBaseRadius = 1.0;
+		public double minBaseRadius { get; set; } = 1.0;
 
-		public double maxBaseRadius = 100.0;
+		public double maxBaseRadius { get; set; } = 100.0;
 
 		public Tuple<double, double> baseRadiusRange => new Tuple<double, double>(minBaseRadius, maxBaseRadius);
 
-		public int numBaseRadii = 10;
+		public int numBaseRadii { get; set; } = 10;
 
-		public int minNumLayers = 1;
+		public int minNumLayers { get; set; } = 1;
 
-		public int maxNumlayers = 10;
+		public int maxNumlayers { get; set; } = 10;
 
 		public Tuple<int, int> numLayersRange => new Tuple<int, int>(minNumLayers, maxNumlayers);
 
-		public double minRegularizer = 0;
+		public double minRegularizer { get; set; } = 0;
 
-		public double maxRegularizer = 10;
+		public double maxRegularizer { get; set; } = 10;
 
 		public Tuple<double, double> regularizerRange => new Tuple<double, double>(minRegularizer, maxRegularizer);
 
-		public int numRegularizers = 10;
+		public int numRegularizers { get; set; } = 20;
 
-		public bool logSpaceRegularizers = true;
+		public bool logSpaceRegularizers { get; set; } = true;
 
 		public CalibrationParameters()
 		{
 			calibrationPoints = new List<Point>();
-			calibrationSequence = new List<int>();
+			calibrationSequence = new List<CalibrationIndex>();
 		}
 
-		public CalibrationParameters(List<Point> calibrationPoints, List<int> calibrationSequence)
+		public CalibrationParameters(List<Point> calibrationPoints, List<CalibrationIndex> calibrationSequence)
 		{
 			this.calibrationPoints = calibrationPoints;
 			this.calibrationSequence = calibrationSequence;
 		}
 
+		public CalibrationParameters(List<Point> calibrationPoints, List<int> calibrationSequence)
+		{
+			this.calibrationPoints = calibrationPoints;
+			this.calibrationSequence = new List<CalibrationIndex>();
+			for (int i = 0; i < calibrationSequence.Count; i++)
+				this.calibrationSequence.Add(new CalibrationIndex(calibrationSequence[i]));
+		}
+
 		public static CalibrationParameters GetDefault35PointCalibrationParameters()
 		{
-			return new CalibrationParameters(GeneratePoints(1024, 768, 7, 5, 1.0), new List<int>(CalibrationSequence35));
+			return new CalibrationParameters(GeneratePoints(1024, 768, 7, 5, 1.0), CalibrationSequence35);
 		}
 
 		public static List<Point> GeneratePoints(int width, int height, int numHorizontal, int numVertical, double DPIUnscaleFactor)

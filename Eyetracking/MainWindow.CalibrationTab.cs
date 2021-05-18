@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using Microsoft.Win32;
+using NumSharp;
+using Num = NumSharp.np;
+using MessageBox = System.Windows.MessageBox;
 
 namespace Eyetracking
 {
@@ -20,6 +25,8 @@ namespace Eyetracking
 		/// Frame number at which the calibration
 		/// </summary>
 		private int calibrationEndFrame = 0;
+
+		private NDArray gazePosition = null;
 
 		private void OpenCalibrationParametersButton_Click(object sender, RoutedEventArgs e)
 		{
@@ -49,6 +56,11 @@ namespace Eyetracking
 				};
 
 			CalibrateButton.IsEnabled = false;
+
+			// TODO: Convert progress bar thing be not indeterminate
+			progressBar.Visibility = Visibility.Visible;
+			progressBar.IsIndeterminate = true;
+			taskbarItemInfo.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Indeterminate;
 			calibrator.Calibrate(GetEyetrackingCalibrationPositions(calibrator.calibrationParameters));
 		}
 
@@ -73,6 +85,11 @@ namespace Eyetracking
 		{
 			CalibrateButton.IsEnabled = true;
 			CalibrationErrorTextBlock.Text = String.Format("Min RMS error {0}", calibrator.MinRMSError);
+
+			taskbarItemInfo.ProgressState = System.Windows.Shell.TaskbarItemProgressState.None;
+			progressBar.Visibility = Visibility.Collapsed;
+			progressBar.IsIndeterminate = false;
+			MapPupilToGazeButton.IsEnabled = true;
 		}
 
 		/// <summary>
@@ -89,6 +106,8 @@ namespace Eyetracking
 														 timestamp.Item2,
 														 timestamp.Item3,
 														 timestamp.Item4);
+			GazeStartTextBox.Text = CalibrationStartTextBox.Text;
+			CalibrateButton.IsEnabled = true;
 		}
 
 		/// <summary>
@@ -99,6 +118,79 @@ namespace Eyetracking
 		private void MarkOutButton_Click(object sender, RoutedEventArgs e)
 		{
 			calibrationEndFrame = pupilFinder.CurrentFrameNumber;
+		}
+
+		private void MapPupilToGazeButton_Click(object sender, RoutedEventArgs e)
+		{
+			try
+			{
+				int startFrame = pupilFinder.TimeStampToFrameNumber(GazeStartTextBox.Text);
+				gazePosition = calibrator.MapPupilPositionToGazePosition(pupilFinder.pupilLocations[string.Format("{0}:, :2", startFrame)]);
+				saveGazeTraceMenuItem.IsEnabled = true;
+			}
+			catch (InvalidOperationException)
+			{
+				MessageBox.Show("Timestamps not parsed");
+			}
+			catch (ArgumentException)
+			{
+				MessageBox.Show("Invalid timestamp format");
+			}
+		}
+
+		/// <summary>
+		/// Parses the eyetracking history file to get a list of first TRs
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void ReadHistoryFileButton_Click(object sender, RoutedEventArgs e)
+		{
+			
+		}
+
+		private void SaveGazeTrace()
+		{
+			if (gazePosition == null)
+			{
+				MessageBox.Show("Gaze not parsed yet");
+				return;
+			}
+			SaveFileDialog saveFileDialog = new SaveFileDialog
+			{
+				Filter = "Numpy file (*.npy)|*.npy",
+				Title = "Save gaze...",
+				FileName = Path.GetFileNameWithoutExtension(Path.Combine(Path.GetDirectoryName(pupilFinder.videoFileName),
+																		 String.Format("{0} gaze.npy", Path.GetFileNameWithoutExtension(pupilFinder.videoFileName))))
+			};
+			if (saveFileDialog.ShowDialog() == true)
+			{
+				Num.save(saveFileDialog.FileName, gazePosition);
+			}
+		}
+
+		private void OpenVideoForGazeButton_Click(object sender, RoutedEventArgs e)
+		{
+			OpenStimulusVideoWithGaze();
+		}
+
+		private void OpenStimulusVideoWithGaze()
+		{
+			if (gazePosition == null)
+			{
+				MessageBox.Show("Gaze not parsed yet");
+				return;
+			}
+			OpenFileDialog openFileDialog = new OpenFileDialog
+			{
+				DefaultExt = ".mkv",
+				Filter = "Stimulus videos (.avi, .mp4, .mkv)|*.avi;*.mp4;*.mkv",
+				Title = "Open stimulus video..."
+			};
+			if (openFileDialog.ShowDialog() == true)
+			{
+				StimulusGazeViewer stimulusGazeViewer = new StimulusGazeViewer(openFileDialog.FileName, gazePosition);
+				stimulusGazeViewer.Show();
+			}
 		}
 	}
 }

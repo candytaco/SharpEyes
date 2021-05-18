@@ -68,6 +68,7 @@
                 <MenuItem Header="_Save Timestamps" Name="saveTimestampsMenuItem" Click="SaveTimeStampsMenuItemClick" IsEnabled="False"></MenuItem>
                 <MenuItem Header="_Save Eyetracking" Name="saveEyetrackingMenuItem" Click="SaveEyetrackingMenuItem_Click" IsEnabled="False"></MenuItem>
                 <MenuItem Header="Save Templates" Name="saveTemplatesMenuItem" Click="SaveTemplatesMenuItem_Click" IsEnabled="False"/>
+                <MenuItem Header="Save Gaze Trace" Name="saveGazeTraceMenuItem" Click="saveGazeTraceMenuItem_Click" IsEnabled="False"/>
                 <MenuItem Header="Save All" Name="saveAllMenuItem" Click="SaveAllMenuItem_Click" IsEnabled="False"/>
                 <MenuItem Header="Auto save on exit" Name="AutoSaveOnExitMenuItem" IsCheckable="True" IsChecked="True"/>
                 <Separator></Separator>
@@ -76,6 +77,7 @@
             </MenuItem>
             <MenuItem Header="_Tools" Name="toolsMenu">
                 <MenuItem Header="_Stimulus view" Name="StimulusViewMenuItem" Click="StimulusViewMenuItem_Click"/>
+                <MenuItem Header="_Stimulus view with gaze" Name="StimulusViewWithGazeMenuitem" Click="StimulusViewWithGazeMenuitem_Click"/>
             </MenuItem>
             <MenuItem Header="_Help" Name="helpMenu">
                 <MenuItem Header="_Help" Name="HelpMenuItem" Click="HelpMenuItem_Click" />
@@ -302,10 +304,10 @@
                 <Grid Background="#FFE5E5E5">
                     <Button Name="MarkInButton" Content="Mark In" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75" Click="MarkInButton_Click"/>
                     <Button Name="MarkOutButton" Content="Mark Out" HorizontalAlignment="Left" Margin="90,10,0,0" VerticalAlignment="Top" Width="75" Click="MarkOutButton_Click"/>
-                    <Button Name="OpenCalibrationParametersButton" Content="Calibration Parameters" HorizontalAlignment="Left" Margin="10,267,0,0" 
+                    <Button Name="OpenCalibrationParametersButton" Content="Calibration Parameters" HorizontalAlignment="Left" Margin="10,68,0,0" 
                             VerticalAlignment="Top" Width="125" Click="OpenCalibrationParametersButton_Click"/>
-                    <Button Name="CalibrateButton" Content="Calibrate" HorizontalAlignment="Left" Margin="10,291,0,0" 
-                            Click="CalibrateButton_Click" VerticalAlignment="Top" Width="75"/>
+                    <Button Name="CalibrateButton" Content="Calibrate" HorizontalAlignment="Left" Margin="10,92,0,0" 
+                            Click="CalibrateButton_Click" VerticalAlignment="Top" Width="75" IsEnabled="False"/>
                     <Label Content="Calibration start" HorizontalAlignment="Left" Margin="10,34,0,0" VerticalAlignment="Top"/>
                     <TextBox Name="CalibrationStartTextBox" HorizontalAlignment="Left" VerticalContentAlignment="Center"
                              Height="24" Margin="109,34,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"
@@ -319,7 +321,23 @@
                             </Binding>
                         </TextBox.Text>
                     </TextBox>
-                    <TextBlock Name="CalibrationErrorTextBlock"  HorizontalAlignment="Left" Margin="10,315,0,0" TextWrapping="Wrap" Text="Min RMS error" VerticalAlignment="Top"/>
+                    <TextBlock Name="CalibrationErrorTextBlock"  HorizontalAlignment="Left" Margin="10,116,0,0" TextWrapping="Wrap" Text="Min RMS error" VerticalAlignment="Top"/>
+                    <Button x:Name="ReadHistoryFileButton" Content="Read history file" HorizontalAlignment="Left" Margin="170,10,0,0" VerticalAlignment="Top" Width="120" Click="ReadHistoryFileButton_Click"/>
+                    <Label Content="Gaze start" HorizontalAlignment="Left" Margin="10,207,0,0" VerticalAlignment="Top"/>
+                    <TextBox x:Name="GazeStartTextBox" HorizontalAlignment="Left" VerticalContentAlignment="Center"
+                        Height="24" Margin="77,209,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"
+                        PreviewTextInput="CalibrationStartTextBox_PreviewTextInput">
+                        <Binding Path="CalibrationStartTime"
+                            UpdateSourceTrigger="PropertyChanged">
+                            <Binding.ValidationRules>
+                                <local:TimestampRule/>
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </TextBox>
+                    <Button x:Name="MapPupilToGazeButton" Content="Convert to Gaze Position" HorizontalAlignment="Left" Margin="10,238,0,0" 
+                        Click="MapPupilToGazeButton_Click" VerticalAlignment="Top" Width="150" IsEnabled="False"/>
+                    <Button x:Name="OpenVideoForGazeButton" Content="Open stimulus video" HorizontalAlignment="Left" Margin="10,262,0,0" 
+                        Click="OpenVideoForGazeButton_Click" VerticalAlignment="Top" Width="150" IsEnabled="False"/>
 
                 </Grid>
             </TabItem>
