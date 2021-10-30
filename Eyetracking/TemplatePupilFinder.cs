@@ -32,11 +32,11 @@ namespace Eyetracking
 		public List<Mat> antiResults { get; private set; }
 		public int NumAntiTemplates => antiTemplates.Count;
 
-		private int _step = 1;
-		public int step
+		private double _fractionToUse = 1;
+		public double fractionToUse
 		{
-			get { return _step; }
-			set { _step = value > 0 ? value : 1; }
+			get { return _fractionToUse; }
+			set { _fractionToUse = value; }
 		}
 
 		public string autoTemplatesFileName
@@ -259,12 +259,14 @@ namespace Eyetracking
 						int startIndex = NumActiveTemplates == 0 ? 0 : templates.Count - NumActiveTemplates;
 						if (startIndex < 0) startIndex = 0;
 
+						Random random = new Random();
+
 						// match positive templates
 						Parallel.For(startIndex, templates.Count, index =>
 						{
 							int i = (int)index; // because Parallel.For uses a long, and that cannot be implicitly cast to int to index into lists
 
-							if ((i % _step) == 0)	// for when we want to skip every other template
+							if (fractionToUse == 1 || (random.NextDouble() <= fractionToUse))	// randomly skip templates
 							{
 								Cv2.MatchTemplate(filteredFrame[top, bottom, left, right], templates[i].Image, matchResults[i],
 									TemplateMatchMode);
@@ -295,6 +297,10 @@ namespace Eyetracking
 								{
 									x = maxLocation.X + (templates[i].Width - antiTemplates[j].Width);
 									y = maxLocation.Y + (templates[i].Height - antiTemplates[j].Height);
+									x = x < 0 ? 0 : x;
+									y = y < 0 ? 0 : y;
+									x = x >= antiResults[j].Width ? antiResults[j].Width - 1 : x;
+									y = y >= antiResults[j].Height ? antiResults[j].Height - 1 : y;
 									lock (antiResults[j])
 									{
 										antiValue = antiResults[j].At<double>(y, x);

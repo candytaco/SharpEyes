@@ -447,7 +447,7 @@ namespace Eyetracking
 			}
 
 			if (pupilFinder is TemplatePupilFinder templatePupilFinder)
-				templatePupilFinder.step = SkipTemplateCheckBox.IsChecked.Value ? 2 : 1;
+				templatePupilFinder.fractionToUse = PercentTemplatesToUsePicker.Value.Value;
 
 			if (AutoAddCustomTemplateCheckBox.IsChecked.Value && isPupilManuallySetOnThisFrame)
 			{
