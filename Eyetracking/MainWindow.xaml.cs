@@ -446,6 +446,9 @@ namespace Eyetracking
 				isEditingStarted = false;
 			}
 
+			if (pupilFinder is TemplatePupilFinder templatePupilFinder)
+				templatePupilFinder.step = SkipTemplateCheckBox.IsChecked.Value ? 2 : 1;
+
 			if (AutoAddCustomTemplateCheckBox.IsChecked.Value && isPupilManuallySetOnThisFrame)
 			{
 				UseImageAsTemplateButton_Click(null, null);
