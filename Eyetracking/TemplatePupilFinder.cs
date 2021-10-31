@@ -32,6 +32,13 @@ namespace Eyetracking
 		public List<Mat> antiResults { get; private set; }
 		public int NumAntiTemplates => antiTemplates.Count;
 
+		private double _fractionToUse = 1;
+		public double fractionToUse
+		{
+			get { return _fractionToUse; }
+			set { _fractionToUse = value; }
+		}
+
 		public string autoTemplatesFileName
 		{
 			get
@@ -252,113 +259,122 @@ namespace Eyetracking
 						int startIndex = NumActiveTemplates == 0 ? 0 : templates.Count - NumActiveTemplates;
 						if (startIndex < 0) startIndex = 0;
 
+						Random random = new Random();
+
 						// match positive templates
 						Parallel.For(startIndex, templates.Count, index =>
 						{
-							int i = (int)index;	// because Parallel.For uses a long, and that cannot be implicitly cast to int to index into lists
+							int i = (int)index; // because Parallel.For uses a long, and that cannot be implicitly cast to int to index into lists
 
-							Cv2.MatchTemplate(filteredFrame[top, bottom, left, right], templates[i].Image, matchResults[i],
-								TemplateMatchMode);
-							matchResults[i].MinMaxLoc(out double minVal, out double maxVal, out Point minLocation,
-								out Point maxLocation);
-
-							// square difference uses minimum value as best
-							switch (TemplateMatchMode)
+							if (fractionToUse == 1 || (random.NextDouble() <= fractionToUse))	// randomly skip templates
 							{
-								case TemplateMatchModes.SqDiff:
-									maxVal = filteredFrame.Width * filteredFrame.Height * 255 * 255 - minVal;
-									maxLocation = minLocation;
-									break;
-								case TemplateMatchModes.SqDiffNormed:
-									maxVal = 1 - minVal;
-									maxLocation = minLocation;
-									break;
-								default:
-									break;
-							}
+								Cv2.MatchTemplate(filteredFrame[top, bottom, left, right], templates[i].Image, matchResults[i],
+									TemplateMatchMode);
+								matchResults[i].MinMaxLoc(out double minVal, out double maxVal, out Point minLocation,
+									out Point maxLocation);
 
-							// if there are negative templates, subtract the value of the best anti-match
-							// at this best match
-							double maxAntiMatch = 0;
-							double thisAntiValue, antiValue;
-							int x, y;	// indexes into the antimatch results, which may be of difference sizes because template
-							for (int j = 0; j < NumAntiTemplates; j++)
-							{
-								x = maxLocation.X + (templates[i].Width - antiTemplates[j].Width);
-								y = maxLocation.Y + (templates[i].Height - antiTemplates[j].Height);
-								lock (antiResults[j])
-								{
-									antiValue = antiResults[j].At<double>(y, x);
-								}
-
+								// square difference uses minimum value as best
 								switch (TemplateMatchMode)
 								{
 									case TemplateMatchModes.SqDiff:
-										thisAntiValue = filteredFrame.Width * filteredFrame.Height * 255 * 255 -
-										                antiValue;
+										maxVal = filteredFrame.Width * filteredFrame.Height * 255 * 255 - minVal;
+										maxLocation = minLocation;
 										break;
 									case TemplateMatchModes.SqDiffNormed:
-										thisAntiValue = 1 - antiValue;
+										maxVal = 1 - minVal;
+										maxLocation = minLocation;
 										break;
 									default:
-										thisAntiValue = antiValue;
 										break;
 								}
 
-								if (thisAntiValue > maxAntiMatch)
-									maxAntiMatch = thisAntiValue;
-							}
-							maxVal -= maxAntiMatch;
-
-							lock (templateLock)
-							{
-								if (NumMatches == 1) // only need highest match and so write directly
+								// if there are negative templates, subtract the value of the best anti-match
+								// at this best match
+								double maxAntiMatch = 0;
+								double thisAntiValue, antiValue;
+								int x, y;   // indexes into the antimatch results, which may be of difference sizes because template
+								for (int j = 0; j < NumAntiTemplates; j++)
 								{
-									if (maxVal > bestCorrelationOnThisFrame)
+									x = maxLocation.X + (templates[i].Width - antiTemplates[j].Width);
+									y = maxLocation.Y + (templates[i].Height - antiTemplates[j].Height);
+									x = x < 0 ? 0 : x;
+									y = y < 0 ? 0 : y;
+									x = x >= antiResults[j].Width ? antiResults[j].Width - 1 : x;
+									y = y >= antiResults[j].Height ? antiResults[j].Height - 1 : y;
+									lock (antiResults[j])
 									{
-										if (!IsUsingCustomTemplates) // case auto-generated templates
-										{
-											pupilLocations[CurrentFrameNumber, 0] = maxLocation.X + left + maxRadius;
-											pupilLocations[CurrentFrameNumber, 1] = maxLocation.Y + top + maxRadius;
-											pupilLocations[CurrentFrameNumber, 2] = i + minRadius;
-										}
-										else // custom templates that may have different sizes. I was going to use ternary ops because slick but it would make three of the same comparisons
-										{
-											pupilLocations[CurrentFrameNumber, 0] =
-												maxLocation.X + left + templates[i].X;
-											pupilLocations[CurrentFrameNumber, 1] =
-												maxLocation.Y + top + templates[i].Y;
-											pupilLocations[CurrentFrameNumber, 2] = templates[i].Radius.Value;
-										}
-
-										bestCorrelationOnThisFrame = maxVal;
+										antiValue = antiResults[j].At<double>(y, x);
 									}
-								}
-								else // have to store values to intermediate and then do weighted average
-								{
-									for (int j = 0; j < NumMatches; j++)
+
+									switch (TemplateMatchMode)
 									{
-										// look over existing stored matches, and if this is better than any
-										// immediately overwrite that one
-										if (maxVal > topMatches[j, 3])
+										case TemplateMatchModes.SqDiff:
+											thisAntiValue = filteredFrame.Width * filteredFrame.Height * 255 * 255 -
+															antiValue;
+											break;
+										case TemplateMatchModes.SqDiffNormed:
+											thisAntiValue = 1 - antiValue;
+											break;
+										default:
+											thisAntiValue = antiValue;
+											break;
+									}
+
+									if (thisAntiValue > maxAntiMatch)
+										maxAntiMatch = thisAntiValue;
+								}
+								maxVal -= maxAntiMatch;
+
+								lock (templateLock)
+								{
+									if (NumMatches == 1) // only need highest match and so write directly
+									{
+										if (maxVal > bestCorrelationOnThisFrame)
 										{
 											if (!IsUsingCustomTemplates) // case auto-generated templates
 											{
-												topMatches[j, 0] = maxLocation.X + left + maxRadius;
-												topMatches[j, 1] = maxLocation.Y + top + maxRadius;
-												topMatches[j, 2] = i + minRadius;
+												pupilLocations[CurrentFrameNumber, 0] = maxLocation.X + left + maxRadius;
+												pupilLocations[CurrentFrameNumber, 1] = maxLocation.Y + top + maxRadius;
+												pupilLocations[CurrentFrameNumber, 2] = i + minRadius;
 											}
 											else // custom templates that may have different sizes. I was going to use ternary ops because slick but it would make three of the same comparisons
 											{
-												topMatches[j, 0] =
+												pupilLocations[CurrentFrameNumber, 0] =
 													maxLocation.X + left + templates[i].X;
-												topMatches[j, 1] =
+												pupilLocations[CurrentFrameNumber, 1] =
 													maxLocation.Y + top + templates[i].Y;
-												topMatches[j, 2] = templates[i].Radius.Value;
+												pupilLocations[CurrentFrameNumber, 2] = templates[i].Radius.Value;
 											}
 
-											topMatches[j, 3] = maxVal;
-											break;
+											bestCorrelationOnThisFrame = maxVal;
+										}
+									}
+									else // have to store values to intermediate and then do weighted average
+									{
+										for (int j = 0; j < NumMatches; j++)
+										{
+											// look over existing stored matches, and if this is better than any
+											// immediately overwrite that one
+											if (maxVal > topMatches[j, 3])
+											{
+												if (!IsUsingCustomTemplates) // case auto-generated templates
+												{
+													topMatches[j, 0] = maxLocation.X + left + maxRadius;
+													topMatches[j, 1] = maxLocation.Y + top + maxRadius;
+													topMatches[j, 2] = i + minRadius;
+												}
+												else // custom templates that may have different sizes. I was going to use ternary ops because slick but it would make three of the same comparisons
+												{
+													topMatches[j, 0] =
+														maxLocation.X + left + templates[i].X;
+													topMatches[j, 1] =
+														maxLocation.Y + top + templates[i].Y;
+													topMatches[j, 2] = templates[i].Radius.Value;
+												}
+
+												topMatches[j, 3] = maxVal;
+												break;
+											}
 										}
 									}
 								}

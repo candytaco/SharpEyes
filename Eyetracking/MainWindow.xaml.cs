@@ -450,6 +450,9 @@ namespace Eyetracking
 				isEditingStarted = false;
 			}
 
+			if (pupilFinder is TemplatePupilFinder templatePupilFinder)
+				templatePupilFinder.fractionToUse = PercentTemplatesToUsePicker.Value.Value;
+
 			if (AutoAddCustomTemplateCheckBox.IsChecked.Value && isPupilManuallySetOnThisFrame)
 			{
 				UseImageAsTemplateButton_Click(null, null);
