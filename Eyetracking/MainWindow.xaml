@@ -311,7 +311,7 @@
                     <Label Content="Calibration start" HorizontalAlignment="Left" Margin="10,34,0,0" VerticalAlignment="Top"/>
                     <TextBox Name="CalibrationStartTextBox" HorizontalAlignment="Left" VerticalContentAlignment="Center"
                              Height="24" Margin="109,34,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"
-                             PreviewTextInput="CalibrationStartTextBox_PreviewTextInput">
+                             PreviewTextInput="CalibrationStartTextBox_PreviewTextInput" TextChanged="CalibrationStartTextBox_TextChanged">
                         <TextBox.Text>
                             <Binding Path="CalibrationStartTime"
                                      UpdateSourceTrigger="PropertyChanged">
@@ -327,7 +327,7 @@
                     <TextBox x:Name="GazeStartTextBox" HorizontalAlignment="Left" VerticalContentAlignment="Center"
                         Height="24" Margin="77,209,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"
                         PreviewTextInput="CalibrationStartTextBox_PreviewTextInput">
-                        <Binding Path="CalibrationStartTime"
+                        <Binding Path="GazeStartTime"
                             UpdateSourceTrigger="PropertyChanged">
                             <Binding.ValidationRules>
                                 <local:TimestampRule/>

@@ -171,6 +171,7 @@ namespace Eyetracking
 		// == mapping from eyetracking video space to stimulus video space ==
 		private Calibrator calibrator = null;
 		public string CalibrationStartTime { get; set; } = "00:00:00.000";
+		public string GazeStartTime { get; set; } = "00:00:00.000";
 
 		public MainWindow()
 		{
@@ -291,6 +292,9 @@ namespace Eyetracking
 
 			CalibrateButton.IsEnabled = false;
 			MapPupilToGazeButton.IsEnabled = false;
+
+			OpenVideoForGazeButton.IsEnabled = false;
+			StimulusViewWithGazeMenuitem.IsEnabled = false;
 
 			UpdateFramesProcessedPreviewImage();
 		}

@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.Win32;
 using NumSharp;
@@ -19,7 +20,7 @@ namespace Eyetracking
 		/// <summary>
 		/// Frame number at which the calibration sequence starts
 		/// </summary>
-		private int calibrationStartFrame = 0;
+		private int? calibrationStartFrame = null;
 		
 		/// <summary>
 		/// Frame number at which the calibration
@@ -45,9 +46,10 @@ namespace Eyetracking
 		private void CalibrationStartTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
 		{
 			e.Handled = Regex.Match(e.Text, "[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}.[0-9]{1,3}").Success;
+			CalibrateButton.IsEnabled = e.Handled;
 		}
 
-		private async void CalibrateButton_Click(object sender, RoutedEventArgs e)
+		private void CalibrateButton_Click(object sender, RoutedEventArgs e)
 		{
 			if (calibrator == null)
 				calibrator = new Calibrator()
@@ -68,10 +70,12 @@ namespace Eyetracking
 		{
 			List<Point> gazePositions = new List<Point>();
 
-			// TODO: get positions
+			if (calibrationStartFrame == null)
+				calibrationStartFrame = pupilFinder.TimeStampToFrameNumber(CalibrationStartTime);
+			
 			for (int i = 0; i < parameters.calibrationPoints.Count; i++)
 			{
-				int startFrame = calibrationStartFrame + i * parameters.calibrationDurationFrames + parameters.calibrationStartDelayFrames;
+				int startFrame = calibrationStartFrame.Value + i * parameters.calibrationDurationFrames + parameters.calibrationStartDelayFrames;
 				int endFrame = startFrame + parameters.calibrationDurationFrames;
 				startFrame += parameters.calibrationPointStartDelayFrames;
 
@@ -100,12 +104,13 @@ namespace Eyetracking
 		private void MarkInButton_Click(object sender, RoutedEventArgs e)
 		{
 			calibrationStartFrame = pupilFinder.CurrentFrameNumber;
-			Tuple<int, int, int, int> timestamp = pupilFinder.GetTimestampForFrame(calibrationStartFrame);
-			CalibrationStartTextBox.Text = String.Format("{0:00}:{1:00}:{2:00}.{3:000}",
+			Tuple<int, int, int, int> timestamp = pupilFinder.GetTimestampForFrame(calibrationStartFrame.Value);
+			CalibrationStartTime = String.Format("{0:00}:{1:00}:{2:00}.{3:000}",
 														 timestamp.Item1,
 														 timestamp.Item2,
 														 timestamp.Item3,
 														 timestamp.Item4);
+			CalibrationStartTextBox.Text = CalibrationStartTime;
 			GazeStartTextBox.Text = CalibrationStartTextBox.Text;
 			CalibrateButton.IsEnabled = true;
 		}
@@ -120,13 +125,15 @@ namespace Eyetracking
 			calibrationEndFrame = pupilFinder.CurrentFrameNumber;
 		}
 
-		private void MapPupilToGazeButton_Click(object sender, RoutedEventArgs e)
+		private async void MapPupilToGazeButton_Click(object sender, RoutedEventArgs e)
 		{
 			try
 			{
-				int startFrame = pupilFinder.TimeStampToFrameNumber(GazeStartTextBox.Text);
-				gazePosition = calibrator.MapPupilPositionToGazePosition(pupilFinder.pupilLocations[string.Format("{0}:, :2", startFrame)]);
+				int startFrame = pupilFinder.TimeStampToFrameNumber(GazeStartTime);
+				gazePosition = await Task.Run(() => calibrator.MapPupilPositionToGazePosition(pupilFinder.pupilLocations[string.Format("{0}:, :2", startFrame)]));
 				saveGazeTraceMenuItem.IsEnabled = true;
+				OpenVideoForGazeButton.IsEnabled = true;
+				StimulusViewWithGazeMenuitem.IsEnabled = true;
 			}
 			catch (InvalidOperationException)
 			{
@@ -192,5 +199,20 @@ namespace Eyetracking
 				stimulusGazeViewer.Show();
 			}
 		}
+
+
+		private void CalibrationStartTextBox_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			try
+			{
+				GazeStartTextBox.Text = CalibrationStartTextBox.Text;
+			}
+			catch (NullReferenceException) { }
+
+			CalibrateButton.IsEnabled =
+				Regex.IsMatch(CalibrationStartTextBox.Text, "[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}.[0-9]{1,3}");
+
+		}
+
 	}
 }

@@ -7,7 +7,7 @@ using System.ComponentModel;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Num = NumSharp.np;
@@ -599,38 +599,42 @@ namespace Eyetracking
 		/// <returns>index of frame</returns>
 		public int TimeStampToFrameNumber(string timestamp)
 		{
-			if (timeStamps == null)
+			if (timeStamps == null) // TODO: after calibration, this hangs because it's waiting on a lock, apparently on timeStamps
 				throw new InvalidOperationException();
 
-			Match match = Regex.Match(timestamp, "[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}.[0-9]{1,3}");
+			Match match = Regex.Match(timestamp, "([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2}).([0-9]{1,3})");
 			if (!match.Success)
 				throw new ArgumentException();
 
-			int hour = int.Parse(match.Groups[0].Value);
-			int minute = int.Parse(match.Groups[1].Value);
-			int second = int.Parse(match.Groups[2].Value);
-			int millisecond = int.Parse(match.Groups[3].Value);
+			// Groups[0] is entire string that matched the regex
+			int hour = int.Parse(match.Groups[1].Value);
+			int minute = int.Parse(match.Groups[2].Value);
+			int second = int.Parse(match.Groups[3].Value);
+			int millisecond = int.Parse(match.Groups[4].Value);
 
 			// iterate through all timestamps and get the timestamp with the lowest difference
 			int minIndex = 0;
 			int minDiff = int.MaxValue;	// difference in milliseconds from desired timestamp
-			object comparisonLock = new object();
+			//object comparisonLock = new object();
 
-			Parallel.For(0, timeStamps.shape[0], i =>
+			for (int i = 0; i < timeStamps.shape[0]; i++)
+			//Parallel.For(0, timeStamps.shape[0], i =>
 			{
 				int diff = (hour - timeStamps[i, 0]) * 3600 * 1000 +
 					(minute - timeStamps[i, 1]) * 60 * 1000 +
 					(second - timeStamps[i, 2]) * 1000 +
 					millisecond - timeStamps[i, 3];
-				lock (comparisonLock)
+				if (diff < 0) diff *= -1;
+				//lock (comparisonLock)
+				//{
+				if (diff < minDiff)
 				{
-					if (diff < minDiff)
-					{
-						minDiff = diff;
+					minDiff = diff;
 						minIndex = i;
-					}
 				}
-			});
+				//}
+
+			}//);
 
 			return minIndex;
 		}

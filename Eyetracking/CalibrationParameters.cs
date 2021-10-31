@@ -96,17 +96,17 @@ namespace Eyetracking
 		/// <summary>
 		/// Minimum base radius for RBF
 		/// </summary>
-		public double minBaseRadius { get; set; } = 1.0;
+		public double minBaseRadius { get; set; } = 10.0;
 
 		public double maxBaseRadius { get; set; } = 100.0;
 
 		public Tuple<double, double> baseRadiusRange => new Tuple<double, double>(minBaseRadius, maxBaseRadius);
 
-		public int numBaseRadii { get; set; } = 10;
+		public int numBaseRadii { get; set; } = 4;
 
 		public int minNumLayers { get; set; } = 1;
 
-		public int maxNumlayers { get; set; } = 10;
+		public int maxNumlayers { get; set; } = 3;
 
 		public Tuple<int, int> numLayersRange => new Tuple<int, int>(minNumLayers, maxNumlayers);
 
@@ -116,7 +116,7 @@ namespace Eyetracking
 
 		public Tuple<double, double> regularizerRange => new Tuple<double, double>(minRegularizer, maxRegularizer);
 
-		public int numRegularizers { get; set; } = 20;
+		public int numRegularizers { get; set; } = 10;
 
 		public bool logSpaceRegularizers { get; set; } = true;
 
