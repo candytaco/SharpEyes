@@ -358,15 +358,23 @@ namespace Eyetracking
 		/// <returns></returns>
 		public bool ReadFrame()
 		{
-			bool success = videoSource.Read(cvFrame);
-			if (!success)
+			try
 			{
+				bool success = videoSource.Read(cvFrame);
+				if (!success)
+				{
+					return success;
+				}
+
+				_currentFrameNumber++;
+				isCVFrameConverted = false;
 				return success;
 			}
-
-			_currentFrameNumber++;
-			isCVFrameConverted = false;
-			return success;
+			catch (AccessViolationException e)
+			{
+				Sentry.SentrySdk.CaptureException(e);
+				return false;
+			}
 		}
 
 		/// <summary>
