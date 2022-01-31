@@ -27,6 +27,18 @@ namespace Eyetracking
 		// Radius of object, can be set to null if not needed
 		public readonly double? Radius;
 
+		// Mean brightness of the pupil
+		public double MeanBrightness
+		{
+			get
+			{
+				return (Image.SubMat(Width / 2 - (int)Radius.Value, 
+									Width / 2 + (int)Radius.Value, 
+									Height / 2 - (int)Radius.Value, 
+									Height / 2 + (int)Radius.Value).Sum().ToDouble() / (Width * Height));
+			}
+		}
+
 		public Template(Mat image, double? radius)
 		{
 			Image = image;

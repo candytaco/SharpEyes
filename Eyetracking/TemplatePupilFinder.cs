@@ -24,6 +24,7 @@ namespace Eyetracking
 		public List<Mat> matchResults { get; private set; }
 		private double bestCorrelationOnThisFrame = -1;
 		public int NumTemplates { get; private set; } = 0;
+		public double meanTemplateBrightness { get; private set; } = -1;
 
 		/// <summary>
 		/// Templates for rejecting matches
@@ -146,7 +147,8 @@ namespace Eyetracking
 			NumTemplates++;
 
 			matchResults.Add(new Mat());
-			
+
+			UpdateTemplateBrightness();			
 		}
 
 		/// <summary>
@@ -212,6 +214,7 @@ namespace Eyetracking
 			templates.RemoveAt(index);
 			matchResults.RemoveAt(index);
 			NumTemplates--;
+			UpdateTemplateBrightness();
 		}
 
 		public void RemoveAntiTemplate(int index)
@@ -222,7 +225,7 @@ namespace Eyetracking
 			antiResults.RemoveAt(index);
 		}
 
-		public override void FindPupils(int Frames, double threshold = 0, int thresholdFrames = 0)
+		public override void FindPupils(int Frames, double threshold = 0, int thresholdFrames = 0, bool doNotStopForBlink = false)
 		{
 			base.FindPupils(Frames);
 			DateTime start = DateTime.Now;
@@ -442,8 +445,24 @@ namespace Eyetracking
 							cumulativeConfidence += pupilLocations[CurrentFrameNumber - i, 3];
 						if (cumulativeConfidence < threshold * thresholdFrames)
 						{
-							stepBack = true;
-							break;
+							if (doNotStopForBlink)
+							{
+								// blink detection via brightness, if too bright, don't stop
+								double x = pupilLocations[CurrentFrameNumber, 0];
+								double y = pupilLocations[CurrentFrameNumber, 1];
+								double r = pupilLocations[CurrentFrameNumber, 2];
+								double brightness = filteredFrame[(int)(x - r), (int)(x + r), (int)(y - r), (int)(y + r)].Sum().ToDouble() / (2 * r * 2 * r);
+								if (brightness <= 1.5 * meanTemplateBrightness)	// too bright to be a pupil
+								{
+									stepBack = true;
+									break;
+								}
+							}
+							else
+							{
+								stepBack = true;
+								break;
+							}
 						}
 					}
 				}
@@ -578,6 +597,8 @@ namespace Eyetracking
 
 				IsUsingCustomTemplates = true;
 
+				UpdateTemplateBrightness();
+
 				matchResults = new List<Mat>(NumTemplates);
 				for (int i = 0; i < NumTemplates; i++)
 					matchResults.Add(new Mat());
@@ -634,6 +655,16 @@ namespace Eyetracking
 				}
 			}
 			
+		}
+
+		private void UpdateTemplateBrightness()
+		{
+			meanTemplateBrightness = 0;
+			foreach (Template template in templates)
+			{
+				meanTemplateBrightness += template.MeanBrightness;
+			}
+			meanTemplateBrightness /= templates.Count;
 		}
 	}
 }

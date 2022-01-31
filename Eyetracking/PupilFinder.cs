@@ -260,7 +260,9 @@ namespace Eyetracking
 		/// <param name="frames"> number of frames from current to find pupils for </param>
 		/// <param name="threshold"> confidence threshold at which to auto-pause pupil finding</param>
 		/// <param name="thresholdFrames"> confidence threshold duration at which to auto pause pupil finding</param>
-		public virtual void FindPupils(int frames, double threshold = 0, int thresholdFrames = 0)
+		/// <param name="doNotStopForBlink"></param>
+		
+		public virtual void FindPupils(int frames, double threshold = 0, int thresholdFrames = 0, bool doNotStopForBlink = false)
 		{
 			if (!isTimestampParsed)
 			{

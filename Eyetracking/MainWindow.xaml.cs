@@ -472,7 +472,8 @@ namespace Eyetracking
 			}
 
 			pupilFinder.FindPupils(frames, AutoPausePupilFindingCheckBox.IsChecked.Value ? ConfidenceThresholdPicker.Value.Value : 0,
-								   AutoPausePupilFindingCheckBox.IsChecked.Value ? ConfidenceThresholdFramesPicker.Value.Value : 0);
+								   AutoPausePupilFindingCheckBox.IsChecked.Value ? ConfidenceThresholdFramesPicker.Value.Value : 0,
+								   AutoPausePupilFindingCheckBox.IsChecked.Value ? DoNotStopForBlinksButton.IsChecked.Value : false);
 		}
 
 		private void LoadTimestamps()
