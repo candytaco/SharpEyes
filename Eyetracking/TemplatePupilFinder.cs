@@ -458,6 +458,12 @@ namespace Eyetracking
 									stepBack = true;
 									break;
 								}
+								else
+								{
+									// set confidence to 1 so the low confidence from the blink
+									// doesn't stop on this pupil frame
+									pupilLocations[CurrentFrameNumber, 3] = 1;
+								}
 							}
 							else
 							{
