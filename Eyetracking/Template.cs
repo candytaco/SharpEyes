@@ -32,10 +32,7 @@ namespace Eyetracking
 		{
 			get
 			{
-				return (Image.SubMat(Width / 2 - (int)Radius.Value, 
-									Width / 2 + (int)Radius.Value, 
-									Height / 2 - (int)Radius.Value, 
-									Height / 2 + (int)Radius.Value).Sum().ToDouble() / (Width * Height));
+				return (Image.Sum().ToDouble() / (Width * Height));
 			}
 		}
 

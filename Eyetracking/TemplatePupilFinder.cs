@@ -25,6 +25,7 @@ namespace Eyetracking
 		private double bestCorrelationOnThisFrame = -1;
 		public int NumTemplates { get; private set; } = 0;
 		public double meanTemplateBrightness { get; private set; } = -1;
+		public double stdevTemplateBrightness { get; private set; } = -1;
 
 		/// <summary>
 		/// Templates for rejecting matches
@@ -450,9 +451,9 @@ namespace Eyetracking
 								// blink detection via brightness, if too bright, don't stop
 								double x = pupilLocations[CurrentFrameNumber, 0];
 								double y = pupilLocations[CurrentFrameNumber, 1];
-								double r = pupilLocations[CurrentFrameNumber, 2];
-								double brightness = filteredFrame[(int)(x - r), (int)(x + r), (int)(y - r), (int)(y + r)].Sum().ToDouble() / (2 * r * 2 * r);
-								if (brightness <= 1.5 * meanTemplateBrightness)	// too bright to be a pupil
+								double r = pupilLocations[CurrentFrameNumber, 2] * 1.5;
+								double brightness = filteredFrame[(int)(y - r), (int)(y + r), (int)(x - r), (int)(x + r)].Sum().ToDouble() / (4 * r * r);
+								if (brightness <= 2.5 * stdevTemplateBrightness + meanTemplateBrightness)	// not bright enough to be a eyelid
 								{
 									stepBack = true;
 									break;
@@ -659,12 +660,19 @@ namespace Eyetracking
 
 		private void UpdateTemplateBrightness()
 		{
+			// see https://stackoverflow.com/questions/895929/how-do-i-determine-the-standard-deviation-stddev-of-a-set-of-values
 			meanTemplateBrightness = 0;
+			stdevTemplateBrightness = 0;
+			double tempMean;
+			int count = 1;
 			foreach (Template template in templates)
 			{
-				meanTemplateBrightness += template.MeanBrightness;
+				tempMean = meanTemplateBrightness;
+				meanTemplateBrightness += (template.MeanBrightness - tempMean) / count;
+				stdevTemplateBrightness += (template.MeanBrightness - tempMean) * (template.MeanBrightness - meanTemplateBrightness);
+				count++;
 			}
-			meanTemplateBrightness /= templates.Count;
+			stdevTemplateBrightness = Math.Sqrt(stdevTemplateBrightness / (count - 1));
 		}
 	}
 }
