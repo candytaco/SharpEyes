@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace Eyetracking
 {
@@ -206,5 +207,14 @@ namespace Eyetracking
 			preview = (TemplatePreview) ShowTemplatesComboBox.SelectedIndex;
 			TemplatePreviewIndex = 0;
 		}
+
+
+		private void TemplatePreviewImage_MouseWheel(object sender, MouseWheelEventArgs e)
+		{
+			if (e.Delta < 0)
+				NextTemplateButton_Click(null, null);
+			else PreviousTemplateButton_Click(null, null);
+		}
+
 	}
 }
