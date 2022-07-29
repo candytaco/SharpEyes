@@ -187,7 +187,7 @@
                                 <Button Name="ResetTemplatesButton" Content="Reset to default templates" HorizontalAlignment="Left" Margin="10,71,0,0" VerticalAlignment="Top" Width="auto" Click="ResetTemplatesButton_Click" IsEnabled="False"/>
                                 <GroupBox Header="Template Preview" HorizontalAlignment="Left" Height="133" Margin="176,29,0,0" VerticalAlignment="Top" Width="149">
                                     <Grid>
-                                        <Image Name="TemplatePreviewImage"  Margin="0,0,0,0" Stretch="Uniform"/>
+                                        <Image Name="TemplatePreviewImage"  Margin="0,0,0,0" Stretch="Uniform" MouseWheel="TemplatePreviewImage_MouseWheel"/>
                                         <Button Name="DeleteTemplateButton" Content="Delete" HorizontalAlignment="Right" Margin="0,0,4,4" VerticalAlignment="Bottom" Width="auto" Click="DeleteTemplateButton_Click" Visibility="Hidden"/>
                                     </Grid>
                                 </GroupBox>
@@ -241,7 +241,7 @@
                     </TabControl>
                     <xctk:IntegerUpDown x:Name="MinRadiusPicker" Value="10" Increment="1" Minimum="1" Maximum="25" Height="24" Margin="91,128,0,0" ValueChanged="RadiusPickerValuesChanged" VerticalAlignment="Top" HorizontalAlignment="Left" MinWidth="75" MinHeight="26"/>
                     <Label Content="Min radius" HorizontalAlignment="Left" Margin="20,126,0,0" VerticalAlignment="Top"/>
-                    <xctk:IntegerUpDown x:Name="MaxRadiusPicker" Value="25" Increment="1" Minimum="10" Maximum="50" Height="24" Margin="254,128,0,0" ValueChanged="RadiusPickerValuesChanged" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="75" MinHeight="26"/>
+                    <xctk:IntegerUpDown x:Name="MaxRadiusPicker" Value="32" Increment="1" Minimum="10" Maximum="50" Height="24" Margin="254,128,0,0" ValueChanged="RadiusPickerValuesChanged" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="75" MinHeight="26"/>
                     <Label Content="Max radius" HorizontalAlignment="Left" Margin="182,126,0,0" VerticalAlignment="Top"/>
                     <Button Name="CancelPupilFindingButton" Content="Cancel" HorizontalAlignment="Left" Margin="119,92,0,0" VerticalAlignment="Top" Width="75" Visibility="Hidden" Click="CancelPupilFindingButton_Click"/>
                     <CheckBox Name="FindPupilsAllFramesCheckBox" Content="All Frames" HorizontalAlignment="Left" Margin="91,65,0,0" VerticalAlignment="Top" IsChecked="False" Checked="FindPupilsAllFramesCheckBox_Checked" Unchecked="FindPupilsAllFramesCheckBox_Checked"/>
