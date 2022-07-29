@@ -193,7 +193,7 @@ namespace Eyetracking
 		public FrameProcessedDelegate UpdateFrame;
 		public FramesProcessedDelegate OnFramesPupilsProcessed; // delegate for when pupils are found in a chunk of frames
 		public FramesProcessedDelegate OnTimeStampsFound;		// delegate for when timestamps are found
-		public CancelPupilFindingDelegate CancelPupilFinding;
+		public CancelPupilFindingDelegate CancelPupilFinding;	// delegate for interrupting pupil finding
 
 		/// <summary>
 		/// For taskbar progress bars
