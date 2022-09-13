@@ -451,7 +451,11 @@ namespace Eyetracking
 			}
 
 			if (pupilFinder is TemplatePupilFinder templatePupilFinder)
+			{
 				templatePupilFinder.fractionToUse = PercentTemplatesToUsePicker.Value.Value;
+				templatePupilFinder.pupilBrightnessThreshold = PupilStdevThresholdPicker.Value.Value;
+				templatePupilFinder.windowBrightnessThreshold = BlinkStdevThresholdPicker.Value.Value;
+			}
 
 			if (AutoAddCustomTemplateCheckBox.IsChecked.Value && isPupilManuallySetOnThisFrame)
 			{

@@ -24,8 +24,14 @@ namespace Eyetracking
 		public List<Mat> matchResults { get; private set; }
 		private double bestCorrelationOnThisFrame = -1;
 		public int NumTemplates { get; private set; } = 0;
-		public double meanTemplateBrightness { get; private set; } = -1;
-		public double stdevTemplateBrightness { get; private set; } = -1;
+
+		// used for blink detection and bad pupil identification
+		public double meanPupilBrightness { get; private set; } = -1;
+		public double stdevPupilBrightness { get; private set; } = -1;
+		public double pupilBrightnessThreshold = 2;	// number of stdevs above mean pupil brightness to break
+		public double? meanWindowBrightness { get; private set; } = null;
+		public double? stdevWindowBrightness { get; private set; } = null;
+		public double windowBrightnessThreshold = 2; // number of stdevs above mean window brightness to count as a blink
 
 		/// <summary>
 		/// Templates for rejecting matches
@@ -143,7 +149,7 @@ namespace Eyetracking
 
 			Mat template = new Mat(bottom - top - deltaTop - deltaBottom, right - left - deltaLeft - deltaRight, MatType.CV_8UC1);
 			filteredFrame[top + deltaTop, bottom - deltaBottom, left + deltaLeft, right - deltaRight].CopyTo(template);
-			templates.Add(new Template(template, radius, (double)template.Width / 2 - deltaLeft + deltaRight, (double)template.Height / 2 - deltaTop + deltaBottom));
+			templates.Add(new Template(template, radius, (double)template.Width / 2 - deltaLeft + deltaRight, (double)template.Height / 2 - deltaTop + deltaBottom, WindowBrightness));
 
 			NumTemplates++;
 
@@ -442,34 +448,16 @@ namespace Eyetracking
 					cumulativeConfidence = 0;
 					if (f >= thresholdFrames)
 					{
+						if (doNotStopForBlink && stdevWindowBrightness.HasValue)
+							// if too bright, is probably eyelid, set confidence to 1 so this frame doesn't stop the process
+							if (WindowBrightness > windowBrightnessThreshold * stdevWindowBrightness.Value + meanWindowBrightness.Value)
+								pupilLocations[CurrentFrameNumber, 3] = 1;
 						for (int i = 0; i < thresholdFrames; i++)
 							cumulativeConfidence += pupilLocations[CurrentFrameNumber - i, 3];
 						if (cumulativeConfidence < threshold * thresholdFrames)
 						{
-							if (doNotStopForBlink)
-							{
-								// blink detection via brightness, if too bright, don't stop
-								double x = pupilLocations[CurrentFrameNumber, 0];
-								double y = pupilLocations[CurrentFrameNumber, 1];
-								double r = pupilLocations[CurrentFrameNumber, 2] * 1.5;
-								double brightness = filteredFrame[(int)(y - r), (int)(y + r), (int)(x - r), (int)(x + r)].Sum().ToDouble() / (4 * r * r);
-								if (brightness <= 2.5 * stdevTemplateBrightness + meanTemplateBrightness)	// not bright enough to be a eyelid
-								{
-									stepBack = true;
-									break;
-								}
-								else
-								{
-									// set confidence to 1 so the low confidence from the blink
-									// doesn't stop on this pupil frame
-									pupilLocations[CurrentFrameNumber, 3] = 1;
-								}
-							}
-							else
-							{
-								stepBack = true;
-								break;
-							}
+							stepBack = true;
+							break;
 						}
 					}
 				}
@@ -530,8 +518,11 @@ namespace Eyetracking
 					using (Stream stream = pupilCentersEntry.Open())
 						formatter.Serialize(stream, centers);
 
+					List<double> brightnesses = new List<double>();
+
 					for (int i = 0; i < NumTemplates; i++)
 					{
+						brightnesses.Add(templates[i].MeanWindowBrightness);
 						ZipArchiveEntry templateEntry = dataFile.CreateEntry(string.Format("template {0}.png", i));
 						using (Stream stream = templateEntry.Open())
 							templates[i].Image.WriteToStream(stream);
@@ -542,6 +533,10 @@ namespace Eyetracking
 						using (Stream stream = templateEntry.Open())
 							antiTemplates[i].Image.WriteToStream(stream);
 					}
+
+					ZipArchiveEntry windowBrightnessesEntry = dataFile.CreateEntry("window brightnesses.list");
+					using (Stream stream = windowBrightnessesEntry.Open())
+						formatter.Serialize(stream, brightnesses);
 				}
 			}
 		}
@@ -561,16 +556,27 @@ namespace Eyetracking
 
 						List<double> pupilSizes;
 						List<Tuple<double, double>> centers = new List<Tuple<double, double>>();
+						List<double> brightnesses;
 
 						BinaryFormatter formatter = new BinaryFormatter();
 						using (Stream stream = radiiEntry.Open())
 							pupilSizes = (List<double>) formatter.Deserialize(stream);
+						NumTemplates = pupilSizes.Count;
 
 						ZipArchiveEntry centersEntry = dataFile.GetEntry("pupil centers.list");
 						using (Stream stream = centersEntry.Open())
 							centers = (List<Tuple<double, double>>) formatter.Deserialize(stream);
 
-						NumTemplates = pupilSizes.Count;
+						ZipArchiveEntry brightnessesEntry = dataFile.GetEntry("window brightnesses.list");
+						if (brightnessesEntry != null)
+							using (Stream stream = brightnessesEntry.Open())
+								brightnesses = (List<double>)formatter.Deserialize(stream);
+						else
+						{	// no stored window brightnesses
+							brightnesses = new List<double>();
+							for (int i = 0; i < NumTemplates; i++)
+								brightnesses.Add(0);
+						}
 
 						for (int i = 0; i < NumTemplates; i++)
 						{
@@ -580,12 +586,12 @@ namespace Eyetracking
 								MemoryStream decompressed = new MemoryStream();
 								stream.CopyTo(decompressed);
 								decompressed.Position = 0;
-								templates.Add(new Template(Mat.FromStream(decompressed, ImreadModes.Grayscale), pupilSizes[i], centers[i].Item1, centers[i].Item2));
+								templates.Add(new Template(Mat.FromStream(decompressed, ImreadModes.Grayscale), pupilSizes[i], centers[i].Item1, centers[i].Item2, brightnesses[i]));
 							}
 						}
 
 						// remaining files, if any, are antitemplates
-						int numAntiTemplates = dataFile.Entries.Count - NumTemplates - 2;
+						int numAntiTemplates = dataFile.Entries.Count - NumTemplates - ((brightnessesEntry != null) ? 3 : 2);
 						antiTemplates = new List<Template>(numAntiTemplates);
 						for (int i = 0; i < numAntiTemplates; i++)
 						{
@@ -667,18 +673,39 @@ namespace Eyetracking
 		private void UpdateTemplateBrightness()
 		{
 			// see https://stackoverflow.com/questions/895929/how-do-i-determine-the-standard-deviation-stddev-of-a-set-of-values
-			meanTemplateBrightness = 0;
-			stdevTemplateBrightness = 0;
+			meanPupilBrightness = 0;
+			stdevPupilBrightness = 0;
 			double tempMean;
 			int count = 1;
 			foreach (Template template in templates)
 			{
-				tempMean = meanTemplateBrightness;
-				meanTemplateBrightness += (template.MeanBrightness - tempMean) / count;
-				stdevTemplateBrightness += (template.MeanBrightness - tempMean) * (template.MeanBrightness - meanTemplateBrightness);
+				tempMean = meanPupilBrightness;
+				meanPupilBrightness += (template.MeanPupilBrightness - tempMean) / count;
+				stdevPupilBrightness += (template.MeanPupilBrightness - tempMean) * (template.MeanPupilBrightness - meanPupilBrightness);
 				count++;
 			}
-			stdevTemplateBrightness = Math.Sqrt(stdevTemplateBrightness / (count - 1));
+			stdevPupilBrightness = Math.Sqrt(stdevPupilBrightness / (count - 1));
+
+			meanWindowBrightness = 0;
+			stdevWindowBrightness = 0;
+			count = 1;
+			foreach (Template template in templates)
+			{
+				if (template.MeanWindowBrightness > 0)
+				{
+					tempMean = (double)meanWindowBrightness;
+					meanWindowBrightness += (template.MeanWindowBrightness - tempMean) / count;
+					stdevWindowBrightness += (template.MeanWindowBrightness - tempMean) * (template.MeanWindowBrightness - meanWindowBrightness);
+					count++;
+				}
+			}
+			if (count > 1)
+				stdevWindowBrightness = Math.Sqrt((double)stdevWindowBrightness / (count - 1));	
+			else
+			{
+				meanWindowBrightness = null;
+				stdevWindowBrightness = null;
+			}
 		}
 	}
 }

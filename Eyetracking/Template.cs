@@ -28,29 +28,40 @@ namespace Eyetracking
 		public readonly double? Radius;
 
 		// Mean brightness of the pupil
-		public double MeanBrightness
+		public double MeanPupilBrightness
 		{
 			get
 			{
-				return (Image.Sum().ToDouble() / (Width * Height));
+				// take only the center of the pupil
+				int left = Width / 2 - Width / 6;
+				int right = left + Width / 3;
+				int top = Height / 2 - Height / 6;
+				int bottom = top + Height / 3;
+				return (Image.SubMat(left, right, top, bottom).Sum().ToDouble() / (Width * Height));
 			}
 		}
 
-		public Template(Mat image, double? radius)
+		// Mean brightness of the window used during eyetracking
+		// for better blink detection
+		public readonly double MeanWindowBrightness;
+
+		public Template(Mat image, double? radius, double windowBrightness = 0)
 		{
 			Image = image;
 			Radius = radius;
+			MeanWindowBrightness = windowBrightness;
 			X = (double)image.Width / 2;
 			Y = (double)image.Height / 2;
 		}
 
-		public Template(Mat image, double? radius, double x, double y)
+		public Template(Mat image, double? radius, double x, double y, double windowBrightness = 0)
 		{
 			if (x < 0 || x >= image.Width || y < 0 || y >= image.Height)
 				throw new ArgumentOutOfRangeException();
 
 			Image = image;
 			Radius = radius;
+			MeanWindowBrightness = windowBrightness;
 
 			X = x;
 			Y = y;

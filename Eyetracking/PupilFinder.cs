@@ -153,6 +153,16 @@ namespace Eyetracking
 		public int minRadius = 6;               // min/max pupil sizes
 		public int maxRadius = 24;
 		public int nThreads = 1;
+		public double WindowBrightness
+		{
+			get
+			{
+				if (!filteredFrame.Empty())
+					return ((double)filteredFrame.Sum()) / (double)(filteredFrame.Height * filteredFrame.Width);
+				else return 0;
+			}
+		}
+
 		/// <summary>
 		/// pupilLocations is a time x 4 array in which the columns are [X, Y, Radius, Confidence.]
 		/// Confidence is correlation value from the template finder and whatever that value is
