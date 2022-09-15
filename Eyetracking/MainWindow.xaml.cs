@@ -171,12 +171,11 @@ namespace Eyetracking
 		// == mapping from eyetracking video space to stimulus video space ==
 		private Calibrator calibrator = null;
 		public string CalibrationStartTime { get; set; } = "00:00:00.000";
+		public string GazeStartTime { get; set; } = "00:00:00.000";
 
 		public MainWindow()
 		{
 			InitializeComponent();
-
-			SentrySdk.Init("https://4aa216608a894bd99da3daa7424c995d@o553633.ingest.sentry.io/5689896");
 
 			Canvas.SetLeft(SearchWindowRectangle, 0);
 			Canvas.SetTop(SearchWindowRectangle, 0);
@@ -290,6 +289,12 @@ namespace Eyetracking
 			UpdateDisplays();
 			pupilFinder.Seek(0);
 			saveAllMenuItem.IsEnabled = true;
+
+			CalibrateButton.IsEnabled = false;
+			MapPupilToGazeButton.IsEnabled = false;
+
+			OpenVideoForGazeButton.IsEnabled = false;
+			StimulusViewWithGazeMenuitem.IsEnabled = false;
 
 			UpdateFramesProcessedPreviewImage();
 		}
@@ -445,6 +450,13 @@ namespace Eyetracking
 				isEditingStarted = false;
 			}
 
+			if (pupilFinder is TemplatePupilFinder templatePupilFinder)
+			{
+				templatePupilFinder.fractionToUse = PercentTemplatesToUsePicker.Value.Value;
+				templatePupilFinder.pupilBrightnessThreshold = PupilStdevThresholdPicker.Value.Value;
+				templatePupilFinder.windowBrightnessThreshold = BlinkStdevThresholdPicker.Value.Value;
+			}
+
 			if (AutoAddCustomTemplateCheckBox.IsChecked.Value && isPupilManuallySetOnThisFrame)
 			{
 				UseImageAsTemplateButton_Click(null, null);
@@ -464,7 +476,8 @@ namespace Eyetracking
 			}
 
 			pupilFinder.FindPupils(frames, AutoPausePupilFindingCheckBox.IsChecked.Value ? ConfidenceThresholdPicker.Value.Value : 0,
-								   AutoPausePupilFindingCheckBox.IsChecked.Value ? ConfidenceThresholdFramesPicker.Value.Value : 0);
+								   AutoPausePupilFindingCheckBox.IsChecked.Value ? ConfidenceThresholdFramesPicker.Value.Value : 0,
+								   AutoPausePupilFindingCheckBox.IsChecked.Value ? DoNotStopForBlinksButton.IsChecked.Value : false);
 		}
 
 		private void LoadTimestamps()
@@ -821,50 +834,7 @@ namespace Eyetracking
 			{
 			}
 		}
-
-		private void OpenCalibrationParametersButton_Click(object sender, RoutedEventArgs e)
-		{
-			if (calibrator == null)
-				calibrator = new Calibrator()
-				{
-					OnCalibrationFinished = this.OnCalibrationFinished
-				};
-
-			CalibrationParametersWindow calibrationParametersWindow =
-				new CalibrationParametersWindow(calibrator.calibrationParameters);
-
-			calibrationParametersWindow.ShowDialog();
-		}
-
-		private void CalibrationStartTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
-		{
-			e.Handled = Regex.Match(e.Text, "[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}.[0-9]{1,3}").Success;
-		}
-
-		private async void CalibrateButton_Click(object sender, RoutedEventArgs e)
-		{
-			if (calibrator == null)
-				calibrator = new Calibrator()
-				{
-					OnCalibrationFinished = this.OnCalibrationFinished
-				};
-
-			calibrator.Calibrate(GetEyetrackingCalibrationPositions(calibrator.calibrationParameters));
-		}
-
-		private List<Point> GetEyetrackingCalibrationPositions(CalibrationParameters parameters)
-		{
-			List<Point> gazePositions = new List<Point>();
-
-			// TODO: get positions
-
-			return gazePositions;
-		}
-
-		private void OnCalibrationFinished()
-		{
-
-		}
+	
 
 		private void MatchModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
@@ -875,6 +845,11 @@ namespace Eyetracking
 		private void AddTemplate_Executed(object sender, ExecutedRoutedEventArgs e)
 		{
 			UseImageAsTemplateButton_Click(null, null);
+		}
+
+		private void StimulusViewWithGazeMenuitem_Click(object sender, RoutedEventArgs e)
+		{
+			OpenStimulusVideoWithGaze();
 		}
 
 		private void UpdateFramesProcessedPreviewImage()

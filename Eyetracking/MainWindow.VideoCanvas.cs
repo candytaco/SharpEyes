@@ -9,6 +9,7 @@ namespace Eyetracking
 	{
 		private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
 		{
+			pupilFinder.CancelPupilFinding?.Invoke();
 			mouseMoveStartPoint = e.GetPosition(canvas);
 			switch (editingState)
 			{
@@ -115,6 +116,7 @@ namespace Eyetracking
 
 		private void Canvas_MouseWheel(object sender, MouseWheelEventArgs e)
 		{
+			pupilFinder.CancelPupilFinding?.Invoke();
 			if (editingState == EditingState.MovingPupil)
 			{
 				double deltaRadius = (e.Delta > 0 ? 1 : -1);

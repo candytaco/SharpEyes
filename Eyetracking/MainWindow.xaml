@@ -6,7 +6,7 @@
 		xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:local="clr-namespace:Eyetracking"
         mc:Ignorable="d"
-        Title="SharpEyes" Height="650" Width="1000" Icon="icons8-iris-scan-96.ico"
+        Title="SharpEyes" Height="700" Width="1200" Icon="icons8-iris-scan-96.ico"
 		Closing="Window_Closing" DataContext="{Binding RelativeSource={RelativeSource Self}}">
     <Window.CommandBindings>
         <CommandBinding x:Name="OpenEyetrackingDataCommand" Command="local:EyetrackerCommands.OpenEyetrackingData" Executed="OpenEyetrackingDataCommand_Executed"/>
@@ -68,6 +68,7 @@
                 <MenuItem Header="_Save Timestamps" Name="saveTimestampsMenuItem" Click="SaveTimeStampsMenuItemClick" IsEnabled="False"></MenuItem>
                 <MenuItem Header="_Save Eyetracking" Name="saveEyetrackingMenuItem" Click="SaveEyetrackingMenuItem_Click" IsEnabled="False"></MenuItem>
                 <MenuItem Header="Save Templates" Name="saveTemplatesMenuItem" Click="SaveTemplatesMenuItem_Click" IsEnabled="False"/>
+                <MenuItem Header="Save Gaze Trace" Name="saveGazeTraceMenuItem" Click="saveGazeTraceMenuItem_Click" IsEnabled="False"/>
                 <MenuItem Header="Save All" Name="saveAllMenuItem" Click="SaveAllMenuItem_Click" IsEnabled="False"/>
                 <MenuItem Header="Auto save on exit" Name="AutoSaveOnExitMenuItem" IsCheckable="True" IsChecked="True"/>
                 <Separator></Separator>
@@ -76,6 +77,7 @@
             </MenuItem>
             <MenuItem Header="_Tools" Name="toolsMenu">
                 <MenuItem Header="_Stimulus view" Name="StimulusViewMenuItem" Click="StimulusViewMenuItem_Click"/>
+                <MenuItem Header="_Stimulus view with gaze" Name="StimulusViewWithGazeMenuitem" Click="StimulusViewWithGazeMenuitem_Click"/>
             </MenuItem>
             <MenuItem Header="_Help" Name="helpMenu">
                 <MenuItem Header="_Help" Name="HelpMenuItem" Click="HelpMenuItem_Click" />
@@ -166,7 +168,7 @@
 
                     <xctk:IntegerUpDown Name="FramesToProcessPicker" Value="120" Increment="30" Minimum="1" Height="24" Margin="10,87,263.4,253" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="75" MinHeight="26"/>
                     <Button x:Name="LoadSavedTimeStampsButton" Content="Load timestamps" HorizontalAlignment="Left" Margin="10,34,0,0" VerticalAlignment="Top" Width="Auto" Click="LoadSavedDataMenuItem_Click" IsEnabled="False"/>
-                    <TabControl HorizontalAlignment="Left" Height="320" Margin="10,165,0,0" VerticalAlignment="Top" Width="339" BorderThickness="0">
+                    <TabControl HorizontalAlignment="Left" Margin="10,165,0,0" VerticalAlignment="Top" BorderThickness="0" Width="351" Height="370">
                         <TabControl.Resources>
                             <Style TargetType="TabItem">
                                 <Setter Property="Template">
@@ -185,7 +187,7 @@
                                 <Button Name="ResetTemplatesButton" Content="Reset to default templates" HorizontalAlignment="Left" Margin="10,71,0,0" VerticalAlignment="Top" Width="auto" Click="ResetTemplatesButton_Click" IsEnabled="False"/>
                                 <GroupBox Header="Template Preview" HorizontalAlignment="Left" Height="133" Margin="176,29,0,0" VerticalAlignment="Top" Width="149">
                                     <Grid>
-                                        <Image Name="TemplatePreviewImage"  Margin="0,0,0,0" Stretch="Uniform"/>
+                                        <Image Name="TemplatePreviewImage"  Margin="0,0,0,0" Stretch="Uniform" MouseWheel="TemplatePreviewImage_MouseWheel"/>
                                         <Button Name="DeleteTemplateButton" Content="Delete" HorizontalAlignment="Right" Margin="0,0,4,4" VerticalAlignment="Bottom" Width="auto" Click="DeleteTemplateButton_Click" Visibility="Hidden"/>
                                     </Grid>
                                 </GroupBox>
@@ -201,17 +203,17 @@
                                 </ComboBox>
                                 <xctk:IntegerUpDown x:Name="NRecentTemplatesPicker" Value="16" Increment="1" Minimum="1" Height="24" Margin="48,124,0,0"  Visibility="Visible"
 													ValueChanged="NRecentTemplatesPicker_ValueChanged" VerticalAlignment="Top" HorizontalAlignment="Left" MinWidth="75" MinHeight="26"/>
-                                <CheckBox Name="AutoPausePupilFindingCheckBox" Content="Pause when confidence is below" HorizontalAlignment="Left" Margin="10,227,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.281,0.026"/>
-                                <xctk:DoubleUpDown x:Name="ConfidenceThresholdPicker" Value="0.925" Height="24" Width="75" Minimum="0" Maximum="1" Increment="0.005" Margin="10,245,250.2,45.4"/>
+                                <CheckBox Name="AutoPausePupilFindingCheckBox" Content="Pause when confidence is below" HorizontalAlignment="Left" Margin="10,227,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.281,0.026" IsChecked="True"/>
+                                <xctk:DoubleUpDown x:Name="ConfidenceThresholdPicker" Value="0.985" Height="24" Width="75" Minimum="0" Maximum="1" Increment="0.005" Margin="10,245,250.2,95.4"/>
                                 <TextBlock HorizontalAlignment="Left" Margin="91,250,0,0" TextWrapping="Wrap" Text="for" VerticalAlignment="Top"/>
-                                <xctk:IntegerUpDown x:Name="ConfidenceThresholdFramesPicker" Value="10" Height="24" Width="40" Minimum="0" Maximum="60" Increment="1" Margin="110,246,185.2,44.4"/>
+                                <xctk:IntegerUpDown x:Name="ConfidenceThresholdFramesPicker" Value="10" Height="24" Width="40" Minimum="0" Maximum="60" Increment="1" Margin="110,246,185.2,94.4"/>
                                 <TextBlock HorizontalAlignment="Left" Margin="157,250,0,0" TextWrapping="Wrap" Text="frames" VerticalAlignment="Top"/>
                                 <Button Name="GoBackNumThresholdFramesButton" Content="&lt;Back" HorizontalAlignment="Left" Margin="198,247,0,0" VerticalAlignment="Top" Width="Auto" Height="24" Click="GoBackNumThresholdFramesButton_Click"/>
-                                <xctk:IntegerUpDown x:Name="NumMatchesPicker" Value="1" Height="24" Width="40" Minimum="1" Maximum="16" Increment="1" Margin="61,164,234.2,126.4" ValueChanged="NumMatchesPicker_ValueChanged"/>
+                                <xctk:IntegerUpDown x:Name="NumMatchesPicker" Value="1" Height="24" Width="40" Minimum="1" Maximum="16" Increment="1" Margin="61,164,234.2,176.4" ValueChanged="NumMatchesPicker_ValueChanged"/>
                                 <Label Content="Match" HorizontalAlignment="Left" Margin="13,163,0,0" VerticalAlignment="Top"/>
                                 <Label Name="TemplatesLabel"  Content="template" HorizontalAlignment="Left" Margin="106,164,0,0" VerticalAlignment="Top"/>
                                 <Label Content="Match Mode" HorizontalAlignment="Left" Margin="13,191,0,0" VerticalAlignment="Top"/>
-                                <ComboBox x:Name="MatchModeComboBox" HorizontalAlignment="Left" Margin="91,194,0,0" VerticalAlignment="Top" Width="202" SelectedIndex="0" SelectionChanged="MatchModeComboBox_SelectionChanged">
+                                <ComboBox x:Name="MatchModeComboBox" HorizontalAlignment="Left" Margin="91,194,0,0" VerticalAlignment="Top" Width="202" SelectedIndex="3" SelectionChanged="MatchModeComboBox_SelectionChanged">
                                     <ComboBoxItem Content="Square Difference"/>
                                     <ComboBoxItem Content="Normed Square Difference"/>
                                     <ComboBoxItem Content="Cross-correlation"/>
@@ -226,6 +228,14 @@
                                 </ComboBox>
                                 <Label Content="Use" HorizontalAlignment="Left" Margin="13,95,0,0" VerticalAlignment="Top"/>
                                 <Label Content="Preview" HorizontalAlignment="Left" Margin="184,5,0,0" VerticalAlignment="Top"/>
+                                <xctk:DoubleUpDown x:Name="PercentTemplatesToUsePicker" Value="1.0" Height="24" Width="50" Minimum="0" Maximum="1" Increment="0.01" Margin="250,260,0,50"/>
+                                <TextBlock HorizontalAlignment="Left" Margin="176,280,0,0" TextWrapping="Wrap" Text="Fraction to use" VerticalAlignment="Top"/>
+                                <CheckBox x:Name="DoNotStopForBlinksButton" Content="Don't stop on blink" HorizontalAlignment="Left" Margin="204,227,-57.8,0" VerticalAlignment="Top" RenderTransformOrigin="0.281,0.026" IsChecked="True"/>
+
+                                <xctk:DoubleUpDown x:Name="BlinkStdevThresholdPicker" Value="2.0" Height="24" Width="50" Minimum="0" Maximum="6" Increment="0.1" Margin="100,307,197.2,30"/>
+                                <Label Content="Blink threshold" HorizontalAlignment="Left" Margin="10,309,0,0" VerticalAlignment="Top"/>
+                                <xctk:DoubleUpDown x:Name="PupilStdevThresholdPicker" Value="2.0" Height="24" Width="50" Minimum="0" Maximum="6" Increment="0.1" Margin="255,307,42.2,30"/>
+                                <Label Content="Pupil threshold" HorizontalAlignment="Left" Margin="165,309,0,0" VerticalAlignment="Top"/>
                             </Grid>
                         </TabItem>
                         <TabItem Header="TabItem">
@@ -236,7 +246,7 @@
                     </TabControl>
                     <xctk:IntegerUpDown x:Name="MinRadiusPicker" Value="10" Increment="1" Minimum="1" Maximum="25" Height="24" Margin="91,128,0,0" ValueChanged="RadiusPickerValuesChanged" VerticalAlignment="Top" HorizontalAlignment="Left" MinWidth="75" MinHeight="26"/>
                     <Label Content="Min radius" HorizontalAlignment="Left" Margin="20,126,0,0" VerticalAlignment="Top"/>
-                    <xctk:IntegerUpDown x:Name="MaxRadiusPicker" Value="25" Increment="1" Minimum="10" Maximum="50" Height="24" Margin="254,128,0,0" ValueChanged="RadiusPickerValuesChanged" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="75" MinHeight="26"/>
+                    <xctk:IntegerUpDown x:Name="MaxRadiusPicker" Value="32" Increment="1" Minimum="10" Maximum="50" Height="24" Margin="254,128,0,0" ValueChanged="RadiusPickerValuesChanged" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="75" MinHeight="26"/>
                     <Label Content="Max radius" HorizontalAlignment="Left" Margin="182,126,0,0" VerticalAlignment="Top"/>
                     <Button Name="CancelPupilFindingButton" Content="Cancel" HorizontalAlignment="Left" Margin="119,92,0,0" VerticalAlignment="Top" Width="75" Visibility="Hidden" Click="CancelPupilFindingButton_Click"/>
                     <CheckBox Name="FindPupilsAllFramesCheckBox" Content="All Frames" HorizontalAlignment="Left" Margin="91,65,0,0" VerticalAlignment="Top" IsChecked="False" Checked="FindPupilsAllFramesCheckBox_Checked" Unchecked="FindPupilsAllFramesCheckBox_Checked"/>
@@ -300,16 +310,16 @@
             </TabItem>
             <TabItem Header="Calibration">
                 <Grid Background="#FFE5E5E5">
-                    <Button Name="MarkInButton" Content="Mark In" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75"/>
-                    <Button Name="MarkOutButton" Content="Mark Out" HorizontalAlignment="Left" Margin="90,10,0,0" VerticalAlignment="Top" Width="75"/>
-                    <Button Name="OpenCalibrationParametersButton" Content="Calibration Parameters" HorizontalAlignment="Left" Margin="10,267,0,0" 
+                    <Button Name="MarkInButton" Content="Mark In" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75" Click="MarkInButton_Click"/>
+                    <Button Name="MarkOutButton" Content="Mark Out" HorizontalAlignment="Left" Margin="90,10,0,0" VerticalAlignment="Top" Width="75" Click="MarkOutButton_Click"/>
+                    <Button Name="OpenCalibrationParametersButton" Content="Calibration Parameters" HorizontalAlignment="Left" Margin="10,68,0,0" 
                             VerticalAlignment="Top" Width="125" Click="OpenCalibrationParametersButton_Click"/>
-                    <Button Name="CalibrateButton" Content="Calibrate" HorizontalAlignment="Left" Margin="10,291,0,0" 
-                            Click="CalibrateButton_Click" VerticalAlignment="Top" Width="75"/>
+                    <Button Name="CalibrateButton" Content="Calibrate" HorizontalAlignment="Left" Margin="10,92,0,0" 
+                            Click="CalibrateButton_Click" VerticalAlignment="Top" Width="75" IsEnabled="False"/>
                     <Label Content="Calibration start" HorizontalAlignment="Left" Margin="10,34,0,0" VerticalAlignment="Top"/>
                     <TextBox Name="CalibrationStartTextBox" HorizontalAlignment="Left" VerticalContentAlignment="Center"
                              Height="24" Margin="109,34,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"
-                             PreviewTextInput="CalibrationStartTextBox_PreviewTextInput">
+                             PreviewTextInput="CalibrationStartTextBox_PreviewTextInput" TextChanged="CalibrationStartTextBox_TextChanged">
                         <TextBox.Text>
                             <Binding Path="CalibrationStartTime"
                                      UpdateSourceTrigger="PropertyChanged">
@@ -319,6 +329,23 @@
                             </Binding>
                         </TextBox.Text>
                     </TextBox>
+                    <TextBlock Name="CalibrationErrorTextBlock"  HorizontalAlignment="Left" Margin="10,116,0,0" TextWrapping="Wrap" Text="Min RMS error" VerticalAlignment="Top"/>
+                    <Button x:Name="ReadHistoryFileButton" Content="Read history file" HorizontalAlignment="Left" Margin="170,10,0,0" VerticalAlignment="Top" Width="120" Click="ReadHistoryFileButton_Click"/>
+                    <Label Content="Gaze start" HorizontalAlignment="Left" Margin="10,207,0,0" VerticalAlignment="Top"/>
+                    <TextBox x:Name="GazeStartTextBox" HorizontalAlignment="Left" VerticalContentAlignment="Center"
+                        Height="24" Margin="77,209,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"
+                        PreviewTextInput="CalibrationStartTextBox_PreviewTextInput">
+                        <Binding Path="GazeStartTime"
+                            UpdateSourceTrigger="PropertyChanged">
+                            <Binding.ValidationRules>
+                                <local:TimestampRule/>
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </TextBox>
+                    <Button x:Name="MapPupilToGazeButton" Content="Convert to Gaze Position" HorizontalAlignment="Left" Margin="10,238,0,0" 
+                        Click="MapPupilToGazeButton_Click" VerticalAlignment="Top" Width="150" IsEnabled="False"/>
+                    <Button x:Name="OpenVideoForGazeButton" Content="Open stimulus video" HorizontalAlignment="Left" Margin="10,262,0,0" 
+                        Click="OpenVideoForGazeButton_Click" VerticalAlignment="Top" Width="150" IsEnabled="False"/>
 
                 </Grid>
             </TabItem>

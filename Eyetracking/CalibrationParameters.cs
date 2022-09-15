@@ -8,6 +8,19 @@ using System.Windows;
 namespace Eyetracking
 {
 	/// <summary>
+	/// Convenience index with an int property for easier data binding
+	/// </summary>
+	public struct CalibrationIndex
+	{
+		public int Index { get; set; }
+
+		public CalibrationIndex(int index)
+		{
+			Index = index;
+		}
+	}
+
+	/// <summary>
 	/// A struct that stores information about the eyetracking calibration sequence
 	/// </summary>
 	public class CalibrationParameters
@@ -17,36 +30,47 @@ namespace Eyetracking
 		/// <summary>
 		/// List of calibration points in screen space
 		/// </summary>
-		public List<Point> calibrationPoints;
+		public List<Point> calibrationPoints { get; set; }
 
 		/// <summary>
 		/// List of the points in the order that they are presented. Indentified by index in <see cref="calibrationPoints"/>
 		/// </summary>
-		public List<int> calibrationSequence;
+		public List<CalibrationIndex> calibrationSequence { get; set; }
 
 		/// <summary>
 		/// How long is the fixation at each point
 		/// </summary>
-		public double calibrationDuration = 2.0;
+		public double calibrationDuration { get; set; } = 2.0;
+
+		/// <summary>
+		/// Seconds between the start of the calibration sequence and the presentation of the first point
+		/// Because in driving, the first TTL starts the sequence, and the first point is presented on the 2nd TTL
+		/// </summary>
+		public double calibrationStartDelay { get; set; } = 2.0;
+
+		/// <summary>
+		/// Convenience property to convert the start delay to a frame count
+		/// </summary>
+		public int calibrationStartDelayFrames => (int) (calibrationStartDelay * eyetrackingFPS);
 
 		/// <summary>
 		/// DPI Scaling factor. See Unreal Engine
 		/// </summary>
-		public double DPIUnscaleFactor = 1.0;
+		public double DPIUnscaleFactor { get; set; } = 1.0;
 
 		/// <summary>
 		/// Default amount of time to discard from beginning of each point
 		/// to account for saccade time
 		/// </summary>
-		public double calibrationPointStartDelaySeconds = 1 / 6.0;
+		public double calibrationPointStartDelaySeconds { get; set; } = 1 / 6.0;
 
 		/// <summary>
 		/// Framerate of eyetracking videos
 		/// </summary>
-		public int eyetrackingFPS = 60;
+		public int eyetrackingFPS { get; set; } = 60;
 
 		/// <summary>
-		/// Conversion from delay in seconds to frames
+		/// Conversion for delay in seconds to frames
 		/// </summary>
 		public int calibrationPointStartDelayFrames
 		{
@@ -56,50 +80,69 @@ namespace Eyetracking
 			}
 		}
 
+		/// <summary>
+		/// Conversion for fixation duration from seconds to frames 
+		/// </summary>
+		public int calibrationDurationFrames
+		{
+			get
+			{
+				return (int) (calibrationDuration * eyetrackingFPS);
+			}
+		}
+
 		// Calibration hyperparameters
 
 		/// <summary>
 		/// Minimum base radius for RBF
 		/// </summary>
-		public double minBaseRadius = 1.0;
+		public double minBaseRadius { get; set; } = 10.0;
 
-		public double maxBaseRadius = 100.0;
+		public double maxBaseRadius { get; set; } = 100.0;
 
 		public Tuple<double, double> baseRadiusRange => new Tuple<double, double>(minBaseRadius, maxBaseRadius);
 
-		public int numBaseRadii = 10;
+		public int numBaseRadii { get; set; } = 4;
 
-		public int minNumLayers = 1;
+		public int minNumLayers { get; set; } = 1;
 
-		public int maxNumlayers = 10;
+		public int maxNumlayers { get; set; } = 3;
 
 		public Tuple<int, int> numLayersRange => new Tuple<int, int>(minNumLayers, maxNumlayers);
 
-		public double minRegularizer = 0;
+		public double minRegularizer { get; set; } = 0;
 
-		public double maxRegularizer = 10;
+		public double maxRegularizer { get; set; } = 10;
 
 		public Tuple<double, double> regularizerRange => new Tuple<double, double>(minRegularizer, maxRegularizer);
 
-		public int numRegularizers = 10;
+		public int numRegularizers { get; set; } = 10;
 
-		public bool logSpaceRegularizers = true;
+		public bool logSpaceRegularizers { get; set; } = true;
 
 		public CalibrationParameters()
 		{
 			calibrationPoints = new List<Point>();
-			calibrationSequence = new List<int>();
+			calibrationSequence = new List<CalibrationIndex>();
 		}
 
-		public CalibrationParameters(List<Point> calibrationPoints, List<int> calibrationSequence)
+		public CalibrationParameters(List<Point> calibrationPoints, List<CalibrationIndex> calibrationSequence)
 		{
 			this.calibrationPoints = calibrationPoints;
 			this.calibrationSequence = calibrationSequence;
 		}
 
+		public CalibrationParameters(List<Point> calibrationPoints, List<int> calibrationSequence)
+		{
+			this.calibrationPoints = calibrationPoints;
+			this.calibrationSequence = new List<CalibrationIndex>();
+			for (int i = 0; i < calibrationSequence.Count; i++)
+				this.calibrationSequence.Add(new CalibrationIndex(calibrationSequence[i]));
+		}
+
 		public static CalibrationParameters GetDefault35PointCalibrationParameters()
 		{
-			return new CalibrationParameters(GeneratePoints(1024, 768, 7, 5, 1.0), new List<int>(CalibrationSequence35));
+			return new CalibrationParameters(GeneratePoints(1024, 768, 7, 5, 1.0), CalibrationSequence35);
 		}
 
 		public static List<Point> GeneratePoints(int width, int height, int numHorizontal, int numVertical, double DPIUnscaleFactor)
@@ -108,14 +151,12 @@ namespace Eyetracking
 
 			int ySpace = (int)(height / numVertical / DPIUnscaleFactor);
 			int xSpace = (int)(width / numHorizontal / DPIUnscaleFactor);
-			int xStart = -numHorizontal / 2;
-			int yStart = -numVertical / 2;
 
 			int x, y;
-			for (int i = 0; i < numHorizontal / 2 + 1; i++)
+			for (int i = -numHorizontal / 2; i < numHorizontal / 2 + 1; i++)
 			{
 				x = width / 2 + i * xSpace;
-				for (int j = 0; j < numVertical / 2 + 1; j++)
+				for (int j = -numVertical / 2; j < numVertical / 2 + 1; j++)
 				{
 					y = height / 2 + j * ySpace;
 					points.Add(new Point(x, y));

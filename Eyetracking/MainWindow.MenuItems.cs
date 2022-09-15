@@ -132,5 +132,11 @@ namespace Eyetracking
 		{
 			System.Diagnostics.Process.Start("https://github.com/candytaco/SharpEyes/issues/new/choose");
 		}
+
+		private void saveGazeTraceMenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			SaveGazeTrace();
+		}
+
 	}
 }

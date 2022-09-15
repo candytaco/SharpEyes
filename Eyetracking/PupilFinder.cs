@@ -2,9 +2,12 @@
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Text.RegularExpressions;
+
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Num = NumSharp.np;
@@ -48,6 +51,30 @@ namespace Eyetracking
 
 	internal abstract class PupilFinder : DispatcherObject
 	{
+		/// <summary>
+		/// Median function, since numsharp does not implement a median
+		/// </summary>
+		/// <param name="list"></param>
+		/// <returns></returns>
+		public static double Median(double[] list)
+		{
+			Array.Sort(list);
+			int middle = list.Length / 2;
+			return (list.Length % 2 != 0) ? (double)list[middle] : ((double)list[middle] + (double)list[middle - 1]) / 2;
+		}
+
+		/// <summary>
+		/// Overloaded median for a list of double. Take that, python.
+		/// </summary>
+		/// <param name="list"></param>
+		/// <returns></returns>
+		public static double Median(List<double> list)
+		{
+			list.Sort();
+			int middle = list.Count / 2;
+			return (list.Count % 2 != 0) ? (double)list[middle] : ((double)list[middle] + (double)list[middle - 1]) / 2;
+		}
+
 		// video information
 		public string videoFileName { get; private set; }
 		public string autoTimestampFileName
@@ -126,6 +153,16 @@ namespace Eyetracking
 		public int minRadius = 6;               // min/max pupil sizes
 		public int maxRadius = 24;
 		public int nThreads = 1;
+		public double WindowBrightness
+		{
+			get
+			{
+				if (!filteredFrame.Empty())
+					return ((double)filteredFrame.Sum()) / (double)(filteredFrame.Height * filteredFrame.Width);
+				else return 0;
+			}
+		}
+
 		/// <summary>
 		/// pupilLocations is a time x 4 array in which the columns are [X, Y, Radius, Confidence.]
 		/// Confidence is correlation value from the template finder and whatever that value is
@@ -166,7 +203,7 @@ namespace Eyetracking
 		public FrameProcessedDelegate UpdateFrame;
 		public FramesProcessedDelegate OnFramesPupilsProcessed; // delegate for when pupils are found in a chunk of frames
 		public FramesProcessedDelegate OnTimeStampsFound;		// delegate for when timestamps are found
-		public CancelPupilFindingDelegate CancelPupilFinding;
+		public CancelPupilFindingDelegate CancelPupilFinding;	// delegate for interrupting pupil finding
 
 		/// <summary>
 		/// For taskbar progress bars
@@ -233,7 +270,9 @@ namespace Eyetracking
 		/// <param name="frames"> number of frames from current to find pupils for </param>
 		/// <param name="threshold"> confidence threshold at which to auto-pause pupil finding</param>
 		/// <param name="thresholdFrames"> confidence threshold duration at which to auto pause pupil finding</param>
-		public virtual void FindPupils(int frames, double threshold = 0, int thresholdFrames = 0)
+		/// <param name="doNotStopForBlink"></param>
+		
+		public virtual void FindPupils(int frames, double threshold = 0, int thresholdFrames = 0, bool doNotStopForBlink = false)
 		{
 			if (!isTimestampParsed)
 			{
@@ -331,15 +370,23 @@ namespace Eyetracking
 		/// <returns></returns>
 		public bool ReadFrame()
 		{
-			bool success = videoSource.Read(cvFrame);
-			if (!success)
+			try
 			{
+				bool success = videoSource.Read(cvFrame);
+				if (!success)
+				{
+					return success;
+				}
+
+				_currentFrameNumber++;
+				isCVFrameConverted = false;
 				return success;
 			}
-
-			_currentFrameNumber++;
-			isCVFrameConverted = false;
-			return success;
+			catch (AccessViolationException e)
+			{
+				Sentry.SentrySdk.CaptureException(e);
+				return false;
+			}
 		}
 
 		/// <summary>
@@ -524,6 +571,92 @@ namespace Eyetracking
 		{
 			pupilLocations = Num.zeros((frameCount, 4), NPTypeCode.Double);
 			pupilLocations *= Num.NaN;    // use -1 to indicate pupil not yet found on this frame
+		}
+
+		/// <summary>
+		/// Returns the timestamp for a frame. We do this instead of making timestamps public
+		/// to prevent modifications
+		/// </summary>
+		/// <param name="frameNumber"></param>
+		/// <returns>tuple of <hour, minutes, seconds, milliseconds> timestamp</hour></returns>
+		public Tuple<int, int, int, int> GetTimestampForFrame(int frameNumber)
+		{
+			return new Tuple<int, int, int, int>(timeStamps[frameNumber, 0],
+												 timeStamps[frameNumber, 1],
+												 timeStamps[frameNumber, 2],
+												 timeStamps[frameNumber, 3]);
+		}
+
+		/// <summary>
+		/// Gets the median pupil location for a given range of frames
+		/// </summary>
+		/// <param name="startFrame"></param>
+		/// <param name="endFrame"></param>
+		/// <returns></returns>
+		public System.Windows.Point GetMedianPupilLocation(int startFrame, int endFrame)
+		{
+			if (startFrame < 0 || endFrame < 0 || endFrame < startFrame)
+				throw new ArgumentOutOfRangeException();
+
+			List<double> xPositions = new List<double>();
+			List<double> yPositions = new List<double>();
+			for (int i = startFrame; i < endFrame; i++)
+			{
+				double x = pupilLocations[i, 0];
+				double y = pupilLocations[i, 1];
+				if (Double.IsNaN(x)) continue;
+				xPositions.Add(x);
+				yPositions.Add(y);
+			}
+
+			return new System.Windows.Point(Median(xPositions), Median(yPositions));
+		}
+
+		/// <summary>
+		/// For a timestamp, gets the index of the closest frame
+		/// </summary>
+		/// <param name="timestamp">timestamp in HH:MM:SS.mmm format</param>
+		/// <returns>index of frame</returns>
+		public int TimeStampToFrameNumber(string timestamp)
+		{
+			if (timeStamps == null) // TODO: after calibration, this hangs because it's waiting on a lock, apparently on timeStamps
+				throw new InvalidOperationException();
+
+			Match match = Regex.Match(timestamp, "([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2}).([0-9]{1,3})");
+			if (!match.Success)
+				throw new ArgumentException();
+
+			// Groups[0] is entire string that matched the regex
+			int hour = int.Parse(match.Groups[1].Value);
+			int minute = int.Parse(match.Groups[2].Value);
+			int second = int.Parse(match.Groups[3].Value);
+			int millisecond = int.Parse(match.Groups[4].Value);
+
+			// iterate through all timestamps and get the timestamp with the lowest difference
+			int minIndex = 0;
+			int minDiff = int.MaxValue;	// difference in milliseconds from desired timestamp
+			//object comparisonLock = new object();
+
+			for (int i = 0; i < timeStamps.shape[0]; i++)
+			//Parallel.For(0, timeStamps.shape[0], i =>
+			{
+				int diff = (hour - timeStamps[i, 0]) * 3600 * 1000 +
+					(minute - timeStamps[i, 1]) * 60 * 1000 +
+					(second - timeStamps[i, 2]) * 1000 +
+					millisecond - timeStamps[i, 3];
+				if (diff < 0) diff *= -1;
+				//lock (comparisonLock)
+				//{
+				if (diff < minDiff)
+				{
+					minDiff = diff;
+						minIndex = i;
+				}
+				//}
+
+			}//);
+
+			return minIndex;
 		}
 	}
 }

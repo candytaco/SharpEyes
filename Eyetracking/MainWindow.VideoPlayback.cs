@@ -17,6 +17,7 @@ namespace Eyetracking
 				return;
 			}
 
+			pupilFinder.CancelPupilFinding?.Invoke();
 			UpdateVideoTime(pupilFinder.CurrentFrameNumber - 1);
 		}
 
@@ -27,6 +28,7 @@ namespace Eyetracking
 				return;
 			}
 
+			pupilFinder.CancelPupilFinding?.Invoke();
 			UpdateVideoTime(pupilFinder.CurrentFrameNumber + 1);
 		}
 

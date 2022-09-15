@@ -22,7 +22,7 @@ namespace Eyetracking
 			
 		}
 
-		public override void FindPupils(int Frames, double threshold = 0, int thresholdFrames = 0)
+		public override void FindPupils(int Frames, double threshold = 0, int thresholdFrames = 0, bool doNotStopForBlink = false)
 		{
 			base.FindPupils(Frames);
 			DateTime start = DateTime.Now;
@@ -37,7 +37,7 @@ namespace Eyetracking
 				for (int i = 0; i < Frames; i++)
 				{
 					ReadGrayscaleFrame();
-					CircleSegment circle = filteredFrame[top, bottom, left, right].HoughCircles(HoughMethods.Gradient, DP, minCircleDistance, param1, param2, minRadius, maxRadius)[0];
+					CircleSegment circle = filteredFrame[top, bottom, left, right].HoughCircles(HoughModes.Gradient, DP, minCircleDistance, param1, param2, minRadius, maxRadius)[0];
 					pupilLocations[CurrentFrameNumber, 0] = circle.Center.X + left;
 					pupilLocations[CurrentFrameNumber, 1] = circle.Center.Y + top;
 					pupilLocations[CurrentFrameNumber, 2] = circle.Radius;
