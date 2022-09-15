@@ -3,56 +3,31 @@
         xmlns:vm="using:SharpEyes.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        xmlns:uc="clr-namespace:SharpEyes"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800" Width="1200" Height="800"
         x:Class="SharpEyes.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
-        Title="SharpEyes" Background="#c0202020">
+        Title="SharpEyes">
 
     <Design.DataContext>
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
+  <Window.Styles>
+    <Style Selector="TabControl WrapPanel">
+      <Setter Property="HorizontalAlignment" Value="Right"></Setter>
+    </Style>
+  </Window.Styles>
+
   <Grid>
-      <Grid.ColumnDefinitions>
-          <ColumnDefinition/>
-          <ColumnDefinition MaxWidth="385"/>
-      </Grid.ColumnDefinitions>
-      <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"/>
-          <RowDefinition Height="Auto"/>
-          <RowDefinition/>
-          <RowDefinition Height="Auto"/>
-          <RowDefinition Height="auto"/>
-      </Grid.RowDefinitions>
-
-    <Menu Height="23" VerticalAlignment="Top" Margin="0,0,0,0" Grid.ColumnSpan="2" Grid.Row="0">
-      <MenuItem Header="_File" Name="FileMenu">
-        <MenuItem Header="_Open Video" Name="OpenFileMenuItem" Click="OpenFileMenuItem_OnClick"></MenuItem>
-        <MenuItem Header="Load _Timestamps" Name="LoadSavedDataMenuItem" Click="LoadSavedDataMenuItem_OnClick"></MenuItem>
-        <MenuItem Header="Load Eyetracking" Name="LoadSavedEyetrackingMenuItem" Click="LoadSavedEyetrackingMenuItem_OnClick" />
-        <MenuItem Header="Load Templates" Name="LoadSavedTemplatesMenuItem" Click="LoadSavedTemplatesMenuItem_OnClick" IsEnabled="False"/>
-        <Separator/>
-        <MenuItem Header="_Save Timestamps" Name="SaveTimestampsMenuItem" Click="SaveTimestampsMenuItem_OnClick" IsEnabled="False"></MenuItem>
-        <MenuItem Header="_Save Eyetracking" Name="SaveEyetrackingMenuItem" Click="SaveEyetrackingMenuItem_OnClick" IsEnabled="False"></MenuItem>
-        <MenuItem Header="Save Templates" Name="SaveTemplatesMenuItem" Click="SaveTemplatesMenuItem_OnClick" IsEnabled="False"/>
-        <MenuItem Header="Save All" Name="SaveAllMenuItem" Click="SaveAllMenuItem_OnClick" IsEnabled="False"/>
-        <MenuItem Header="Auto save on exit" Name="AutoSaveOnExitMenuItem" />
-        <Separator></Separator>
-      </MenuItem>
-      <MenuItem Header="_Edit" Name="EditMenu">
-      </MenuItem>
-      <MenuItem Header="_Tools" Name="ToolsMenu">
-        <MenuItem Header="_Stimulus view" Name="StimulusViewMenuItem" Click="StimulusViewMenuItem_OnClick"/>
-      </MenuItem>
-      <MenuItem Header="_Help" Name="HelpMenu">
-        <MenuItem Header="_Help" Name="HelpMenuItem" Click="HelpMenuItem_OnClick" />
-        <MenuItem Header="_Report bug" Name="ReportBugmenuItem" Click="ReportBugmenuItem_OnClick" />
-        <MenuItem Header="_About" Name="AboutMenuItem" Click="AboutMenuItem_OnClick" />
-      </MenuItem>
-    </Menu>
-    
+    <TabControl>
+      <TabItem Header="Pupil Finding" VerticalContentAlignment="Center">
+        <uc:PupilFindingUserControl HorizontalAlignment="Stretch" VerticalContentAlignment="Stretch"/>
+      </TabItem>
+      <TabItem Header="Stimulus &#38; Gaze" VerticalContentAlignment="Center">
+        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center">Not yet implemented</TextBlock>
+      </TabItem>
+    </TabControl>
   </Grid>
-
-   
 
 </Window>
