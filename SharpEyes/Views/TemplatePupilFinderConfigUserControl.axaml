@@ -1,0 +1,110 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="350" d:DesignHeight="450" Width="346"
+             x:Class="SharpEyes.Views.TemplatePupilFinderConfigUserControl">
+  <StackPanel>
+    <Expander Header="Templates" IsExpanded="False">
+      <StackPanel Orientation="Horizontal">
+        <StackPanel>
+        <Canvas Width="150" Height="150">
+          <Image Width="150" Height="150">
+          </Image>
+          <Rectangle Width="150" Height="150" Stroke="DodgerBlue" StrokeThickness="4"></Rectangle>
+        </Canvas>
+          <Panel Margin="0 4">
+            <Button Name="PreviousTemplateButton" VerticalAlignment="Center" HorizontalAlignment="Left">Prev</Button>
+            <TextBlock Name="TemplateNumberTextBlock" VerticalAlignment="Center" HorizontalAlignment="Center">0/0</TextBlock>
+            <Button Name="NextTemplateButton" VerticalContentAlignment="Center" HorizontalAlignment="Right">Next</Button>
+          </Panel>
+        </StackPanel>
+        <DockPanel Margin="8 0">
+          <Button Margin="0 4" Name="AddNewTemplateButton" DockPanel.Dock="Top">Add current</Button>
+          <ToggleSwitch Margin="0 4" Name="AutoAddTemplateToggleSwitch" 
+                        OnContent="Auto add on" OffContent="Auto add off" 
+                        IsThreeState="False" IsChecked="True"
+                        DockPanel.Dock="Top"/>
+
+          <Button Margin="0 4" Name="RemoveTemplateButton" DockPanel.Dock="Top">Remove</Button>
+          <Button Name="ResetTemplatesButton" Margin="0 4"  VerticalAlignment="Bottom" IsEnabled="False" HorizontalAlignment="Right">Reset templates</Button>
+        </DockPanel>
+      </StackPanel>
+    </Expander>
+    <Expander Header="Anti-templates" IsExpanded="False">
+      <StackPanel Orientation="Horizontal">
+        <StackPanel>
+          <Canvas Width="150" Height="150">
+            <Image Width="150" Height="150">
+            </Image>
+            <Rectangle Width="150" Height="150" Stroke="DodgerBlue" StrokeThickness="4"></Rectangle>
+          </Canvas>
+          <Panel Margin="0 4">
+            <Button Name="PreviousAntiTemplateButton" VerticalAlignment="Center" HorizontalAlignment="Left">Prev</Button>
+            <TextBlock Name="AntiTemplateNumberTextBlock" VerticalAlignment="Center" HorizontalAlignment="Center">0/0</TextBlock>
+            <Button Name="NextAntiTemplateButton" VerticalContentAlignment="Center" HorizontalAlignment="Right">Next</Button>
+          </Panel>
+        </StackPanel>
+        <StackPanel Margin="8 0">
+          <Button Margin="0 4" Name="AddNewAntiTemplateButton">Add current</Button>
+          <Button Margin="0 4" Name="RemoveAntiTemplateButton">Remove</Button>
+        </StackPanel>
+      </StackPanel>
+    </Expander>
+    <Expander Header="Matching options" IsExpanded="True">      
+      <StackPanel>
+        <StackPanel Orientation="Horizontal" Margin="0 8">
+          <TextBlock VerticalAlignment="Center">Metric</TextBlock>
+          <ComboBox Name="MatchMethodComboBox" SelectedIndex="3" Width="250" Margin="8 0 0 0">
+            <ComboBoxItem>Square Difference</ComboBoxItem>
+            <ComboBoxItem>Normed Square Difference</ComboBoxItem>
+            <ComboBoxItem>Cross-correlation</ComboBoxItem>
+            <ComboBoxItem>Normed cross-correlation</ComboBoxItem>
+            <ComboBoxItem>Correlation coefficient</ComboBoxItem>
+            <ComboBoxItem>Normed correlation coefficient</ComboBoxItem>
+          </ComboBox>
+        </StackPanel>
+        <ToggleSwitch Name="UseRecentTemplateToggleSwitch" OnContent="Use all templates" OffContent="Use only recent templates" IsChecked="True"/>
+        <StackPanel Orientation="Horizontal" Margin="0 8" IsVisible="{Binding !#UseRecentTemplateToggleSwitch.IsChecked}">
+          <TextBlock VerticalAlignment="Center" Margin="0 0 4 0">Use</TextBlock>
+          <NumericUpDown Name="NRecentTemplatesUpDown" Minimum="1" Increment="1" Value="128" Margin="0 0 4 0" Width="115"/>
+          <TextBlock VerticalAlignment="Center">most recent templates</TextBlock>
+        </StackPanel>
+        <ToggleSwitch Name="UseEveryTemplateToggleSwitch" OnContent="Use every template" OffContent="Use random subset of templates" IsChecked="True"/>
+        <StackPanel Orientation="Horizontal" Margin="0 8" IsVisible="{Binding !#UseEveryTemplateToggleSwitch.IsChecked}">
+          <TextBlock VerticalAlignment="Center" Margin="0 0 4 0">Use</TextBlock>
+          <NumericUpDown Name="FractionTemplatesUpDown" Minimum="1" Maximum="99" Increment="1" Value="75" Margin="0 0 4 0" Width="115"/>
+          <TextBlock VerticalAlignment="Center">% of templates</TextBlock>
+        </StackPanel>
+      </StackPanel>
+    </Expander>
+    <Expander Header="Confidence options" IsExpanded="False">
+      <StackPanel>
+        <ToggleSwitch Name="PauseOnLowConfidenceToggleSwitch" OffContent="No auto stop" OnContent="Stop on low confidence" IsChecked="True"/>
+        <StackPanel IsVisible="{Binding #PauseOnLowConfidenceToggleSwitch.IsChecked}">
+          <StackPanel Orientation="Horizontal">
+            <TextBlock VerticalAlignment="Center" Width="75">Threshold</TextBlock>
+            <NumericUpDown Name="ConfidenceThresholdUpDown" Margin="4 0 0 0" Width="150" Value="0.985" Increment="0.005" Minimum="0"/>
+          </StackPanel>
+          <StackPanel Margin="0 8 0 0" Orientation="Horizontal">
+            <TextBlock VerticalAlignment="Center" Width="75">Frames</TextBlock>
+            <NumericUpDown Name="ConfidenceThresholdFramesUpDown" Margin="4 0 0 0" Width="150" Value="12" Increment="1" Minimum="1"/>
+          </StackPanel>
+        </StackPanel>
+        <ToggleSwitch Name="BlinkRejectionToggleSwitch" OffContent="No blink rejection" 
+                      OnContent="Brightness-based blink rejection" IsChecked="True" Margin="0 8 0 0"
+                      ToolTip.Tip="Don't stop when confidence is low if a blink is detected"/>
+        <StackPanel IsVisible="{Binding #BlinkRejectionToggleSwitch.IsChecked}">
+          <StackPanel Orientation="Horizontal">
+            <TextBlock VerticalAlignment="Center" Width="75">Blink (σ)</TextBlock>
+            <NumericUpDown Name="BlinkThresholdUpDown" Margin="4 0 0 0" Width="150" Value="2.0" Increment="0.05" Minimum="0"/>
+          </StackPanel>
+          <StackPanel Margin="0 8 0 0" Orientation="Horizontal">
+            <TextBlock VerticalAlignment="Center" Width="75">Pupil (σ)</TextBlock>
+            <NumericUpDown Name="PupilThresholdUpDown" Margin="4 0 0 0" Width="150" Value="2.0" Increment="0.05" Minimum="1"/>
+          </StackPanel>
+        </StackPanel>
+      </StackPanel>
+    </Expander>
+  </StackPanel>
+</UserControl>

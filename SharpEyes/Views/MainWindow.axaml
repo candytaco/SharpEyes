@@ -3,8 +3,9 @@
         xmlns:vm="using:SharpEyes.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:uc="clr-namespace:SharpEyes"
+        xmlns:uc="clr-namespace:SharpEyes.Views"
         mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800" Width="1200" Height="800"
+        MinWidth="800" MinHeight="450"
         x:Class="SharpEyes.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
         Title="SharpEyes">
@@ -15,17 +16,22 @@
 
   <Window.Styles>
     <Style Selector="TabControl WrapPanel">
-      <Setter Property="HorizontalAlignment" Value="Right"></Setter>
+      <Setter Property="HorizontalAlignment" Value="Right"/>
+      <Setter Property="Height" Value="48"/>
     </Style>
   </Window.Styles>
 
   <Grid>
-    <TabControl>
+      <uc:PupilFindingMenuStrip HorizontalAlignment="Left" VerticalAlignment="Top"/>
+    <TabControl ZIndex="-1">
       <TabItem Header="Pupil Finding" VerticalContentAlignment="Center">
         <uc:PupilFindingUserControl HorizontalAlignment="Stretch" VerticalContentAlignment="Stretch"/>
       </TabItem>
+      <TabItem Header="Calibration">
+        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center">Calibration not yet implemented</TextBlock>
+      </TabItem>
       <TabItem Header="Stimulus &#38; Gaze" VerticalContentAlignment="Center">
-        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center">Not yet implemented</TextBlock>
+        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center">Stimulus view yet implemented</TextBlock>
       </TabItem>
     </TabControl>
   </Grid>

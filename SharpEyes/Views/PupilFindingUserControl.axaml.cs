@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using System;
 
-namespace SharpEyes
+namespace SharpEyes.Views
 {
 	public partial class PupilFindingUserControl : UserControl
 	{
