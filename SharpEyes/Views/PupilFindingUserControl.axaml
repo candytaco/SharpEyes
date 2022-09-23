@@ -4,7 +4,14 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
              xmlns:uc="clr-namespace:SharpEyes.Views"
+             xmlns:vm="clr-namespace:SharpEyes.ViewModels"
              x:Class="SharpEyes.Views.PupilFindingUserControl">
+
+  <Design.DataContext>
+    <vm:PupilFindingUserControlViewModel/>
+  </Design.DataContext>
+
+
   <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="4" ShowGridLines="False">
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="*"/>
@@ -21,13 +28,16 @@
         <RowDefinition Height="*"/>
         <RowDefinition Height="96"/>
       </Grid.RowDefinitions>
-      
+
+      <!--Top button row-->
       <StackPanel Orientation="Horizontal" Grid.Row="0">
-        <Button Name="LoadVideoButton" Margin="4">Load Video</Button>
+        <Button Name="LoadVideoButton" Margin="4" Command="{Binding LoadVideoCommand}">Load Video</Button>
         <TextBlock VerticalAlignment="Center" Margin="4">|</TextBlock>
-        <ToggleButton Name="DrawWindowButton" Margin="4">Draw Window</ToggleButton>
-        <ToggleButton Name="MovePupilButton" Margin="4">Move Pupil</ToggleButton>
+        <ToggleButton Name="DrawWindowButton" Margin="4" Command="{Binding DrawWindowCommand}">Draw Window</ToggleButton>
+        <ToggleButton Name="MovePupilButton" Margin="4" Command="{Binding MovePupilCommand}">Move Pupil</ToggleButton>
       </StackPanel>
+
+      <!--Video video box-->
       <Viewbox Grid.Row="1" Stretch="Uniform">
         <Canvas Width="400" Height="300">
           <Rectangle Name="PupilWindowRectangle" Width="400" Height="300" Stroke="DodgerBlue" StrokeThickness="4"/>
@@ -35,110 +45,141 @@
         </Canvas>
       </Viewbox>
 
+      <!--Video playback controls and display-->
       <StackPanel Orientation="Vertical" Grid.Row="2">
         <Slider Name="VideoTimeSlider" Margin="0 0 4 4"></Slider>
         <Panel>
-          <TextBlock Name="CurrentVideoTimeTextBlock" HorizontalAlignment="Left" VerticalAlignment="Center">0:00:00;00</TextBlock>
+          <TextBlock Name="CurrentVideoTimeTextBlock" HorizontalAlignment="Left" VerticalAlignment="Center" Text="{Binding CurrentVideoTime}"/>
           <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
-            <Button Name="PreviousFrameButton" ToolTip.Tip="Previous Frame" Height="32" VerticalContentAlignment="Center">⮜</Button>
-            <Button Name="PlayPauseButton" Height="32" VerticalContentAlignment="Center" Margin="2 0 2 0">Play</Button>
-            <Button Name="NextFrameButton" ToolTip.Tip="Next Frame" Height="32" VerticalContentAlignment="Center">⮞</Button>
+            <Button Name="PreviousFrameButton" ToolTip.Tip="Previous Frame" Height="32" VerticalContentAlignment="Center"
+                    Command="{Binding PreviousFrameCommand}">⮜</Button>
+            <Button Name="PlayPauseButton" Height="32" VerticalContentAlignment="Center" Margin="2 0 2 0" Content="{Binding PlayPauseButtonText}"
+                    Command="{Binding PlayPauseCommand}"/>
+            <Button Name="NextFrameButton" ToolTip.Tip="Next Frame" Height="32" VerticalContentAlignment="Center"
+                    Command="{Binding NextFrameCommand}">⮞</Button>
           </StackPanel>
-          <TextBlock Name="TotalVideoTimeTextBlock" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="4 0 4 0">0:00:00;00</TextBlock>
+          <TextBlock Name="TotalVideoTimeTextBlock" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="4 0 4 0" Text="{Binding TotalVideoTime}"/>
         </Panel>
       </StackPanel>
-      
+
     </Grid>
 
-      <DockPanel Grid.Row="4" Grid.Column="0" LastChildFill="True" VerticalAlignment="Center">
-        <TextBlock DockPanel.Dock="Left" Name="StatusTextBlock">Idle</TextBlock>
-        <ProgressBar Name="StatusProgressBar" Margin="4 0 4 0" Minimum="0" Maximum="100"/>
-      </DockPanel>
+    <!--Status bar-->
+    <DockPanel Grid.Row="4" Grid.Column="0" LastChildFill="True" VerticalAlignment="Center">
+      <TextBlock DockPanel.Dock="Left" Name="StatusTextBlock" Text="{Binding StatusText}"/>
+      <ProgressBar Name="StatusProgressBar" Margin="4 0 4 0" Minimum="0" Maximum="100" IsIndeterminate="{Binding IsProgressbarIndeterminate}"
+                   Value="{Binding ProgressBarValue}" IsVisible="{Binding IsProgressBarVisible}"/>
+    </DockPanel>
 
-      <DockPanel Margin="0" Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" >
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4 4 4 8"
-                    DockPanel.Dock="Top">
-          <TextBlock Name="PupilXCoordTextBlock" Width="50">X: 000</TextBlock>
-          <TextBlock Name="PupilYCoordTextBlock" Width="50">Y: 000</TextBlock>
-          <TextBlock Name="PupilRadiusTextBlock" Width="75">Radius: 00</TextBlock>
-          <TextBlock Name="PupilConfidenceTextBlock" Width="125">Confidence: 0.00</TextBlock>
+    <!--Pupil info display-->
+    <DockPanel Margin="0" Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" >
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4 4 4 8"
+                  DockPanel.Dock="Top">
+        <TextBlock Name="PupilXCoordTextBlock" Width="50">X: 000</TextBlock>
+        <TextBlock Name="PupilYCoordTextBlock" Width="50">Y: 000</TextBlock>
+        <TextBlock Name="PupilRadiusTextBlock" Width="75">Radius: 00</TextBlock>
+        <TextBlock Name="PupilConfidenceTextBlock" Width="125">Confidence: 0.00</TextBlock>
+      </StackPanel>
+      <Button DockPanel.Dock="Top" Name="FindPupilsButton" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4 2"
+              Command="{Binding FindPupilsCommand}">Find Pupils</Button>
+      <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center" Margin="4 4 4 8">
+        <ToggleSwitch Name="AllFramesToggleSwitch" Margin="4 2 16 2" Width="130" OnContent="All frames"
+                      OffContent="Fixed count" IsThreeState="False" HorizontalContentAlignment="Center"
+                      IsChecked="{Binding ProcessAllFrames}"/>
+        <StackPanel Orientation="Horizontal" IsVisible="{Binding !#AllFramesToggleSwitch.IsChecked}">
+          <NumericUpDown Value="{Binding FramesToProcess}" Margin="4 2" VerticalAlignment="Center" Increment="1" Minimum="1"/>
+          <TextBlock VerticalAlignment="Center" Margin="16 2 4 2">Frames</TextBlock>
         </StackPanel>
-        <Button DockPanel.Dock="Top" Name="FindPupilsButton" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4 2">Find Pupils</Button>
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center" Margin="4 4 4 8">
-          <ToggleSwitch Name="AllFramesToggleSwitch" Margin="4 2 16 2" Width="130" OnContent="All frames" OffContent="Fixed count" IsThreeState="False" HorizontalContentAlignment="Center"/>
-          <StackPanel Orientation="Horizontal" IsVisible="{Binding !#AllFramesToggleSwitch.IsChecked}">
-            <NumericUpDown Value="120" Margin="4 2" VerticalAlignment="Center" Increment="1" Minimum="1"/>
-            <TextBlock VerticalAlignment="Center" Margin="16 2 4 2">Frames</TextBlock>          
-          </StackPanel>
-        </StackPanel>
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center" Margin="6">
-          <TextBlock Margin="4 2" VerticalAlignment="Center">Pupil finder type</TextBlock>
-          <ComboBox Margin="4 2" VerticalContentAlignment="Center" VerticalAlignment="Center" Name="PupilFinderComboBox" SelectedIndex="0">
-            <ComboBoxItem>Template</ComboBoxItem>
-            <ComboBoxItem>Hough Circles</ComboBoxItem>
-          </ComboBox>
-        </StackPanel>
-        
+      </StackPanel>
+      <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center" Margin="6">
+        <TextBlock Margin="4 2" VerticalAlignment="Center">Pupil finder type</TextBlock>
+        <ComboBox Margin="4 2" VerticalContentAlignment="Center" VerticalAlignment="Center" Name="PupilFinderComboBox" SelectedIndex="{Binding PupilFinderTypeIndex}">
+          <ComboBoxItem>Template</ComboBoxItem>
+          <ComboBoxItem>Hough Circles</ComboBoxItem>
+        </ComboBox>
+      </StackPanel>
+
+      <!--Pupil finding options-->
       <ScrollViewer DockPanel.Dock="Top" Margin="2">
         <StackPanel>
-          <uc:TemplatePupilFinderConfigUserControl Name="TemplateFinderConfigPanel"/>       
-      
-          <Expander Margin="0 8 0 0 " Header="Timestamps"  HorizontalContentAlignment="Center" IsExpanded="False">
+          <Expander Margin="0 8 0 0 " Header="Pupil Size"  HorizontalContentAlignment="Center" IsExpanded="False">
             <StackPanel>
-              <ToggleSwitch Name="AutoReadTimestampsToggleSwitch" OffContent="Auto read timestamps" OnContent="Auto read timestamps" IsChecked="True"/>
-              <StackPanel Orientation="Horizontal" Margin="0 8 0 0 " HorizontalAlignment="Center">
-                <Button Name="ReadTimestampButton" Width="150" HorizontalContentAlignment="Center" Margin="2 0 2 0">Read timestamps</Button>
-                <Button Name="LoadTimestampButton" Width="150" HorizontalContentAlignment="Center" Margin="2 0 2 0">Load timestamps</Button>
+              <StackPanel Orientation="Horizontal">
+                <TextBlock VerticalAlignment="Center" Width="100">Min Diameter</TextBlock>
+                <NumericUpDown Name="MinDiameterUpDown" Margin="4 0 0 0" Width="150" Value="{Binding MinPupilDiameter}" Increment="1" Minimum="1"/>
+              </StackPanel>
+              <StackPanel Margin="0 8 0 0" Orientation="Horizontal">
+                <TextBlock VerticalAlignment="Center" Width="100">Max Diameter</TextBlock>
+                <NumericUpDown Name="MaxDiameterUpDown" Margin="4 0 0 0" Width="150" Value="{Binding MaxPupilDiameter}" Increment="1" Minimum="2"/>
               </StackPanel>
             </StackPanel>
           </Expander>
+
+          <!--Pupil finder options-->
+          <uc:TemplatePupilFinderConfigUserControl Name="TemplateFinderConfigPanel"/>
+
+          <!--Timestamp reading options-->
+          <Expander Margin="0 8 0 0 " Header="Timestamps"  HorizontalContentAlignment="Center" IsExpanded="False">
+            <StackPanel>
+              <ToggleSwitch Name="AutoReadTimestampsToggleSwitch" OffContent="Auto read timestamps" OnContent="Auto read timestamps" IsChecked="{Binding AutoReadTimestamps}"/>
+              <StackPanel Orientation="Horizontal" Margin="0 8 0 0 " HorizontalAlignment="Center">
+                <Button Name="ReadTimestampButton" Width="150" HorizontalContentAlignment="Center" Margin="2 0 2 0"
+                        Command="{Binding ReadTimestampsCommand}">Read timestamps</Button>
+                <Button Name="LoadTimestampButton" Width="150" HorizontalContentAlignment="Center" Margin="2 0 2 0"
+                        Command="{Binding LoadTimestampsCommand}">Load timestamps</Button>
+              </StackPanel>
+            </StackPanel>
+          </Expander>
+          <!--Image filtering options-->
           <Expander Header="Image Pre-filtering" IsExpanded="False">
             <StackPanel>
-              <ToggleSwitch Name="BilateralBlurToggleSwitch" OnContent="Bilateral blur" OffContent="Bilateral blur" IsChecked="True"/>
+              <ToggleSwitch Name="BilateralBlurToggleSwitch" OnContent="Bilateral blur" OffContent="Bilateral blur" IsChecked="{Binding UseBilateralBlur}"/>
               <StackPanel IsVisible="{Binding #BilateralBlurToggleSwitch.IsChecked}">
                 <StackPanel Orientation="Horizontal">
                   <TextBlock VerticalAlignment="Center" Width="60">Blur size</TextBlock>
-                  <NumericUpDown Name="BilateralBlurUpDown" Value="1" Minimum="1" Increment="1" Margin="8 0 0 0" Width="120"/>
+                  <NumericUpDown Name="BilateralBlurUpDown" Value="{Binding BilateralBlurSize}" Minimum="1" Increment="1" Margin="8 0 0 0" Width="120"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0 4 0 0">
-                    <TextBlock VerticalAlignment="Center" Width="60">σ Color</TextBlock>
-                    <NumericUpDown Name="SigmaColorUpDown" Value="30" Minimum="0" Increment="1" Maximum="255" Margin="8 0 0 0" Width="120"/>
+                  <TextBlock VerticalAlignment="Center" Width="60">σ Color</TextBlock>
+                  <NumericUpDown Name="SigmaColorUpDown" Value="{Binding BilateralBlurSigmaColor}" Minimum="0" Increment="1" Maximum="255" Margin="8 0 0 0" Width="120"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0 4 0 0">
-                    <TextBlock VerticalAlignment="Center" Width="60">σ Space</TextBlock>
-                    <NumericUpDown Name="SigmaSpaceUpDown" Value="10" Minimum="0" Increment="1" Maximum="320" Margin="8 0 0 0" Width="120"/>
+                  <TextBlock VerticalAlignment="Center" Width="60">σ Space</TextBlock>
+                  <NumericUpDown Name="SigmaSpaceUpDown" Value="{Binding BilateralBlurSigmaSpace}" Minimum="0" Increment="1" Maximum="320" Margin="8 0 0 0" Width="120"/>
                 </StackPanel>
               </StackPanel>
-            <ToggleSwitch Name="MedianBlurToggleSwitch" OnContent="Median blur" OffContent="Median blur" IsChecked="True" Margin="0 8 0 0"/>
+              <ToggleSwitch Name="MedianBlurToggleSwitch" OnContent="Median blur" OffContent="Median blur" IsChecked="{Binding UseMedianBlur}" Margin="0 8 0 0"/>
               <StackPanel IsVisible="{Binding #MedianBlurToggleSwitch.IsChecked}">
                 <StackPanel Orientation="Horizontal">
                   <TextBlock VerticalAlignment="Center" Width="60">Blur size</TextBlock>
-                  <NumericUpDown Name="MedianBlurUpDown" Value="1" Minimum="1" Increment="1" Margin="8 0 0 0" Width="120"/>
+                  <NumericUpDown Name="MedianBlurUpDown" Value="{Binding MedianBlurSize}" Minimum="1" Increment="1" Margin="8 0 0 0" Width="120"/>
                 </StackPanel>
               </StackPanel>
             </StackPanel>
           </Expander>
+          <!--Manual adjustment options-->
           <Expander Header="Manual adjust options" IsExpanded="False">
-        <StackPanel>
-          <ToggleSwitch Name="AutoEnterPupilEditModeToggleSwitch" OffContent="Auto enter pupil edit mode on pause" OnContent="Auto enter pupil edit mode on pause" IsChecked="True"/>
-          <StackPanel Margin="0 8 0 0">
-            <TextBlock VerticalAlignment="Center">Mode</TextBlock>
-            <RadioButton Name="LinearDecayChoice" GroupName="Adjust Mode" Content="Linear Decay" IsThreeState="False" IsChecked="True"/>
-            <RadioButton Name="ExponentialDecayChoice" GroupName="Adjust Mode" Content="Exponential Decay" IsThreeState="False" IsChecked="False"/>
-            <RadioButton Name="StaticChoice" GroupName="Adjust Mode" Content="Static" IsThreeState="False" IsChecked="False"/>
-          </StackPanel>
-          <StackPanel Orientation="Horizontal" Margin="0 8 0 0" IsVisible="{Binding #LinearDecayChoice.IsChecked}">
-            <TextBlock VerticalAlignment="Center">Fade frames</TextBlock>
-            <NumericUpDown Name="LinearFadeFramesUpDown" Value="180" Increment="1" Minimum="1" Margin="8 0 0 0" Width="125"/>
-          </StackPanel>
-        <StackPanel>
-          <StackPanel Orientation="Horizontal" Margin="0 8 0 0" IsVisible="{Binding #ExponentialDecayChoice.IsChecked}">
-            <TextBlock VerticalAlignment="Center">Time constant (frames)</TextBlock>
-            <NumericUpDown Name="ExponentialFadeUpDown" Value="30" Increment="1" Minimum="1" Margin="8 0 0 0" Width="125"/>
-          </StackPanel>
-        </StackPanel>
-        </StackPanel>
-      </Expander>
+            <StackPanel>
+              <ToggleSwitch Name="AutoEnterPupilEditModeToggleSwitch" OffContent="Auto enter pupil edit mode on pause" 
+                            OnContent="Auto enter pupil edit mode on pause" IsChecked="{Binding AutoEnterPupilEditMode}"/>
+              <StackPanel Margin="0 8 0 0">
+                <TextBlock VerticalAlignment="Center">Mode</TextBlock>
+                <RadioButton Name="LinearDecayChoice" GroupName="Adjust Mode" Content="Linear Decay" IsThreeState="False" IsChecked="{Binding UseLinearDecay}"/>
+                <RadioButton Name="ExponentialDecayChoice" GroupName="Adjust Mode" Content="Exponential Decay" IsThreeState="False" IsChecked="{Binding UseExponentialDecay}"/>
+                <RadioButton Name="StaticChoice" GroupName="Adjust Mode" Content="Static" IsThreeState="False" IsChecked="{Binding UseNoDecay}"/>
+              </StackPanel>
+              <StackPanel Orientation="Horizontal" Margin="0 8 0 0" IsVisible="{Binding #LinearDecayChoice.IsChecked}">
+                <TextBlock VerticalAlignment="Center">Fade frames</TextBlock>
+                <NumericUpDown Name="LinearFadeFramesUpDown" Value="{Binding LinearDecayFrames}" Increment="1" Minimum="1" Margin="8 0 0 0" Width="125"/>
+              </StackPanel>
+              <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0 8 0 0" IsVisible="{Binding #ExponentialDecayChoice.IsChecked}">
+                  <TextBlock VerticalAlignment="Center">Time constant (frames)</TextBlock>
+                  <NumericUpDown Name="ExponentialFadeUpDown" Value="{Binding ExponentialDecayTimeConstant}" Increment="1" Minimum="1" Margin="8 0 0 0" Width="125"/>
+                </StackPanel>
+              </StackPanel>
+            </StackPanel>
+          </Expander>
         </StackPanel>
       </ScrollViewer>
     </DockPanel>

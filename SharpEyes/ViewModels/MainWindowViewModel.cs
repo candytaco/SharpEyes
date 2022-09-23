@@ -6,6 +6,11 @@ namespace SharpEyes.ViewModels
 {
 	public class MainWindowViewModel : ViewModelBase
 	{
-		public string Greeting => "Welcome to Avalonia!";
+		public PupilFindingUserControlViewModel pupilFindingUserControlViewModel { get; }
+
+		public MainWindowViewModel()
+		{
+			pupilFindingUserControlViewModel = new PupilFindingUserControlViewModel();
+		}
 	}
 }

@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using System;
+using SharpEyes.ViewModels;
 
 namespace SharpEyes.Views
 {
