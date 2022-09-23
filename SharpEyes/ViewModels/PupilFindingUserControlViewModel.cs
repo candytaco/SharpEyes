@@ -8,17 +8,19 @@ namespace SharpEyes.ViewModels
 {
 	public class PupilFindingUserControlViewModel : ViewModelBase
 	{
+		// TODO: setters and raising Notify property changed
+
 		// Commands
-		public ReactiveCommand<Unit, Unit> LoadVideoCommand { get; }
-		public ReactiveCommand<Unit, Unit> DrawWindowCommand { get; }
-		public ReactiveCommand<Unit, Unit> MovePupilCommand { get; }
-		public ReactiveCommand<Unit, Unit> FindPupilsCommand { get; }
-		public ReactiveCommand<Unit, Unit> PlayPauseCommand { get; }
-		public ReactiveCommand<Unit, Unit> PreviousFrameCommand { get; }
-		public ReactiveCommand<Unit, Unit> NextFrameCommand { get; }
-		public ReactiveCommand<Unit, Unit> VideoSliderUpdatedCommand { get; }
-		public ReactiveCommand<Unit, Unit> ReadTimestampsCommand { get; }
-		public ReactiveCommand<Unit, Unit> LoadTimestampsCommand { get; }
+		public ReactiveCommand<Unit, Unit>? LoadVideoCommand { get; } = null;
+		public ReactiveCommand<Unit, Unit>? DrawWindowCommand { get; } = null;
+		public ReactiveCommand<Unit, Unit>? MovePupilCommand { get; } = null;
+		public ReactiveCommand<Unit, Unit>? FindPupilsCommand { get; } = null;
+		public ReactiveCommand<Unit, Unit>? PlayPauseCommand { get; } = null;
+		public ReactiveCommand<Unit, Unit>? PreviousFrameCommand { get; } = null;
+		public ReactiveCommand<Unit, Unit>? NextFrameCommand { get; } = null;
+		public ReactiveCommand<Unit, Unit>? VideoSliderUpdatedCommand { get; } = null;
+		public ReactiveCommand<Unit, Unit>? ReadTimestampsCommand { get; } = null;
+		public ReactiveCommand<Unit, Unit>? LoadTimestampsCommand { get; } = null;
 
 		// == UI elements ==
 
@@ -78,5 +80,13 @@ namespace SharpEyes.ViewModels
 		public bool UseNoDecay => false;
 		public int LinearDecayFrames => 180;
 		public int ExponentialDecayTimeConstant => 30;
+
+		// children view models
+		public TemplatePupilFinderConfigUserControlViewModel templatePupilFinderConfigUserControlViewModel { get; }
+
+		public PupilFindingUserControlViewModel()
+		{
+			templatePupilFinderConfigUserControlViewModel = new TemplatePupilFinderConfigUserControlViewModel(this);
+		}
 	}
 }

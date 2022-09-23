@@ -116,7 +116,7 @@
           </Expander>
 
           <!--Pupil finder options-->
-          <uc:TemplatePupilFinderConfigUserControl Name="TemplateFinderConfigPanel"/>
+          <uc:TemplatePupilFinderConfigUserControl Name="TemplateFinderConfigPanel" DataContext="{Binding TemplatePupilFinderConfigUserControlViewModel}"/>
 
           <!--Timestamp reading options-->
           <Expander Margin="0 8 0 0 " Header="Timestamps"  HorizontalContentAlignment="Center" IsExpanded="False">

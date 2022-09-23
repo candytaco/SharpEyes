@@ -3,59 +3,78 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="350" d:DesignHeight="450" Width="346"
-             x:Class="SharpEyes.Views.TemplatePupilFinderConfigUserControl">
+             x:Class="SharpEyes.Views.TemplatePupilFinderConfigUserControl"
+             xmlns:vm="clr-namespace:SharpEyes.ViewModels">
+
+  <Design.DataContext>
+    <vm:TemplatePupilFinderConfigUserControlViewModel/>
+  </Design.DataContext>
+  
   <StackPanel>
+    <!--Templates section-->
     <Expander Header="Templates" IsExpanded="False">
       <StackPanel Orientation="Horizontal">
         <StackPanel>
-        <Canvas Width="150" Height="150">
-          <Image Width="150" Height="150">
+        <Canvas Width="175" Height="175">
+          <Image Width="175" Height="175">
           </Image>
-          <Rectangle Width="150" Height="150" Stroke="DodgerBlue" StrokeThickness="4"></Rectangle>
+          <Rectangle Width="175" Height="175" Stroke="DodgerBlue" StrokeThickness="4"></Rectangle>
         </Canvas>
           <Panel Margin="0 4">
-            <Button Name="PreviousTemplateButton" VerticalAlignment="Center" HorizontalAlignment="Left">Prev</Button>
-            <TextBlock Name="TemplateNumberTextBlock" VerticalAlignment="Center" HorizontalAlignment="Center">0/0</TextBlock>
-            <Button Name="NextTemplateButton" VerticalContentAlignment="Center" HorizontalAlignment="Right">Next</Button>
+            <Button Name="PreviousTemplateButton" VerticalAlignment="Center" HorizontalAlignment="Left" 
+                    Command="{Binding PreviousTemplateCommand}">Prev</Button>
+            <TextBlock Name="TemplateNumberTextBlock" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{Binding TemplateIndexText}"/>
+            <Button Name="NextTemplateButton" VerticalContentAlignment="Center" HorizontalAlignment="Right" 
+                    Command="{Binding NextTemplateCommand}">Next</Button>
           </Panel>
         </StackPanel>
         <DockPanel Margin="8 0">
-          <Button Margin="0 4" Name="AddNewTemplateButton" DockPanel.Dock="Top">Add current</Button>
+          <Button Margin="0 4" Name="AddNewTemplateButton" DockPanel.Dock="Top"
+                  Command="{Binding AddCurrentAsTemplateCommand}">Add current</Button>
           <ToggleSwitch Margin="0 4" Name="AutoAddTemplateToggleSwitch" 
-                        OnContent="Auto add on" OffContent="Auto add off" 
-                        IsThreeState="False" IsChecked="True"
+                        OnContent="Auto add" OffContent="Auto add" 
+                        ToolTip.Tip="Automatically add manually edited pupils as templates"
+                        IsThreeState="False" IsChecked="{Binding AutoAddNewTemplate}"
                         DockPanel.Dock="Top"/>
-
-          <Button Margin="0 4" Name="RemoveTemplateButton" DockPanel.Dock="Top">Remove</Button>
-          <Button Name="ResetTemplatesButton" Margin="0 4"  VerticalAlignment="Bottom" IsEnabled="False" HorizontalAlignment="Right">Reset templates</Button>
+          <Button Margin="0 4" Name="RemoveTemplateButton" DockPanel.Dock="Top"
+                  Command="{Binding RemoveCurrentTemplateCommand}">Remove</Button>
+          <Button Name="ResetTemplatesButton" Margin="0 4"  VerticalAlignment="Bottom" HorizontalAlignment="Right"
+                  Command="{Binding ResetTemplatesCommand}">Reset templates</Button>
         </DockPanel>
       </StackPanel>
     </Expander>
+    
+    <!--Anti templates-->
     <Expander Header="Anti-templates" IsExpanded="False">
       <StackPanel Orientation="Horizontal">
         <StackPanel>
-          <Canvas Width="150" Height="150">
-            <Image Width="150" Height="150">
+          <Canvas Width="175" Height="175">
+            <Image Width="175" Height="175">
             </Image>
-            <Rectangle Width="150" Height="150" Stroke="DodgerBlue" StrokeThickness="4"></Rectangle>
+            <Rectangle Width="175" Height="175" Stroke="DodgerBlue" StrokeThickness="4"></Rectangle>
           </Canvas>
           <Panel Margin="0 4">
-            <Button Name="PreviousAntiTemplateButton" VerticalAlignment="Center" HorizontalAlignment="Left">Prev</Button>
-            <TextBlock Name="AntiTemplateNumberTextBlock" VerticalAlignment="Center" HorizontalAlignment="Center">0/0</TextBlock>
-            <Button Name="NextAntiTemplateButton" VerticalContentAlignment="Center" HorizontalAlignment="Right">Next</Button>
+            <Button Name="PreviousAntiTemplateButton" VerticalAlignment="Center" HorizontalAlignment="Left"
+                    Command="{Binding PreviousAntiTemplateCommand}">Prev</Button>
+            <TextBlock Name="AntiTemplateNumberTextBlock" VerticalAlignment="Center" HorizontalAlignment="Center"
+                       Text="{Binding AntiTemplateIndexText}"/>
+            <Button Name="NextAntiTemplateButton" VerticalContentAlignment="Center" HorizontalAlignment="Right"
+                    Command="{Binding NextAntiTemplateCommand}">Next</Button>
           </Panel>
         </StackPanel>
         <StackPanel Margin="8 0">
-          <Button Margin="0 4" Name="AddNewAntiTemplateButton">Add current</Button>
-          <Button Margin="0 4" Name="RemoveAntiTemplateButton">Remove</Button>
+          <Button Margin="0 4" Name="AddNewAntiTemplateButton" Command="{Binding AddCurrentAsAntiTempalteCommand}">Add current</Button>
+          <Button Margin="0 4" Name="RemoveAntiTemplateButton" Command="{Binding RemoveCurrentAntiTemplateCommand}">Remove</Button>
         </StackPanel>
       </StackPanel>
     </Expander>
-    <Expander Header="Matching options" IsExpanded="True">      
+    
+    <!--Match options-->
+    <Expander Header="Matching options" IsExpanded="False">      
       <StackPanel>
         <StackPanel Orientation="Horizontal" Margin="0 8">
           <TextBlock VerticalAlignment="Center">Metric</TextBlock>
-          <ComboBox Name="MatchMethodComboBox" SelectedIndex="3" Width="250" Margin="8 0 0 0">
+          <ComboBox Name="MatchMethodComboBox" SelectedIndex="{Binding SelectedMetricIndex}" Width="250" Margin="8 0 0 0">
             <ComboBoxItem>Square Difference</ComboBoxItem>
             <ComboBoxItem>Normed Square Difference</ComboBoxItem>
             <ComboBoxItem>Cross-correlation</ComboBoxItem>
@@ -64,44 +83,51 @@
             <ComboBoxItem>Normed correlation coefficient</ComboBoxItem>
           </ComboBox>
         </StackPanel>
-        <ToggleSwitch Name="UseRecentTemplateToggleSwitch" OnContent="Use all templates" OffContent="Use only recent templates" IsChecked="True"/>
+        <ToggleSwitch Name="UseRecentTemplateToggleSwitch" OnContent="Use all templates" OffContent="Use all templates" IsChecked="{Binding UseAllTemplates}"/>
         <StackPanel Orientation="Horizontal" Margin="0 8" IsVisible="{Binding !#UseRecentTemplateToggleSwitch.IsChecked}">
           <TextBlock VerticalAlignment="Center" Margin="0 0 4 0">Use</TextBlock>
-          <NumericUpDown Name="NRecentTemplatesUpDown" Minimum="1" Increment="1" Value="128" Margin="0 0 4 0" Width="115"/>
+          <NumericUpDown Name="NRecentTemplatesUpDown" Minimum="1" Increment="1" Value="{Binding NumTemplatesToUse}" Margin="0 0 4 0" Width="115"/>
           <TextBlock VerticalAlignment="Center">most recent templates</TextBlock>
         </StackPanel>
-        <ToggleSwitch Name="UseEveryTemplateToggleSwitch" OnContent="Use every template" OffContent="Use random subset of templates" IsChecked="True"/>
+        <ToggleSwitch Name="UseEveryTemplateToggleSwitch" OnContent="Use every template" OffContent="Use every template" IsChecked="{Binding UseEveryTemplate}"/>
         <StackPanel Orientation="Horizontal" Margin="0 8" IsVisible="{Binding !#UseEveryTemplateToggleSwitch.IsChecked}">
           <TextBlock VerticalAlignment="Center" Margin="0 0 4 0">Use</TextBlock>
-          <NumericUpDown Name="FractionTemplatesUpDown" Minimum="1" Maximum="99" Increment="1" Value="75" Margin="0 0 4 0" Width="115"/>
+          <NumericUpDown Name="FractionTemplatesUpDown" Minimum="1" Maximum="99" Increment="1" Value="{Binding FractionOfTemplatesToUse}" Margin="0 0 4 0" Width="115"/>
           <TextBlock VerticalAlignment="Center">% of templates</TextBlock>
         </StackPanel>
       </StackPanel>
     </Expander>
+    
+    <!--Confidence options-->
     <Expander Header="Confidence options" IsExpanded="False">
       <StackPanel>
-        <ToggleSwitch Name="PauseOnLowConfidenceToggleSwitch" OffContent="No auto stop" OnContent="Stop on low confidence" IsChecked="True"/>
+        <ToggleSwitch Name="PauseOnLowConfidenceToggleSwitch" OffContent="Stop on low confidence" OnContent="Stop on low confidence" 
+                      IsChecked="{Binding StopOnLowConfidence}"/>
         <StackPanel IsVisible="{Binding #PauseOnLowConfidenceToggleSwitch.IsChecked}">
           <StackPanel Orientation="Horizontal">
             <TextBlock VerticalAlignment="Center" Width="75">Threshold</TextBlock>
-            <NumericUpDown Name="ConfidenceThresholdUpDown" Margin="4 0 0 0" Width="150" Value="0.985" Increment="0.005" Minimum="0"/>
+            <NumericUpDown Name="ConfidenceThresholdUpDown" Margin="4 0 0 0" Width="150" 
+                           Value="{Binding LowConfidenceThreshold}" Increment="0.005" Minimum="0"/>
           </StackPanel>
           <StackPanel Margin="0 8 0 0" Orientation="Horizontal">
             <TextBlock VerticalAlignment="Center" Width="75">Frames</TextBlock>
-            <NumericUpDown Name="ConfidenceThresholdFramesUpDown" Margin="4 0 0 0" Width="150" Value="12" Increment="1" Minimum="1"/>
+            <NumericUpDown Name="ConfidenceThresholdFramesUpDown" Margin="4 0 0 0" Width="150" 
+                           Value="{Binding LowConfidenceFrameCountThreshold}" Increment="1" Minimum="1"/>
           </StackPanel>
         </StackPanel>
-        <ToggleSwitch Name="BlinkRejectionToggleSwitch" OffContent="No blink rejection" 
-                      OnContent="Brightness-based blink rejection" IsChecked="True" Margin="0 8 0 0"
+        <ToggleSwitch Name="BlinkRejectionToggleSwitch" OffContent="Brightness-based blink rejection" 
+                      OnContent="Brightness-based blink rejection" IsChecked="{Binding EnableBlinkRejection}" Margin="0 8 0 0"
                       ToolTip.Tip="Don't stop when confidence is low if a blink is detected"/>
         <StackPanel IsVisible="{Binding #BlinkRejectionToggleSwitch.IsChecked}">
           <StackPanel Orientation="Horizontal">
             <TextBlock VerticalAlignment="Center" Width="75">Blink (σ)</TextBlock>
-            <NumericUpDown Name="BlinkThresholdUpDown" Margin="4 0 0 0" Width="150" Value="2.0" Increment="0.05" Minimum="0"/>
+            <NumericUpDown Name="BlinkThresholdUpDown" Margin="4 0 0 0" Width="150" 
+                           Value="{Binding BlinkRejectionBlinkSigma}" Increment="0.05" Minimum="0"/>
           </StackPanel>
           <StackPanel Margin="0 8 0 0" Orientation="Horizontal">
             <TextBlock VerticalAlignment="Center" Width="75">Pupil (σ)</TextBlock>
-            <NumericUpDown Name="PupilThresholdUpDown" Margin="4 0 0 0" Width="150" Value="2.0" Increment="0.05" Minimum="1"/>
+            <NumericUpDown Name="PupilThresholdUpDown" Margin="4 0 0 0" Width="150" 
+                           Value="{Binding BlinkRejectionPupilSigma}" Increment="0.05" Minimum="1"/>
           </StackPanel>
         </StackPanel>
       </StackPanel>
