@@ -25,8 +25,11 @@ namespace SharpEyes.Views
 
 		private void SetPupilPosition(Point point)
 		{
-			viewModel.PupilX = point.X;
-			viewModel.PupilY = point.Y;
+			if (viewModel.IsMovingPupil)
+			{
+				viewModel.PupilX = point.X;
+				viewModel.PupilY = point.Y;
+			}
 		}
 
 		public void VideoCanvasMouseDown(object sender, PointerPressedEventArgs e)

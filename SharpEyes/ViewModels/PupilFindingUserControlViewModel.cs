@@ -6,14 +6,19 @@ using ReactiveUI;
 
 namespace SharpEyes.ViewModels
 {
+	public enum EditingState
+	{
+		None,
+		DrawWindow,
+		MovePupil
+	}
+
 	public class PupilFindingUserControlViewModel : ViewModelBase
 	{
 		// TODO: setters and raising Notify property changed
 
 		// Commands
 		public ReactiveCommand<Unit, Unit>? LoadVideoCommand { get; } = null;
-		public ReactiveCommand<Unit, Unit>? DrawWindowCommand { get; } = null;
-		public ReactiveCommand<Unit, Unit>? MovePupilCommand { get; } = null;
 		public ReactiveCommand<Unit, Unit>? FindPupilsCommand { get; } = null;
 		public ReactiveCommand<Unit, Unit>? PlayPauseCommand { get; } = null;
 		public ReactiveCommand<Unit, Unit>? PreviousFrameCommand { get; } = null;
@@ -23,6 +28,25 @@ namespace SharpEyes.ViewModels
 		public ReactiveCommand<Unit, Unit>? LoadTimestampsCommand { get; } = null;
 
 		// == UI elements ==
+		private EditingState editingState = EditingState.None;
+		public bool IsDrawingWindow
+		{
+			get => editingState == EditingState.DrawWindow;
+			set
+			{
+				this.RaiseAndSetIfChanged(ref editingState, value ? EditingState.DrawWindow : EditingState.None);
+				this.RaisePropertyChanged("IsMovingPupil");
+			}
+		}
+		public bool IsMovingPupil
+		{
+			get => editingState == EditingState.MovePupil;
+			set
+			{
+				this.RaiseAndSetIfChanged(ref editingState, value ? EditingState.MovePupil : EditingState.None);
+				this.RaisePropertyChanged("IsDrawingWindow");
+			}
+		}
 
 		// progress bar
 		public string StatusText => "Idle";

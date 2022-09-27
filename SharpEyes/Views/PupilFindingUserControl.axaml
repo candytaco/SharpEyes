@@ -33,8 +33,8 @@
       <StackPanel Orientation="Horizontal" Grid.Row="0">
         <Button Name="LoadVideoButton" Margin="4" Command="{Binding LoadVideoCommand}">Load Video</Button>
         <TextBlock VerticalAlignment="Center" Margin="4">|</TextBlock>
-        <ToggleButton Name="DrawWindowButton" Margin="4" Command="{Binding DrawWindowCommand}">Draw Window</ToggleButton>
-        <ToggleButton Name="MovePupilButton" Margin="4" Command="{Binding MovePupilCommand}">Move Pupil</ToggleButton>
+        <ToggleButton Name="DrawWindowButton" Margin="4" IsChecked="{Binding IsDrawingWindow}">Draw Window</ToggleButton>
+        <ToggleButton Name="MovePupilButton" Margin="4" IsChecked="{Binding IsMovingPupil}">Move Pupil</ToggleButton>
       </StackPanel>
 
       <!--Video video box-->
