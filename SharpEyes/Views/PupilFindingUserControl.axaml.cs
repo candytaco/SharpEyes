@@ -8,45 +8,83 @@ namespace SharpEyes.Views
 {
 	public partial class PupilFindingUserControl : UserControl
 	{
+		// for moving the pupil and window
 		private bool isMouseDownOnVideoCanvas = false;
+		private Point? windowInitialPoint = null;
 		private PupilFindingUserControlViewModel? viewModel => (PupilFindingUserControlViewModel)this.DataContext;
-		private Canvas videoCanvas;
 		public PupilFindingUserControl()
 		{
 			InitializeComponent();
-			FindControls();
 		}
 
-		private void FindControls()
+		private void SetCanvasChildElementPosition(Point point)
 		{
-			// set static values
-			videoCanvas = this.FindControl<Canvas>("VideoCanvas");
-		}
-
-		private void SetPupilPosition(Point point)
-		{
-			if (viewModel.IsMovingPupil)
+			switch (viewModel.EditingState)
 			{
-				viewModel.PupilX = point.X;
-				viewModel.PupilY = point.Y;
+				case EditingState.MovePupil:
+					viewModel.PupilX = point.X;
+					viewModel.PupilY = point.Y;
+					break;
+				case EditingState.DrawWindow:
+					if (windowInitialPoint == null)
+						windowInitialPoint = point;
+					double left, right, top, bottom;
+					if (windowInitialPoint.Value.X < point.X)
+					{
+						left = windowInitialPoint.Value.X;
+						right = point.X;
+					}
+					else
+					{
+						left = point.X;
+						right = windowInitialPoint.Value.X;
+					}
+					if (windowInitialPoint.Value.Y < point.Y)
+					{
+						top = windowInitialPoint.Value.Y;
+						bottom = point.Y;
+					}
+					else
+					{
+						top = point.Y;
+						bottom = windowInitialPoint.Value.Y;
+					}
+					left = left >= 0 ? left : 0;
+					top = top >= 0 ? top : 0;
+					viewModel.PupilWindowLeft = left;
+					viewModel.PupilWindowTop = top;
+					viewModel.PupilWindowWidth = right <= VideoCanvas.Width ? right - left : VideoCanvas.Width - left;
+					viewModel.PupilWindowHeight = bottom <= VideoCanvas.Height ? bottom - top : VideoCanvas.Height - top;
+
+					break;
+				default:
+					break;
 			}
 		}
 
 		public void VideoCanvasMouseDown(object sender, PointerPressedEventArgs e)
 		{
 			isMouseDownOnVideoCanvas = true;
-			SetPupilPosition(e.GetPosition(videoCanvas));
+			windowInitialPoint = null;
+			SetCanvasChildElementPosition(e.GetPosition(VideoCanvas));
 		}
 
 		public void VideoCanvasMouseMove(object sender, PointerEventArgs e)
 		{
 			if (isMouseDownOnVideoCanvas)
-				SetPupilPosition(e.GetPosition(videoCanvas));
+				SetCanvasChildElementPosition(e.GetPosition(VideoCanvas));
 		}
 
 		public void VideoCanvasMouseUp(object sender, PointerReleasedEventArgs e)
 		{
 			isMouseDownOnVideoCanvas = false;
+		}
+
+		public void VideoCanvasScroll(object sender, PointerWheelEventArgs e)
+		{
+			// e.Delta.Y encodes the number of clicks of the wheel, with + being up, - being down
+			if (viewModel.EditingState == EditingState.MovePupil)
+				viewModel.PupilDiameter += e.Delta.Y;
 		}
 	}
 }

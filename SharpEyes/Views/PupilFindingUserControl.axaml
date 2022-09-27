@@ -40,8 +40,11 @@
       <!--Video video box-->
       <Viewbox Grid.Row="1" Stretch="Uniform">
         <Canvas Name="VideoCanvas" Width="400" Height="300" PointerPressed="VideoCanvasMouseDown" 
-                PointerMoved="VideoCanvasMouseMove" PointerReleased="VideoCanvasMouseUp" Background="Transparent">
-          <Rectangle Name="PupilWindowRectangle" Width="400" Height="300" Stroke="DodgerBlue" StrokeThickness="4"/>
+                PointerMoved="VideoCanvasMouseMove" PointerReleased="VideoCanvasMouseUp"
+                PointerWheelChanged="VideoCanvasScroll" Background="Transparent">
+          <Rectangle Name="PupilWindowRectangle" Width="{Binding PupilWindowWidth}" Height="{Binding PupilWindowHeight}" 
+                     Canvas.Left="{Binding PupilWindowLeft}" Canvas.Top="{Binding PupilWindowTop}"
+                     Stroke="DodgerBlue" StrokeThickness="4"/>
           <Ellipse Name="PupilEllipse" Width="{Binding PupilDiameter}" Height="{Binding #PupilEllipse.Width}" 
                    Stroke="LimeGreen" StrokeThickness="4" Opacity="50"
                    Canvas.Left="{Binding PupilCircleLeft}" Canvas.Top="{Binding PupilCircleTop}"/>
@@ -76,13 +79,13 @@
 
     <!--Pupil info display-->
     <DockPanel Margin="0" Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" >
-      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4 4 4 8"
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4 4 4 2"
                   DockPanel.Dock="Top">
-        <TextBlock Name="PupilXCoordTextBlock" Width="50">X: 000</TextBlock>
-        <TextBlock Name="PupilYCoordTextBlock" Width="50">Y: 000</TextBlock>
-        <TextBlock Name="PupilRadiusTextBlock" Width="75">Radius: 00</TextBlock>
-        <TextBlock Name="PupilConfidenceTextBlock" Width="125">Confidence: 0.00</TextBlock>
+        <TextBlock Name="PupilXCoordTextBlock" Width="100" Text="{Binding PupilXText}"/>
+        <TextBlock Name="PupilYCoordTextBlock" Width="100" Text="{Binding PupilYText}"/>
+        <TextBlock Name="PupilRadiusTextBlock" Width="100" Text="{Binding PupilRadiusText}"/>
       </StackPanel>
+        <TextBlock Name="PupilConfidenceTextBlock" Width="150" Text="{Binding PupilConfidenceText}" DockPanel.Dock="Top"/>
       <Button DockPanel.Dock="Top" Name="FindPupilsButton" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4 2"
               Command="{Binding FindPupilsCommand}">Find Pupils</Button>
       <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center" Margin="4 4 4 8">
