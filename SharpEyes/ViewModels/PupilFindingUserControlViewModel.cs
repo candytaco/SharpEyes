@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reactive;
 using System.Text;
+using Avalonia.Media.Imaging;
 using ReactiveUI;
 
 namespace SharpEyes.ViewModels
@@ -13,10 +14,15 @@ namespace SharpEyes.ViewModels
 		MovePupil
 	}
 
+	// note the ordering here should match the combobox items
+	public enum PupilFinderType
+	{
+		Template,
+		HoughCircles,
+	}
+
 	public class PupilFindingUserControlViewModel : ViewModelBase
 	{
-		// TODO: setters and raising Notify property changed
-
 		// Commands
 		public ReactiveCommand<Unit, Unit>? LoadVideoCommand { get; } = null;
 		public ReactiveCommand<Unit, Unit>? FindPupilsCommand { get; } = null;
@@ -74,12 +80,13 @@ namespace SharpEyes.ViewModels
 		public string PlayPauseButtonText => IsVideoPlaying ? "Pause" : "Play";
 		public bool IsVideoPlaying { get; private set; } = false;
 		public double CurrentVideoPercentage { get; set; } = 0.0;
+		public Bitmap? VideoFrame => null;
 
 		// pupil overlay info
 		private double pupilX = 0;
 		private double pupilY = 0;
 		public double PupilX
-		{ 
+		{
 			get => pupilX;
 			set
 			{
@@ -167,6 +174,7 @@ namespace SharpEyes.ViewModels
 		public int MinPupilDiameter { get; set; } = 10;
 		public int MaxPupilDiameter { get; set; } = 75;
 		public int PupilFinderTypeIndex { get; set; } = 0;
+		public PupilFinderType PupilFinderType => (PupilFinderType)PupilFinderTypeIndex;
 
 		// timestamps
 		public bool AutoReadTimestamps => true;

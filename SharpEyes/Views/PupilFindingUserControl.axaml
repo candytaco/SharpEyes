@@ -39,15 +39,16 @@
 
       <!--Video video box-->
       <Viewbox Grid.Row="1" Stretch="Uniform">
-        <Canvas Name="VideoCanvas" Width="400" Height="300" PointerPressed="VideoCanvasMouseDown" 
+        <Canvas Name="VideoCanvas" Width="400" Height="300" PointerPressed="VideoCanvasMouseDown"
                 PointerMoved="VideoCanvasMouseMove" PointerReleased="VideoCanvasMouseUp"
                 PointerWheelChanged="VideoCanvasScroll" Background="Transparent">
-          <Rectangle Name="PupilWindowRectangle" Width="{Binding PupilWindowWidth}" Height="{Binding PupilWindowHeight}" 
+          <Rectangle Name="PupilWindowRectangle" Width="{Binding PupilWindowWidth}" Height="{Binding PupilWindowHeight}"
                      Canvas.Left="{Binding PupilWindowLeft}" Canvas.Top="{Binding PupilWindowTop}"
                      Stroke="DodgerBlue" StrokeThickness="4"/>
-          <Ellipse Name="PupilEllipse" Width="{Binding PupilDiameter}" Height="{Binding #PupilEllipse.Width}" 
+          <Ellipse Name="PupilEllipse" Width="{Binding PupilDiameter}" Height="{Binding #PupilEllipse.Width}"
                    Stroke="LimeGreen" StrokeThickness="4" Opacity="50"
                    Canvas.Left="{Binding PupilCircleLeft}" Canvas.Top="{Binding PupilCircleTop}"/>
+          <Image Name="VideoFrameImage" Source="{Binding VideoFrame}" Width="400" Height="300"/>
         </Canvas>
       </Viewbox>
 
@@ -85,7 +86,7 @@
         <TextBlock Name="PupilYCoordTextBlock" Width="100" Text="{Binding PupilYText}"/>
         <TextBlock Name="PupilRadiusTextBlock" Width="100" Text="{Binding PupilRadiusText}"/>
       </StackPanel>
-        <TextBlock Name="PupilConfidenceTextBlock" Width="150" Text="{Binding PupilConfidenceText}" DockPanel.Dock="Top"/>
+      <TextBlock Name="PupilConfidenceTextBlock" Width="150" Text="{Binding PupilConfidenceText}" DockPanel.Dock="Top"/>
       <Button DockPanel.Dock="Top" Name="FindPupilsButton" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4 2"
               Command="{Binding FindPupilsCommand}">Find Pupils</Button>
       <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center" Margin="4 4 4 8">
@@ -166,7 +167,7 @@
           <!--Manual adjustment options-->
           <Expander Header="Manual adjust options" IsExpanded="False">
             <StackPanel>
-              <ToggleSwitch Name="AutoEnterPupilEditModeToggleSwitch" OffContent="Auto enter pupil edit mode on pause" 
+              <ToggleSwitch Name="AutoEnterPupilEditModeToggleSwitch" OffContent="Auto enter pupil edit mode on pause"
                             OnContent="Auto enter pupil edit mode on pause" IsChecked="{Binding AutoEnterPupilEditMode}"/>
               <StackPanel Margin="0 8 0 0">
                 <TextBlock VerticalAlignment="Center">Mode</TextBlock>
