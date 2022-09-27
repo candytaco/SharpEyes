@@ -38,12 +38,30 @@ namespace SharpEyes.ViewModels
 		public double CurrentVideoPercentage => 0.0;
 
 		// pupil overlay info
-		public double PupilX => 0;	// center of pupil
-		public double PupilY => 0;	// center of pupil
+		private double pupilX = 0;
+		private double pupilY = 0;
+		public double PupilX
+		{ 
+			get => pupilX;
+			set
+			{
+				this.RaiseAndSetIfChanged(ref pupilX, value);
+				this.RaisePropertyChanged("PupilCircleLeft");
+			}
+		}
+		public double PupilY
+		{
+			get => pupilY;
+			set
+			{
+				this.RaiseAndSetIfChanged(ref pupilY, value);
+				this.RaisePropertyChanged("PupilCircleTop");
+			}
+		}
 		public double PupilRadius => PupilDiameter / 2;
-		public double PupilDiameter => 0;
-		public double PupilCircleLeft => PupilX - PupilRadius;
-		public double PupilCircleTop => PupilY - PupilRadius;
+		public double PupilDiameter => 64;
+		public double PupilCircleLeft => pupilX - PupilRadius;
+		public double PupilCircleTop => pupilY - PupilRadius;
 		public double PupilConfidence => 0;
 		public double PupilWindowLeft => 0;
 		public double PupilWindowTop => 0;
