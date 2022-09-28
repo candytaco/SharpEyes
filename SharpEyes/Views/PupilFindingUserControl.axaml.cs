@@ -4,6 +4,7 @@ using SharpEyes.ViewModels;
 using Avalonia.Input;
 using Avalonia;
 using Avalonia.Interactivity;
+using Eyetracking;
 
 namespace SharpEyes.Views
 {
@@ -13,6 +14,9 @@ namespace SharpEyes.Views
 		private bool isMouseDownOnVideoCanvas = false;
 		private Point? windowInitialPoint = null;
 		private PupilFindingUserControlViewModel? viewModel => (PupilFindingUserControlViewModel)this.DataContext;
+
+		private PupilFinder? pupilFinder = null;
+
 		public PupilFindingUserControl()
 		{
 			InitializeComponent();

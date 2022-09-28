@@ -35,13 +35,13 @@ namespace SharpEyes.ViewModels
 		public ReactiveCommand<Unit, Unit>? LoadTimestampsCommand { get; } = null;
 
 		// == UI elements ==
-		private EditingState editingState = EditingState.None;
+		private EditingState _editingState = EditingState.None;
 		public EditingState EditingState
 		{
-			get => editingState;
+			get => _editingState;
 			set
 			{
-				editingState = value;
+				_editingState = value;
 				// apparently this is not the ReactiveUI way to do things, but their documentation is nonexistent.
 				// There is literally no page describing the syntax for the WhenAny method, only a poorly written set of
 				// examples. Remember kids, examples are not documentation.
@@ -52,19 +52,19 @@ namespace SharpEyes.ViewModels
 		}
 		public bool IsDrawingWindow
 		{
-			get => editingState == EditingState.DrawWindow;
+			get => _editingState == EditingState.DrawWindow;
 			set
 			{
-				this.RaiseAndSetIfChanged(ref editingState, value ? EditingState.DrawWindow : EditingState.None);
+				this.RaiseAndSetIfChanged(ref _editingState, value ? EditingState.DrawWindow : EditingState.None);
 				this.RaisePropertyChanged("IsMovingPupil");
 			}
 		}
 		public bool IsMovingPupil
 		{
-			get => editingState == EditingState.MovePupil;
+			get => _editingState == EditingState.MovePupil;
 			set
 			{
-				this.RaiseAndSetIfChanged(ref editingState, value ? EditingState.MovePupil : EditingState.None);
+				this.RaiseAndSetIfChanged(ref _editingState, value ? EditingState.MovePupil : EditingState.None);
 				this.RaisePropertyChanged("IsDrawingWindow");
 			}
 		}
@@ -84,43 +84,43 @@ namespace SharpEyes.ViewModels
 		public Bitmap? VideoFrame => null;
 
 		// pupil overlay info
-		private double pupilX = 0;
-		private double pupilY = 0;
+		private double _pupilX = 0;
+		private double _pupilY = 0;
 		public double PupilX
 		{
-			get => pupilX;
+			get => _pupilX;
 			set
 			{
-				this.RaiseAndSetIfChanged(ref pupilX, value);
+				this.RaiseAndSetIfChanged(ref _pupilX, value);
 				this.RaisePropertyChanged("PupilCircleLeft");
 				this.RaisePropertyChanged("PupilXText");
 			}
 		}
 		public double PupilY
 		{
-			get => pupilY;
+			get => _pupilY;
 			set
 			{
-				this.RaiseAndSetIfChanged(ref pupilY, value);
+				this.RaiseAndSetIfChanged(ref _pupilY, value);
 				this.RaisePropertyChanged("PupilCircleTop");
 				this.RaisePropertyChanged("PupilYText");
 			}
 		}
-		public double PupilCircleLeft => pupilX - PupilRadius;
-		public double PupilCircleTop => pupilY - PupilRadius;
-		private double pupilDiameter = 64;
-		public double PupilRadius => pupilDiameter / 2;
+		public double PupilCircleLeft => _pupilX - PupilRadius;
+		public double PupilCircleTop => _pupilY - PupilRadius;
+		private double _pupilDiameter = 64;
+		public double PupilRadius => _pupilDiameter / 2;
 		public double PupilDiameter
 		{
-			get => pupilDiameter;
+			get => _pupilDiameter;
 			set
 			{
 				// pupil diameter is bounded
-				pupilDiameter = value;
-				if (pupilDiameter > MaxPupilDiameter)
-					pupilDiameter = MaxPupilDiameter;
-				else if (pupilDiameter < MinPupilDiameter)
-					pupilDiameter = MinPupilDiameter;
+				_pupilDiameter = value;
+				if (_pupilDiameter > MaxPupilDiameter)
+					_pupilDiameter = MaxPupilDiameter;
+				else if (_pupilDiameter < MinPupilDiameter)
+					_pupilDiameter = MinPupilDiameter;
 
 				this.RaisePropertyChanged("PupilDiameter");
 				this.RaisePropertyChanged("PupilRadius");
@@ -130,39 +130,39 @@ namespace SharpEyes.ViewModels
 				this.RaisePropertyChanged("PupilCircleTop");
 			}
 		}
-		private double pupilConfidence = Double.NaN;
+		private double _pupilConfidence = Double.NaN;
 		public double PupilConfidence
 		{
-			get => pupilConfidence;
+			get => _pupilConfidence;
 			set
 			{
-				this.RaiseAndSetIfChanged(ref pupilConfidence, value);
+				this.RaiseAndSetIfChanged(ref _pupilConfidence, value);
 				this.RaisePropertyChanged("PupilConfidenceText");
 			}
 		}
-		private double pupilWindowLeft = 0;
+		private double _pupilWindowLeft = 0;
 		public double PupilWindowLeft
 		{
-			get => pupilWindowLeft;
-			set => this.RaiseAndSetIfChanged(ref pupilWindowLeft, value);
+			get => _pupilWindowLeft;
+			set => this.RaiseAndSetIfChanged(ref _pupilWindowLeft, value);
 		}
-		private double pupilWindowTop = 0;
+		private double _pupilWindowTop = 0;
 		public double PupilWindowTop
 		{
-			get => pupilWindowTop;
-			set => this.RaiseAndSetIfChanged(ref pupilWindowTop, value);
+			get => _pupilWindowTop;
+			set => this.RaiseAndSetIfChanged(ref _pupilWindowTop, value);
 		}
-		private double pupilWindowWidth = 0;
+		private double _pupilWindowWidth = 0;
 		public double PupilWindowWidth
 		{
-			get => pupilWindowWidth;
-			set => this.RaiseAndSetIfChanged(ref pupilWindowWidth, value);
+			get => _pupilWindowWidth;
+			set => this.RaiseAndSetIfChanged(ref _pupilWindowWidth, value);
 		}
-		private double pupilWindowHeight = 0;
+		private double _pupilWindowHeight = 0;
 		public double PupilWindowHeight
 		{
-			get => pupilWindowHeight;
-			set => this.RaiseAndSetIfChanged(ref pupilWindowHeight, value);
+			get => _pupilWindowHeight;
+			set => this.RaiseAndSetIfChanged(ref _pupilWindowHeight, value);
 		}
 
 		// pupil finding info
@@ -185,12 +185,12 @@ namespace SharpEyes.ViewModels
 		public bool UseBilateralBlur { get; set; } = false;
 		public int BilateralBlurSize { get; set; } = 1;
 		public int BilateralBlurSigmaColor { get; set; } = 30;
-		public int BilateralBlueSigmaSpace { get; set; } = 10;
+		public int BilateralBlurSigmaSpace { get; set; } = 10;
 		public bool UseMedianBlur { get; set; } = false;
 		public int MedianBlurSize { get; set; } = 1;
 
 		// manual adjustment
-		public bool AutoEnterPupilEditmode { get; set; } = true;
+		public bool AutoEnterPupilEditMode { get; set; } = true;
 		public bool UseLinearDecay { get; set; } = true;
 		public bool UseExponentialDecay { get; set; } = false;
 		public bool UseNoDecay { get; set; } = false;
