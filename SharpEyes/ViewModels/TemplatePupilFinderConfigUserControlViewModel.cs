@@ -1,4 +1,5 @@
-﻿using ReactiveUI;
+﻿using Avalonia.Media.Imaging;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Reactive;
@@ -11,50 +12,109 @@ namespace SharpEyes.ViewModels
 		// Commands
 		public ReactiveCommand<Unit, Unit>? AddCurrentAsTemplateCommand { get; } = null;
 		public ReactiveCommand<Unit, Unit>? RemoveCurrentTemplateCommand { get; } = null;
-		public ReactiveCommand<Unit, Unit>? PreviousTemplateCommand { get; } = null;
-		public ReactiveCommand<Unit, Unit>? NextTemplateCommand { get; } = null;
+		public ReactiveCommand<int, Unit>? ChangeTemplatePreviewIndexCommand { get; } = null;
 		public ReactiveCommand<Unit, Unit>? ResetTemplatesCommand { get; } = null;
 		public ReactiveCommand<Unit, Unit>? AddCurrentAsAntiTemplateCommand { get; } = null;
 		public ReactiveCommand<Unit, Unit>? RemoveCurrentAntiTemplateCommand { get; } = null;
-		public ReactiveCommand<Unit, Unit>? PreviousAntiTemplateCommand { get; } = null;
-		public ReactiveCommand<Unit, Unit>? NextAntiTemplateCommand { get; } = null;
+		public ReactiveCommand<int, Unit>? ChangeAntiTemplatePreviewIndexCommand { get; } = null;
 
 		// templates section
-		public bool AutoAddNewTemplates => true;
-		public int CurrentTemplateIndex => 0;
+		public bool AutoAddNewTemplates { get; set; } = true;
+		public int CurrentTemplateIndex { get; set; } = 0;
 		public int TotalTemplateCount { get; private set; } = 0;
 		public string TemplateIndexText => String.Format("{0}/{1}", CurrentTemplateIndex, TotalTemplateCount);
+		private Bitmap? templatePreviewImage = null;
+		public Bitmap? TemplatePreviewImage
+		{
+			get => templatePreviewImage;
+			set => this.RaiseAndSetIfChanged(ref templatePreviewImage, value);
+		}
 
 		// anti-templates section
-		public int CurrentAntiTemplateIndex => 0;
+		public int CurrentAntiTemplateIndex { get; set; } = 0;
 		public int TotalAntiTemplateCount { get; private set; } = 0;
 		public string AntiTemplateIndexText => String.Format("{0}/{1}", CurrentAntiTemplateIndex, TotalAntiTemplateCount);
+		private Bitmap? antiTemplatePreviewImage = null;
+		public Bitmap? AntiTemplatePreviewImage
+		{
+			get => antiTemplatePreviewImage;
+			set => this.RaiseAndSetIfChanged(ref antiTemplatePreviewImage, value);
+		}
 
 		// match options
-		public int SelectedMetricIndex => 3;
-		public bool UseAllTemplates => true;
-		public int NumTemplatesToUse => 128;
-		public bool UseEveryTemplate => true;
-		public int FractionOfTemplatesToUse => 75;
+		public int SelectedMetricIndex { get; set; } = 3;
+		public bool UseAllTemplates { get; set; } = true;
+		public int NumTemplatesToUse { get; set; } = 128;
+		public bool UseEveryTemplate { get; set; } = true;
+		public int FractionOfTemplatesToUse { get; set; } = 75;
 
 		// confidence options
-		public bool StopOnLowConfidence => true;
-		public double LowConfidenceThreshold => 0.985;
-		public int LowConfidenceFrameCountThreshold => 12;
-		public bool EnableBlinkRejection => true;
-		public double BlinkRejectionBlinkSigma => 2.0;
-		public double BlinkRejectionPupilSigma => 2.0;
+		public bool StopOnLowConfidence { get; set; } = true;
+		public double LowConfidenceThreshold { get; set; } = 0.985;
+		public int LowConfidenceFrameCountThreshold { get; set; } = 12;
+		public bool EnableBlinkRejection { get; set; } = true;
+		public double BlinkRejectionBlinkSigma { get; set; } = 2.0;
+		public double BlinkRejectionPupilSigma { get; set; } = 2.0;
 
 		// view model hierarchey
 		private PupilFindingUserControlViewModel? parent = null;
 
 		public TemplatePupilFinderConfigUserControlViewModel()
+			:this(null)
 		{
 		}
 
 		public TemplatePupilFinderConfigUserControlViewModel(PupilFindingUserControlViewModel parent)
 		{
+			AddCurrentAsTemplateCommand = ReactiveCommand.Create(AddCurrentAsTemplate);
+			RemoveCurrentTemplateCommand = ReactiveCommand.Create(RemoveCurrentTemplate);
+			ChangeTemplatePreviewIndexCommand = ReactiveCommand.Create<int>(ChangeTemplatePreviewIndex);
+			ResetTemplatesCommand = ReactiveCommand.Create(ResetTemplates);
+			AddCurrentAsAntiTemplateCommand = ReactiveCommand.Create(AddCurrentAsAntiTemplate);
+			RemoveCurrentAntiTemplateCommand = ReactiveCommand.Create(RemoveCurrentAntiTemplate);
+			ChangeAntiTemplatePreviewIndexCommand = ReactiveCommand.Create<int>(ChangeAntiTemplatePreviewIndex);
 			this.parent = parent;
+		}
+
+		// Command implementations
+
+		public void AddCurrentAsTemplate()
+		{
+
+		}
+
+		public void RemoveCurrentTemplate()
+		{
+
+		}
+
+		/// <summary>
+		/// Changes the template displayed
+		/// </summary>
+		/// <param name="delta">-1 to show previous, +1 to show next</param>
+		public void ChangeTemplatePreviewIndex(int delta)
+		{
+			return;
+		}
+
+		public void ResetTemplates()
+		{
+
+		}
+
+		public void AddCurrentAsAntiTemplate()
+		{
+
+		}
+
+		public void RemoveCurrentAntiTemplate()
+		{
+
+		}
+
+		public void ChangeAntiTemplatePreviewIndex(int delta)
+		{
+
 		}
 	}
 }

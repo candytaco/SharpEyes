@@ -3,6 +3,7 @@ using System;
 using SharpEyes.ViewModels;
 using Avalonia.Input;
 using Avalonia;
+using Avalonia.Interactivity;
 
 namespace SharpEyes.Views
 {
@@ -85,6 +86,15 @@ namespace SharpEyes.Views
 			// e.Delta.Y encodes the number of clicks of the wheel, with + being up, - being down
 			if (viewModel.EditingState == EditingState.MovePupil)
 				viewModel.PupilDiameter += e.Delta.Y;
+		}
+
+		public void LoadVideo(object sender, RoutedEventArgs e)
+		{
+			OpenFileDialog openFileDialog = new OpenFileDialog()
+			{
+				Title = "Load eyetracking video"
+			};
+			openFileDialog.ShowAsync((Window)this.VisualRoot);
 		}
 	}
 }

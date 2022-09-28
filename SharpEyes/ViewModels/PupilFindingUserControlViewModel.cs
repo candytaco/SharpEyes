@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reactive;
 using System.Text;
+using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using ReactiveUI;
 
@@ -202,6 +203,34 @@ namespace SharpEyes.ViewModels
 		public PupilFindingUserControlViewModel()
 		{
 			templatePupilFinderConfigUserControlViewModel = new TemplatePupilFinderConfigUserControlViewModel(this);
+			LoadVideoCommand = ReactiveCommand.Create(LoadVideo);
 		}
+
+		// command backings
+		public void LoadVideo()
+		{
+			
+		}
+
+		public void FindPupils()
+		{
+
+		}
+
+		public void PlayPause()
+		{
+
+		}
+
+		public void PreviousFrame()
+		{
+
+		}
+
+		public void NextFrame()
+		{
+
+		}
+
 	}
 }
