@@ -88,7 +88,7 @@ namespace Eyetracking
 		}
 
 		public TemplatePupilFinder(string videoFileName, PupilFindingUserControlViewModel viewModel = null)
-			: base(videoFileName, viewmodel)
+			: base(videoFileName, viewModel)
 		{
 			if (File.Exists(autoTemplatesFileName))
 				LoadTemplates(autoTemplatesFileName);
