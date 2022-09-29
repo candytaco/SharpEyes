@@ -262,6 +262,7 @@ namespace Eyetracking
 			}
 
 			ViewModel.TotalVideoFrames = frameCount;
+			ViewModel.TotalVideoTime = FramesToTimecode(frameCount);
 		}
 
 		/// <summary>
@@ -662,16 +663,8 @@ namespace Eyetracking
 		{
 			try
 			{
-				int frames = CurrentFrameNumber;
 				ViewModel.CurrentVideoFrame = CurrentFrameNumber;
-
-				int hours = frames / framesPerHour;
-				frames -= hours * framesPerHour;
-				int minutes = frames / framesPerMinute;
-				frames -= minutes * framesPerMinute;
-				int seconds = frames / fps;
-				frames -= seconds * fps;
-				ViewModel.CurrentVideoTime = String.Format("{0:00}:{1:00}:{2:00};{3:#00}", hours, minutes, seconds, frames + 1);
+				ViewModel.CurrentVideoTime = FramesToTimecode(CurrentFrameNumber);
 				ViewModel.VideoFrame = GetFrameForDisplay(/*ShowFilteredVideoButton.IsChecked.Value TODO: add toggle switch to show filtered video*/);
 
 				ViewModel.PupilX = pupilLocations[CurrentFrameNumber, 0];
@@ -688,6 +681,17 @@ namespace Eyetracking
 			{
 				ShowMessageBox("Exception", e.ToString(), ButtonEnum.Ok, Icon.Error);
 			}
+		}
+
+		public string FramesToTimecode(int frames)
+		{
+			int hours = frames / framesPerHour;
+			frames -= hours * framesPerHour;
+			int minutes = frames / framesPerMinute;
+			frames -= minutes * framesPerMinute;
+			int seconds = frames / fps;
+			frames -= seconds * fps;
+			return String.Format("{0:00}:{1:00}:{2:00};{3:#00}", hours, minutes, seconds, frames + 1);
 		}
 
 		public void OnFramesProcessed(bool error = false, string message = null, bool stepBack = false)
