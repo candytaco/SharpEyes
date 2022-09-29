@@ -13,8 +13,8 @@ namespace Eyetracking
 		public double param2 = 20;
 
 		public HoughPupilFinder(string videoFileName, 
-								SetStatusDelegate setStatus, FrameProcessedDelegate updateFrame, FramesProcessedDelegate framesProcessed)
-			: base(videoFileName, setStatus, updateFrame, framesProcessed)
+								SetStatusDelegate setStatusDelegate, FrameProcessedDelegate updateFrameDelegate, FramesProcessedDelegate framesProcessedDelegate)
+			: base(videoFileName, setStatusDelegate, updateFrameDelegate, framesProcessedDelegate)
 		{
 			
 		}
@@ -23,7 +23,7 @@ namespace Eyetracking
 		{
 			base.FindPupils(Frames);
 			DateTime start = DateTime.Now;
-			SetStatus("Finding pupils 0/100%");
+			SetStatusDelegate("Finding pupils 0/100%");
 			BackgroundWorker worker = new BackgroundWorker
 			{
 				WorkerReportsProgress = true,
@@ -42,7 +42,7 @@ namespace Eyetracking
 
 					isFrameProcessed[CurrentFrameNumber] = true;
 					
-						UpdateFrame();
+						UpdateFrameDelegate();
 					((BackgroundWorker)sender).ReportProgress((i + 1) * 100 / Frames);
 					if (worker.CancellationPending)
 					{
@@ -54,19 +54,19 @@ namespace Eyetracking
 
 			worker.ProgressChanged += delegate (object sender, ProgressChangedEventArgs e)
 			{
-				SetStatus(string.Format("Finding pupils {0}%", e.ProgressPercentage));
+				SetStatusDelegate(string.Format("Finding pupils {0}%", e.ProgressPercentage));
 			};
 
 			worker.RunWorkerCompleted += delegate (object sender, RunWorkerCompletedEventArgs e)
 			{
 				if (e.Cancelled)
-					SetStatus(string.Format("Idle. Pupil finding was cancelled."));
+					SetStatusDelegate(string.Format("Idle. Pupil finding was cancelled."));
 				else
-					SetStatus(string.Format("Idle. {0} frames processed in {1:c}", Frames, DateTime.Now - start));
-				CancelPupilFinding -= worker.CancelAsync;
+					SetStatusDelegate(string.Format("Idle. {0} frames processed in {1:c}", Frames, DateTime.Now - start));
+				CancelPupilFindingDelegate -= worker.CancelAsync;
 			};
 
-			CancelPupilFinding += worker.CancelAsync;
+			CancelPupilFindingDelegate += worker.CancelAsync;
 			worker.RunWorkerAsync();
 		}
 	}

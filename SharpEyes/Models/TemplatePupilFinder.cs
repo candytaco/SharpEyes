@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -86,8 +86,8 @@ namespace Eyetracking
 		}
 
 		public TemplatePupilFinder(string videoFileName,
-								   SetStatusDelegate setStatus, FrameProcessedDelegate updateFrame, FramesProcessedDelegate framesProcessed)
-			: base(videoFileName, setStatus, updateFrame, framesProcessed)
+								   SetStatusDelegate setStatusDelegate, FrameProcessedDelegate updateFrameDelegate, FramesProcessedDelegate framesProcessedDelegate)
+			: base(videoFileName, setStatusDelegate, updateFrameDelegate, framesProcessedDelegate)
 		{
 			if (File.Exists(autoTemplatesFileName))
 				LoadTemplates(autoTemplatesFileName);
@@ -229,7 +229,7 @@ namespace Eyetracking
 		{
 			base.FindPupils(Frames);
 			DateTime start = DateTime.Now;
-			SetStatus("Finding pupils 0%");
+			SetStatusDelegate("Finding pupils 0%");
 			BackgroundWorker worker = new BackgroundWorker
 			{
 				WorkerReportsProgress = true,
@@ -429,7 +429,7 @@ namespace Eyetracking
 					isAnyFrameProcessed = true;
 					framesProcessed++;
 
-					UpdateFrame();
+					UpdateFrameDelegate();
 					((BackgroundWorker) sender).ReportProgress((f + 1) * 100 / Frames);
 					if (worker.CancellationPending)
 					{
@@ -458,7 +458,7 @@ namespace Eyetracking
 
 			worker.ProgressChanged += delegate (object sender, ProgressChangedEventArgs e)
 			{
-				SetStatus(string.Format("Finding pupils in {0} frames {1}%", Frames, e.ProgressPercentage));
+				SetStatusDelegate(string.Format("Finding pupils in {0} frames {1}%", Frames, e.ProgressPercentage));
 			};
 
 			worker.RunWorkerCompleted += delegate (object sender, RunWorkerCompletedEventArgs e)
@@ -469,13 +469,13 @@ namespace Eyetracking
 					additionalMessage = "Confidence fell below threshold";
 				else if (e.Cancelled)
 					additionalMessage = "Pupil finding cancelled";
-				SetStatus(string.Format("Idle.{3} {0} frames processed in {1:c} ({2} fps)", framesProcessed, elapsed, (int)(framesProcessed / elapsed.TotalSeconds), 
+				SetStatusDelegate(string.Format("Idle.{3} {0} frames processed in {1:c} ({2} fps)", framesProcessed, elapsed, (int)(framesProcessed / elapsed.TotalSeconds), 
 																							additionalMessage));
-				OnFramesPupilsProcessed(false, null, stepBack);
-				CancelPupilFinding -= worker.CancelAsync;
+				OnFramesPupilsProcessedDelegate(false, null, stepBack);
+				CancelPupilFindingDelegate -= worker.CancelAsync;
 			};
 
-			CancelPupilFinding += worker.CancelAsync;
+			CancelPupilFindingDelegate += worker.CancelAsync;
 			worker.RunWorkerAsync();
 		}
 

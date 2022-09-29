@@ -1,4 +1,4 @@
-﻿using NumSharp;
+using NumSharp;
 using OpenCvSharp;
 using System;
 using System.Collections.Generic;
@@ -194,25 +194,27 @@ namespace Eyetracking
 		public double bilateralSigmaSpace = 0;
 
 		// UI delegates/references
-		public SetStatusDelegate SetStatus { get; private set; }
-		public FrameProcessedDelegate UpdateFrame;
-		public FramesProcessedDelegate OnFramesPupilsProcessed; // delegate for when pupils are found in a chunk of frames
-		public FramesProcessedDelegate OnTimeStampsFound;		// delegate for when timestamps are found
-		public CancelPupilFindingDelegate CancelPupilFinding;	// delegate for interrupting pupil finding
+		public SetStatusDelegate SetStatusDelegate { get; private set; }
+		public FrameProcessedDelegate UpdateFrameDelegate;
+		public FramesProcessedDelegate OnFramesPupilsProcessedDelegate; // delegate for when pupils are found in a chunk of frames
+		public FramesProcessedDelegate OnTimeStampsFoundDelegate;		// delegate for when timestamps are found
+		public CancelPupilFindingDelegate CancelPupilFindingDelegate;	// delegate for interrupting pupil finding
 
 		public PupilFinder(string videoFileName, 
-						   SetStatusDelegate setStatus, FrameProcessedDelegate updateFrame, FramesProcessedDelegate framesProcessed)
+						   SetStatusDelegate setStatusDelegate, FrameProcessedDelegate updateFrameDelegate, FramesProcessedDelegate framesProcessedDelegate)
 		{
 			this.videoFileName = videoFileName;
-			SetStatus = setStatus;
-			UpdateFrame = updateFrame;
-			OnFramesPupilsProcessed = framesProcessed;
+			SetStatusDelegate = setStatusDelegate;
+			UpdateFrameDelegate = updateFrameDelegate;
+			OnFramesPupilsProcessedDelegate = framesProcessedDelegate;
 			videoSource = new VideoCapture(videoFileName);
 			width = (int)videoSource.Get(VideoCaptureProperties.FrameWidth);
 			height = (int)videoSource.Get(VideoCaptureProperties.FrameHeight);
 			fps = (int)videoSource.Get(VideoCaptureProperties.Fps);
 			frameCount = (int)videoSource.Get(VideoCaptureProperties.FrameCount);
 			duration = (double)frameCount / fps;
+			framesPerMinute = fps * 60;
+			framesPerHour = framesPerHour * 60;
 
 			// try to auto load stuff if they exist
 			if (File.Exists(autoTimestampFileName))
@@ -274,7 +276,7 @@ namespace Eyetracking
 		/// </summary>
 		public void ParseTimeStamps()
 		{
-			SetStatus("Parsing timestamps 0%");
+			SetStatusDelegate("Parsing timestamps 0%");
 			DateTime start = DateTime.Now;
 			BackgroundWorker worker = new BackgroundWorker
 			{
@@ -313,13 +315,13 @@ namespace Eyetracking
 
 			worker.ProgressChanged += delegate (object sender, ProgressChangedEventArgs e)
 			{
-				SetStatus(string.Format("Parsing timestamps {0}%", e.ProgressPercentage));
+				SetStatusDelegate(string.Format("Parsing timestamps {0}%", e.ProgressPercentage));
 			};
 
 			worker.RunWorkerCompleted += delegate (object sender, RunWorkerCompletedEventArgs e)
 			{
 				TimeSpan elapsed = DateTime.Now - start;
-				SetStatus(string.Format("Idle. {0} frames processed in {1:c} ({2} fps)", frameCount, elapsed, (int)(frameCount / elapsed.TotalSeconds)));
+				SetStatusDelegate(string.Format("Idle. {0} frames processed in {1:c} ({2} fps)", frameCount, elapsed, (int)(frameCount / elapsed.TotalSeconds)));
 				// seek to beginning
 				CurrentFrameNumber = 0;
 				isTimestampParsed = true;
@@ -340,7 +342,7 @@ namespace Eyetracking
 					}
 				}
 
-				OnTimeStampsFound(warn, message);
+				OnTimeStampsFoundDelegate(warn, message);
 			};
 			
 			worker.RunWorkerAsync();
@@ -633,6 +635,84 @@ namespace Eyetracking
 			}//);
 
 			return minIndex;
+		}
+
+		// UI interaction code
+		// quick default delegates. Holdover from WPF implementation
+		// TODO: check if we still actually need the delegate pattern
+		public void SetStatus(string status = null)
+		{
+			if (ViewModel != null)
+				ViewModel.StatusText = status != null ? status : "Idle";
+		}
+
+		public void UpdateFrame()
+		{
+			try
+			{
+				int frames = CurrentFrameNumber;
+				ViewModel.CurrentVideoFrame = CurrentFrameNumber;
+
+				int hours = frames / framesPerHour;
+				frames -= hours * framesPerHour;
+				int minutes = frames / framesPerMinute;
+				frames -= minutes * framesPerMinute;
+				int seconds = frames / fps;
+				frames -= seconds * fps;
+				ViewModel.CurrentVideoTime = String.Format("{0:00}:{1:00}:{2:00};{3:#00}", hours, minutes, seconds, frames + 1);
+				ViewModel.VideoFrame = GetFrameForDisplay(/*ShowFilteredVideoButton.IsChecked.Value TODO: add toggle switch to show filtered video*/);
+
+				ViewModel.PupilX = pupilLocations[CurrentFrameNumber, 0];
+				ViewModel.PupilY = pupilLocations[CurrentFrameNumber, 1];
+				ViewModel.PupilDiameter = pupilLocations[CurrentFrameNumber, 2] * 2;
+				ViewModel.PupilConfidence = pupilLocations[CurrentFrameNumber, 3];
+
+				// at some point check if this could be moved into an arg and passed in from the pupil finders,
+				// which would need some change in the delegate signature
+				// TODO: Move isPupilManuallySetOnThisFrame into the pupil finder
+				//isPupilManuallySetOnThisFrame = false;
+			}
+			catch (Exception e)
+			{
+				ShowMessageBox("Exception", e.ToString(), ButtonEnum.Ok, Icon.Error);
+			}
+		}
+
+		public void OnFramesProcessed(bool error = false, string message = null, bool stepBack = false)
+		{
+			UpdatePupilFindingButtons(false);
+			UpdateFramesProcessedPreviewImage();
+			
+			// auto save
+			SavePupilLocations();
+			SaveTimestamps();
+			if (this is TemplatePupilFinder templatePupilFinder)
+				templatePupilFinder.SaveTemplates();
+			
+			if (stepBack)
+				UpdateVideoTime(CurrentFrameNumber - ViewModel.templatePupilFinderConfigUserControlViewModel.LowConfidenceFrameCountThreshold / 2); // don't fully step back because we want the bad frames in saccades
+
+		}
+
+		public void OnTimestampsFound(bool error = false, string message = null, bool stepBack = false)
+		{
+
+		}
+
+		private void UpdateVideoTime(int frame)
+		{
+			CurrentFrameNumber = frame;
+			UpdateFrame();
+		}
+
+		private void UpdateFramesProcessedPreviewImage()
+		{
+			ViewModel.FramesProcessedPreviewImage = GetFramesProcessedPreviewImage();
+		}
+
+		private void UpdatePupilFindingButtons(bool isPupilFinding)
+		{
+
 		}
 	}
 }
