@@ -9,6 +9,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using Avalonia.Media.Imaging;
 using MessageBox.Avalonia;
 using MessageBox.Avalonia.BaseWindows.Base;
+using MessageBox.Avalonia.Enums;
 using Point = OpenCvSharp.Point;
 
 namespace Eyetracking
@@ -610,9 +611,7 @@ namespace Eyetracking
 			}
 			catch (InvalidDataException)
 			{
-				IMsBoxWindow<MessageBox.Avalonia.Enums.ButtonResult> messageBox = 
-					MessageBoxManager.GetMessageBoxStandardWindow("Corrupted Templates", "Templates file is corrupted");
-				messageBox.Show();
+				ShowMessageBox("Corrupted Templates", "Templates file is corrupted", ButtonEnum.Ok, Icon.Error);
 			}
 		}
 

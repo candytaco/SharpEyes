@@ -6,6 +6,9 @@ using System.ComponentModel;
 using System.IO;
 using System.Text.RegularExpressions;
 using Avalonia.Media.Imaging;
+using MessageBox.Avalonia;
+using MessageBox.Avalonia.BaseWindows.Base;
+using MessageBox.Avalonia.Enums;
 using SharpEyes.ViewModels;
 using Num = NumSharp.np;
 
@@ -71,7 +74,12 @@ namespace Eyetracking
 			int middle = list.Count / 2;
 			return (list.Count % 2 != 0) ? (double)list[middle] : ((double)list[middle] + (double)list[middle - 1]) / 2;
 		}
-
+		public static void ShowMessageBox(string title, string body, ButtonEnum buttons = ButtonEnum.Ok, Icon icon = Icon.None)
+		{
+			IMsBoxWindow<MessageBox.Avalonia.Enums.ButtonResult> messageBox =
+				MessageBoxManager.GetMessageBoxStandardWindow(title, body, buttons, icon);
+			messageBox.Show();
+		}
 		// video information
 		public string videoFileName { get; private set; }
 		public string autoTimestampFileName
