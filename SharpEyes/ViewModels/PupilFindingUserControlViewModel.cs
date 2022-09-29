@@ -71,15 +71,29 @@ namespace SharpEyes.ViewModels
 
 		// progress bar
 		private string _statusText = "Idle";
-
 		public string StatusText
 		{
 			get => _statusText;
 			set => this.RaiseAndSetIfChanged(ref _statusText, value);
 		}
-		public bool IsProgressBarVisible => false;
-		public bool IsProgressBarIndeterminate => false;
-		public double ProgressBarValue => 0;
+		private bool _isProgressBarVisible = false;
+		public bool IsProgressBarVisible
+		{
+			get => _isProgressBarVisible;
+			set => this.RaiseAndSetIfChanged(ref _isProgressBarVisible, value);
+		}
+		private bool _isProgressBarIndeterminate = false;
+		public bool IsProgressBarIndeterminate
+		{
+			get => _isProgressBarIndeterminate;
+			set => this.RaiseAndSetIfChanged(ref _isProgressBarIndeterminate, value);
+		}
+		private double _progressBarValue = 0;
+		public double ProgressBarValue
+		{
+			get => _progressBarValue;
+			set => this.RaiseAndSetIfChanged(ref _progressBarValue, value);
+		}
 
 		// video playback
 		private string _currentVideoTime = "0:00:00;00";

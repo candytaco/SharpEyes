@@ -126,7 +126,17 @@ namespace SharpEyes.Views
 			viewModel.VideoFrame = pupilFinder.GetFrameForDisplay(false);
 
 			if (!pupilFinder.isTimestampParsed)
+			{
 				viewModel.ShowTimestampParsing = true;
+				if (viewModel.AutoReadTimestamps)
+					pupilFinder.ParseTimeStamps();
+			}
+		}
+
+		public async void ReadTimestamps(object sender, RoutedEventArgs e)
+		{
+			if (pupilFinder != null)
+				pupilFinder.ParseTimeStamps();
 		}
 	}
 }

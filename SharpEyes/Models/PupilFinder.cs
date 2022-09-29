@@ -324,15 +324,18 @@ namespace Eyetracking
 			worker.ProgressChanged += delegate (object sender, ProgressChangedEventArgs e)
 			{
 				SetStatusDelegate(string.Format("Parsing timestamps {0}%", e.ProgressPercentage));
+				ViewModel.ProgressBarValue = e.ProgressPercentage;
 			};
 
 			worker.RunWorkerCompleted += delegate (object sender, RunWorkerCompletedEventArgs e)
 			{
 				TimeSpan elapsed = DateTime.Now - start;
 				SetStatusDelegate(string.Format("Idle. {0} frames processed in {1:c} ({2} fps)", frameCount, elapsed, (int)(frameCount / elapsed.TotalSeconds)));
+				ViewModel.IsProgressBarVisible = false;
 				// seek to beginning
 				CurrentFrameNumber = 0;
 				isTimestampParsed = true;
+				SaveTimestamps();
 
 				bool warn = false;
 				string message = null;
@@ -344,15 +347,13 @@ namespace Eyetracking
 					thisTime = timeStamps[i, 3] + 1000 * (timeStamps[i, 2] + 60 * timeStamps[i, 1] + 3600 * timeStamps[i, 0]);
 					if (thisTime <= lastTime)   // timestamps should always increment
 					{
-						message = "Parsed timestamps are not incrementing";
-						warn = true;
+						ShowMessageBox("Warning", "Parsed timestamps are not incrementing", icon: Icon.Warning);
 						break;
 					}
 				}
-
-				OnTimeStampsFoundDelegate(warn, message);
 			};
-			
+
+			ViewModel.IsProgressBarVisible = true;
 			worker.RunWorkerAsync();
 
 		}
