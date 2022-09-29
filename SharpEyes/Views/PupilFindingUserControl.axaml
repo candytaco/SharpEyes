@@ -55,7 +55,8 @@
 
       <!--Video playback controls and display-->
       <StackPanel Orientation="Vertical" Grid.Row="2">
-        <Slider Name="VideoTimeSlider" Margin="0 0 4 4"></Slider>
+        <Slider Name="VideoTimeSlider" Margin="0 0 4 4" Minimum="0" 
+                Maximum="{Binding TotalVideoFrames}" Value="{Binding CurrentVideoFrame}"></Slider>
         <Panel>
           <TextBlock Name="CurrentVideoTimeTextBlock" HorizontalAlignment="Left" VerticalAlignment="Center" Text="{Binding CurrentVideoTime}"/>
           <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
