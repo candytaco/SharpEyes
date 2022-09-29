@@ -460,6 +460,7 @@ namespace Eyetracking
 			worker.ProgressChanged += delegate (object sender, ProgressChangedEventArgs e)
 			{
 				SetStatusDelegate(string.Format("Finding pupils in {0} frames {1}%", Frames, e.ProgressPercentage));
+				ViewModel.ProgressBarValue = e.ProgressPercentage;
 			};
 
 			worker.RunWorkerCompleted += delegate (object sender, RunWorkerCompletedEventArgs e)
@@ -474,8 +475,10 @@ namespace Eyetracking
 																							additionalMessage));
 				OnFramesPupilsProcessedDelegate(false, null, stepBack);
 				CancelPupilFindingDelegate -= worker.CancelAsync;
+				ViewModel.IsProgressBarVisible = false;
 			};
 
+			ViewModel.IsProgressBarVisible = true;
 			CancelPupilFindingDelegate += worker.CancelAsync;
 			worker.RunWorkerAsync();
 		}

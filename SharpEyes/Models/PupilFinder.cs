@@ -266,6 +266,15 @@ namespace Eyetracking
 		}
 
 		/// <summary>
+		/// Uses the viewmodel to figure out the parameters
+		/// </summary>
+		public virtual void FindPupils()
+		{
+			int frames = ViewModel.ProcessAllFrames ? frameCount - CurrentFrameNumber : ViewModel.FramesToProcess;
+			FindPupils(frames, ViewModel.LowConfidenceThreshold, ViewModel.LowConfidenceFrameCountThreshold, !ViewModel.StopOnLowConfidence);
+		}
+
+		/// <summary>
 		/// Find pupils in some set of frames. Must be overridden in child classes.
 		/// Will auto-pause if average confidence is below the threshold for the specified number of frames
 		/// </summary>
@@ -273,7 +282,6 @@ namespace Eyetracking
 		/// <param name="threshold"> confidence threshold at which to auto-pause pupil finding</param>
 		/// <param name="thresholdFrames"> confidence threshold duration at which to auto pause pupil finding</param>
 		/// <param name="doNotStopForBlink"></param>
-		
 		public virtual void FindPupils(int frames, double threshold = 0, int thresholdFrames = 0, bool doNotStopForBlink = false)
 		{
 			if (!isTimestampParsed)

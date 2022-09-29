@@ -90,7 +90,7 @@
       </StackPanel>
       <TextBlock Name="PupilConfidenceTextBlock" Width="150" Text="{Binding PupilConfidenceText}" DockPanel.Dock="Top"/>
       <Button DockPanel.Dock="Top" Name="FindPupilsButton" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4 2"
-              Command="{Binding FindPupilsCommand}" Content="{Binding PupilFindingButtonText}"/>
+              Click="FindPupilsButton_Click" Content="{Binding PupilFindingButtonText}"/>
       <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center" Margin="4 4 4 8">
         <ToggleSwitch Name="AllFramesToggleSwitch" Margin="4 2 16 2" Width="130" OnContent="All frames"
                       OffContent="Fixed count" IsThreeState="False" HorizontalContentAlignment="Center"

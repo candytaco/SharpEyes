@@ -149,5 +149,15 @@ namespace SharpEyes.Views
 				pupilFinder.LoadTimestamps(fileName[0]);
 			}
 		}
+
+		public async void FindPupilsButton_Click(object sender, RoutedEventArgs e)
+		{
+			if (viewModel.IsFindingPupils)
+				pupilFinder.CancelPupilFindingDelegate();
+			else
+			{
+				pupilFinder.FindPupils();
+			}
+		}
 	}
 }
