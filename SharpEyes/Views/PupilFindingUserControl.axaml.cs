@@ -105,7 +105,7 @@ namespace SharpEyes.Views
 
 			switch (viewModel.PupilFinderType)
 			{
-				// TODO: implement delegates
+				// TODO: implement delegates, either here, or in the PupilFinder class
 				case PupilFinderType.Template:
 					pupilFinder = new TemplatePupilFinder(fileName[0], status => { }, () => { },
 						(error, message, back) => { });
@@ -117,6 +117,12 @@ namespace SharpEyes.Views
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
+
+			pupilFinder.ReadFrame();
+			viewModel.VideoFrame = pupilFinder.GetFrameForDisplay(false);
+
+			if (!pupilFinder.isTimestampParsed)
+				viewModel.ShowTimestampParsing = true;
 		}
 	}
 }

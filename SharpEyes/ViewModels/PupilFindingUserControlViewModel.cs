@@ -81,7 +81,13 @@ namespace SharpEyes.ViewModels
 		public string PlayPauseButtonText => IsVideoPlaying ? "Pause" : "Play";
 		public bool IsVideoPlaying { get; private set; } = false;
 		public double CurrentVideoPercentage { get; set; } = 0.0;
-		public Bitmap? VideoFrame => null;
+		private Bitmap? _videoFrame = null;
+
+		public Bitmap? VideoFrame
+		{
+			get => _videoFrame; 
+			set => this.RaiseAndSetIfChanged(ref _videoFrame, value);
+		}
 
 		// pupil overlay info
 		private double _pupilX = 0;
@@ -178,6 +184,13 @@ namespace SharpEyes.ViewModels
 		public PupilFinderType PupilFinderType => (PupilFinderType)PupilFinderTypeIndex;
 
 		// timestamps
+		private bool _showTimestampParsing = false;
+
+		public bool ShowTimestampParsing
+		{
+			get => _showTimestampParsing;
+			set => this.RaiseAndSetIfChanged(ref _showTimestampParsing, value);
+		}
 		public bool AutoReadTimestamps => true;
 		public bool IsTimestampsRead { get; private set; } = false;
 

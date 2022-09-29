@@ -126,7 +126,7 @@
           <uc:TemplatePupilFinderConfigUserControl Name="TemplateFinderConfigPanel" DataContext="{Binding TemplatePupilFinderConfigUserControlViewModel}"/>
 
           <!--Timestamp reading options-->
-          <Expander Margin="0 8 0 0 " Header="Timestamps"  HorizontalContentAlignment="Center" IsExpanded="False">
+          <Expander Margin="0 8 0 0 " Header="Timestamps"  HorizontalContentAlignment="Center" IsExpanded="{Binding ShowTimestampParsing}" Name="TimestampParsingExpander">
             <StackPanel>
               <ToggleSwitch Name="AutoReadTimestampsToggleSwitch" OffContent="Auto read timestamps" OnContent="Auto read timestamps" IsChecked="{Binding AutoReadTimestamps}"/>
               <StackPanel Orientation="Horizontal" Margin="0 8 0 0 " HorizontalAlignment="Center">
