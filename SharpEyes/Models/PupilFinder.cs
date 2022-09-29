@@ -209,9 +209,10 @@ namespace Eyetracking
 		public FramesProcessedDelegate OnFramesPupilsProcessedDelegate; // delegate for when pupils are found in a chunk of frames
 		public CancelPupilFindingDelegate CancelPupilFindingDelegate;	// delegate for interrupting pupil finding
 
-		public PupilFinder(string videoFileName)
+		public PupilFinder(string videoFileName, PupilFindingUserControlViewModel viewModel = null)
 		{
 			this.videoFileName = videoFileName;
+			ViewModel = viewModel;
 			SetStatusDelegate = SetStatus;
 			UpdateFrameDelegate = UpdateFrame;
 			OnFramesPupilsProcessedDelegate = OnFramesProcessed;
@@ -259,6 +260,8 @@ namespace Eyetracking
 			{
 				isFrameProcessed[i] = false;
 			}
+
+			ViewModel.TotalVideoFrames = frameCount;
 		}
 
 		/// <summary>

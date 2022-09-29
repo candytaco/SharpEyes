@@ -11,6 +11,7 @@ using MessageBox.Avalonia;
 using MessageBox.Avalonia.BaseWindows.Base;
 using MessageBox.Avalonia.Enums;
 using Point = OpenCvSharp.Point;
+using SharpEyes.ViewModels;
 
 namespace Eyetracking
 {
@@ -86,8 +87,8 @@ namespace Eyetracking
 			}
 		}
 
-		public TemplatePupilFinder(string videoFileName)
-			: base(videoFileName)
+		public TemplatePupilFinder(string videoFileName, PupilFindingUserControlViewModel viewModel = null)
+			: base(videoFileName, viewmodel)
 		{
 			if (File.Exists(autoTemplatesFileName))
 				LoadTemplates(autoTemplatesFileName);

@@ -1,6 +1,7 @@
 ﻿using OpenCvSharp;
 using System;
 using System.ComponentModel;
+using SharpEyes.ViewModels;
 
 namespace Eyetracking
 {
@@ -12,8 +13,8 @@ namespace Eyetracking
 		public double param1 = 80;
 		public double param2 = 20;
 
-		public HoughPupilFinder(string videoFileName)
-			: base(videoFileName)
+		public HoughPupilFinder(string videoFileName, PupilFindingUserControlViewModel viewModel = null)
+			: base(videoFileName, viewModel)
 		{
 			
 		}
