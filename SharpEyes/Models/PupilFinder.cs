@@ -700,7 +700,7 @@ namespace Eyetracking
 				templatePupilFinder.SaveTemplates();
 			
 			if (stepBack)
-				UpdateVideoTime(CurrentFrameNumber - ViewModel.templatePupilFinderConfigUserControlViewModel.LowConfidenceFrameCountThreshold / 2); // don't fully step back because we want the bad frames in saccades
+				UpdateVideoTime(CurrentFrameNumber - ViewModel.LowConfidenceFrameCountThreshold / 2); // don't fully step back because we want the bad frames in saccades
 
 		}
 

@@ -220,6 +220,27 @@ namespace SharpEyes.ViewModels
 		public int PupilFinderTypeIndex { get; set; } = 0;
 		public PupilFinderType PupilFinderType => (PupilFinderType)PupilFinderTypeIndex;
 
+		private bool _isFindingPupils = false;
+
+		public bool IsFindingPupils
+		{
+			get => _isFindingPupils;
+			set
+			{
+				this.RaiseAndSetIfChanged(ref _isFindingPupils, value);
+				this.RaisePropertyChanged("PupilFindingButtonText");
+			}
+		}
+		public string PupilFindingButtonText => IsFindingPupils ? "Cancel" : "Find Pupils";
+
+		// confidence options - here because they can apply to all pupil finders
+		public bool StopOnLowConfidence { get; set; } = true;
+		public double LowConfidenceThreshold { get; set; } = 0.985;
+		public int LowConfidenceFrameCountThreshold { get; set; } = 12;
+		public bool EnableBlinkRejection { get; set; } = true;
+		public double BlinkRejectionBlinkSigma { get; set; } = 2.0;
+		public double BlinkRejectionPupilSigma { get; set; } = 2.0;
+
 		// timestamps
 		private bool _showTimestampParsing = false;
 

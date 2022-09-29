@@ -48,15 +48,7 @@ namespace SharpEyes.ViewModels
 		public bool UseEveryTemplate { get; set; } = true;
 		public int FractionOfTemplatesToUse { get; set; } = 75;
 
-		// confidence options
-		public bool StopOnLowConfidence { get; set; } = true;
-		public double LowConfidenceThreshold { get; set; } = 0.985;
-		public int LowConfidenceFrameCountThreshold { get; set; } = 12;
-		public bool EnableBlinkRejection { get; set; } = true;
-		public double BlinkRejectionBlinkSigma { get; set; } = 2.0;
-		public double BlinkRejectionPupilSigma { get; set; } = 2.0;
-
-		// view model hierarchey
+		// view model hierarchy
 		private PupilFindingUserControlViewModel? parent = null;
 
 		public TemplatePupilFinderConfigUserControlViewModel()
