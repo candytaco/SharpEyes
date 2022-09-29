@@ -42,13 +42,14 @@
         <Canvas Name="VideoCanvas" Width="400" Height="300" PointerPressed="VideoCanvasMouseDown"
                 PointerMoved="VideoCanvasMouseMove" PointerReleased="VideoCanvasMouseUp"
                 PointerWheelChanged="VideoCanvasScroll" Background="Transparent">
-          <Rectangle Name="PupilWindowRectangle" Width="{Binding PupilWindowWidth}" Height="{Binding PupilWindowHeight}"
-                     Canvas.Left="{Binding PupilWindowLeft}" Canvas.Top="{Binding PupilWindowTop}"
-                     Stroke="DodgerBlue" StrokeThickness="4"/>
+            <Image Name="VideoFrameImage" Source="{Binding VideoFrame}" Width="400" Height="300"/>
+            <Rectangle Name="PupilWindowRectangle" Width="{Binding PupilWindowWidth}" Height="{Binding PupilWindowHeight}"
+                       Canvas.Left="{Binding PupilWindowLeft}" Canvas.Top="{Binding PupilWindowTop}"
+                       Stroke="DodgerBlue" StrokeThickness="4"/>
           <Ellipse Name="PupilEllipse" Width="{Binding PupilDiameter}" Height="{Binding #PupilEllipse.Width}"
                    Stroke="LimeGreen" StrokeThickness="4" Opacity="50"
                    Canvas.Left="{Binding PupilCircleLeft}" Canvas.Top="{Binding PupilCircleTop}"/>
-          <Image Name="VideoFrameImage" Source="{Binding VideoFrame}" Width="400" Height="300"/>
+          
         </Canvas>
       </Viewbox>
 
