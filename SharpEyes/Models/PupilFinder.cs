@@ -271,7 +271,8 @@ namespace Eyetracking
 		public virtual void FindPupils()
 		{
 			int frames = ViewModel.ProcessAllFrames ? frameCount - CurrentFrameNumber : ViewModel.FramesToProcess;
-			FindPupils(frames, ViewModel.LowConfidenceThreshold, ViewModel.LowConfidenceFrameCountThreshold, !ViewModel.StopOnLowConfidence);
+			FindPupils(frames, ViewModel.StopOnLowConfidence ? ViewModel.LowConfidenceThreshold : 0, 
+				ViewModel.LowConfidenceFrameCountThreshold, ViewModel.EnableBlinkRejection);
 		}
 
 		/// <summary>
