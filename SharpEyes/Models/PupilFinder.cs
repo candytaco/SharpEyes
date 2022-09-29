@@ -109,6 +109,8 @@ namespace Eyetracking
 		public int fps { get; private set; } = -1;
 		public int frameCount { get; private set; } = -1;
 		public double duration { get; private set; } = -1.0;
+		protected int framesPerHour = 0;
+		protected int framesPerMinute = 0;
 
 		// parsing video stuff		
 		protected int _currentFrameNumber = -1;
@@ -422,7 +424,7 @@ namespace Eyetracking
 		/// </summary>
 		/// <param name="filtered">get the filtered frame instead of the RGB frame.</param>
 		/// <returns></returns>
-		public Bitmap GetFrameForDisplay(bool filtered)
+		public Bitmap GetFrameForDisplay(bool filtered = false)
 		{
 			if (cvFrame == null)
 			{
