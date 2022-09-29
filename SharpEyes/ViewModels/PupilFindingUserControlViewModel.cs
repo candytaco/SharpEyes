@@ -70,7 +70,13 @@ namespace SharpEyes.ViewModels
 		}
 
 		// progress bar
-		public string StatusText => "Idle";
+		private string _statusText = "Idle";
+
+		public string StatusText
+		{
+			get => _statusText;
+			set => this.RaiseAndSetIfChanged(ref _statusText, value);
+		}
 		public bool IsProgressBarVisible => false;
 		public bool IsProgressBarIndeterminate => false;
 		public double ProgressBarValue => 0;
