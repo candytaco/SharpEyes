@@ -138,5 +138,22 @@ namespace SharpEyes.Views
 			if (pupilFinder != null)
 				pupilFinder.ParseTimeStamps();
 		}
+
+		public async void LoadTimestamps(object sender, RoutedEventArgs e)
+		{
+			if (pupilFinder != null)
+			{
+				OpenFileDialog openFileDialog = new OpenFileDialog()
+				{
+					Title = "Load timestamps...",
+					Filters = {new FileDialogFilter(){Name = "Numpy File (*.npy)", Extensions = {"npy"}}}
+				};
+				string[] fileName = await openFileDialog.ShowAsync((Window)this.VisualRoot);
+
+				if (fileName == null || fileName.Length == 0)
+					return;
+				pupilFinder.LoadTimestamps(fileName[0]);
+			}
+		}
 	}
 }

@@ -166,9 +166,9 @@
               <ToggleSwitch Name="AutoReadTimestampsToggleSwitch" OffContent="Auto read timestamps" OnContent="Auto read timestamps" IsChecked="{Binding AutoReadTimestamps}"/>
               <StackPanel Orientation="Horizontal" Margin="0 8 0 0 " HorizontalAlignment="Center">
                 <Button Name="ReadTimestampButton" Width="150" HorizontalContentAlignment="Center" Margin="2 0 2 0"
-                        Command="{Binding ReadTimestamps}">Read timestamps</Button>
+                        Click="ReadTimestamps">Read timestamps</Button>
                 <Button Name="LoadTimestampButton" Width="150" HorizontalContentAlignment="Center" Margin="2 0 2 0"
-                        Command="{Binding LoadTimestampsCommand}">Load timestamps</Button>
+                        Click="LoadTimestamps">Load timestamps</Button>
               </StackPanel>
             </StackPanel>
           </Expander>
