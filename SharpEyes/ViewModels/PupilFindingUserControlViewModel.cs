@@ -82,17 +82,48 @@ namespace SharpEyes.ViewModels
 		public double ProgressBarValue => 0;
 
 		// video playback
-		public string CurrentVideoTime => "0:00:00;00";
-		public string TotalVideoTime => "0:00:00;00";
+		private string _currentVideoTime = "0:00:00;00";
+
+		public string CurrentVideoTime
+		{
+			get => _currentVideoTime;
+			set => this.RaiseAndSetIfChanged(ref _currentVideoTime, value);
+		}
+		private string _totalVideoTime = "0:00:00;00";
+
+		public string TotalVideoTime
+		{
+			get => _totalVideoTime;
+			set => this.RaiseAndSetIfChanged(ref _totalVideoTime, value);
+		}
 		public string PlayPauseButtonText => IsVideoPlaying ? "Pause" : "Play";
 		public bool IsVideoPlaying { get; private set; } = false;
-		public double CurrentVideoPercentage { get; set; } = 0.0;
-		private Bitmap? _videoFrame = null;
+		private int _currentVideoFrame = 0;
+		public int CurrentVideoFrame
+		{
+			get => _currentVideoFrame;
+			set => this.RaiseAndSetIfChanged(ref _currentVideoFrame, value);
+		}
 
+		private int _totalVideoFrames = 0;
+		public int TotalVideoFrames
+		{
+			get => _totalVideoFrames;
+			set => this.RaiseAndSetIfChanged(ref _totalVideoFrames, value);
+		}
+		
+		private Bitmap? _videoFrame = null;
 		public Bitmap? VideoFrame
 		{
-			get => _videoFrame; 
+			get => _videoFrame;
 			set => this.RaiseAndSetIfChanged(ref _videoFrame, value);
+		}
+
+		private Bitmap _framesProcessedPreviewImage = null;
+		public Bitmap FramesProcessedPreviewImage
+		{
+			get => _framesProcessedPreviewImage;
+			set => this.RaiseAndSetIfChanged(ref _framesProcessedPreviewImage, value);
 		}
 
 		// pupil overlay info
@@ -228,7 +259,7 @@ namespace SharpEyes.ViewModels
 		// command backings
 		public void LoadVideo()
 		{
-			
+
 		}
 
 		public void FindPupils()
