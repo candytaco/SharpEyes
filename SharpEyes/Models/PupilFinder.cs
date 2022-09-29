@@ -223,7 +223,7 @@ namespace Eyetracking
 			frameCount = (int)videoSource.Get(VideoCaptureProperties.FrameCount);
 			duration = (double)frameCount / fps;
 			framesPerMinute = fps * 60;
-			framesPerHour = framesPerHour * 60;
+			framesPerHour = framesPerMinute * 60;
 
 			// try to auto load stuff if they exist
 			if (File.Exists(autoTimestampFileName))
