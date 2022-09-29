@@ -86,9 +86,8 @@ namespace Eyetracking
 			}
 		}
 
-		public TemplatePupilFinder(string videoFileName,
-								   SetStatusDelegate setStatusDelegate, FrameProcessedDelegate updateFrameDelegate, FramesProcessedDelegate framesProcessedDelegate)
-			: base(videoFileName, setStatusDelegate, updateFrameDelegate, framesProcessedDelegate)
+		public TemplatePupilFinder(string videoFileName)
+			: base(videoFileName)
 		{
 			if (File.Exists(autoTemplatesFileName))
 				LoadTemplates(autoTemplatesFileName);

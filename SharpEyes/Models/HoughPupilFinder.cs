@@ -12,9 +12,8 @@ namespace Eyetracking
 		public double param1 = 80;
 		public double param2 = 20;
 
-		public HoughPupilFinder(string videoFileName, 
-								SetStatusDelegate setStatusDelegate, FrameProcessedDelegate updateFrameDelegate, FramesProcessedDelegate framesProcessedDelegate)
-			: base(videoFileName, setStatusDelegate, updateFrameDelegate, framesProcessedDelegate)
+		public HoughPupilFinder(string videoFileName)
+			: base(videoFileName)
 		{
 			
 		}

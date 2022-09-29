@@ -207,16 +207,14 @@ namespace Eyetracking
 		public SetStatusDelegate SetStatusDelegate { get; private set; }
 		public FrameProcessedDelegate UpdateFrameDelegate;
 		public FramesProcessedDelegate OnFramesPupilsProcessedDelegate; // delegate for when pupils are found in a chunk of frames
-		public FramesProcessedDelegate OnTimeStampsFoundDelegate;		// delegate for when timestamps are found
 		public CancelPupilFindingDelegate CancelPupilFindingDelegate;	// delegate for interrupting pupil finding
 
-		public PupilFinder(string videoFileName, 
-						   SetStatusDelegate setStatusDelegate, FrameProcessedDelegate updateFrameDelegate, FramesProcessedDelegate framesProcessedDelegate)
+		public PupilFinder(string videoFileName)
 		{
 			this.videoFileName = videoFileName;
-			SetStatusDelegate = setStatusDelegate;
-			UpdateFrameDelegate = updateFrameDelegate;
-			OnFramesPupilsProcessedDelegate = framesProcessedDelegate;
+			SetStatusDelegate = SetStatus;
+			UpdateFrameDelegate = UpdateFrame;
+			OnFramesPupilsProcessedDelegate = OnFramesProcessed;
 			videoSource = new VideoCapture(videoFileName);
 			width = (int)videoSource.Get(VideoCaptureProperties.FrameWidth);
 			height = (int)videoSource.Get(VideoCaptureProperties.FrameHeight);
