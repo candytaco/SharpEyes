@@ -94,7 +94,7 @@ namespace Eyetracking
 		}
 		protected VideoCapture videoSource = null;
 
-		public PupilFindingUserControlViewModel? viewModel = null;
+		public PupilFindingUserControlViewModel? ViewModel { get; set; } = null;
 
 		public int width { get; private set; } = -1;
 		public int height { get; private set; } = -1;
