@@ -3,10 +3,10 @@ using OpenCvSharp;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Text.RegularExpressions;
 using Avalonia.Media.Imaging;
+using SharpEyes.ViewModels;
 using Num = NumSharp.np;
 
 namespace Eyetracking
@@ -94,6 +94,8 @@ namespace Eyetracking
 		}
 		protected VideoCapture videoSource = null;
 
+		public PupilFindingUserControlViewModel? viewModel = null;
+
 		public int width { get; private set; } = -1;
 		public int height { get; private set; } = -1;
 		public int fps { get; private set; } = -1;
@@ -134,10 +136,7 @@ namespace Eyetracking
 		protected Mat[] colorChannels = new Mat[3];
 		protected Mat red;
 		public bool isTimestampParsed { get; private set; } = false;
-		/// <summary>
-		/// Used for converting a Cv2 Mat to a displayable bitmap
-		/// </summary>
-		private MemoryStream BMPConvertMemeory = new MemoryStream();
+
 		/// <summary>
 		/// Lazy flag in case for some reason we need to get the same frame twice
 		/// </summary>
@@ -201,10 +200,6 @@ namespace Eyetracking
 		public FramesProcessedDelegate OnTimeStampsFound;		// delegate for when timestamps are found
 		public CancelPupilFindingDelegate CancelPupilFinding;	// delegate for interrupting pupil finding
 
-		/// <summary>
-		/// For taskbar progress bars
-		/// </summary>
-
 		public PupilFinder(string videoFileName, 
 						   SetStatusDelegate setStatus, FrameProcessedDelegate updateFrame, FramesProcessedDelegate framesProcessed)
 		{
@@ -217,7 +212,7 @@ namespace Eyetracking
 			height = (int)videoSource.Get(VideoCaptureProperties.FrameHeight);
 			fps = (int)videoSource.Get(VideoCaptureProperties.Fps);
 			frameCount = (int)videoSource.Get(VideoCaptureProperties.FrameCount);
-			duration = frameCount / fps;
+			duration = (double)frameCount / fps;
 
 			// try to auto load stuff if they exist
 			if (File.Exists(autoTimestampFileName))
@@ -442,7 +437,6 @@ namespace Eyetracking
 			}
 
 			imageStream.Seek(0, SeekOrigin.Begin);
-			BMPConvertMemeory.Position = 0;
 			bitmapFrame = new Bitmap(imageStream);
 			return bitmapFrame;
 		}

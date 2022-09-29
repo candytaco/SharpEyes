@@ -92,13 +92,31 @@ namespace SharpEyes.Views
 				viewModel.PupilDiameter += e.Delta.Y;
 		}
 
-		public void LoadVideo(object sender, RoutedEventArgs e)
+		public async void LoadVideo(object sender, RoutedEventArgs e)
 		{
 			OpenFileDialog openFileDialog = new OpenFileDialog()
 			{
 				Title = "Load eyetracking video"
 			};
-			openFileDialog.ShowAsync((Window)this.VisualRoot);
+			string[] fileName = await openFileDialog.ShowAsync((Window)this.VisualRoot);
+
+			if (fileName == null || fileName.Length == 0)
+				return;
+
+			switch (viewModel.PupilFinderType)
+			{
+				// TODO: implement delegates
+				case PupilFinderType.Template:
+					pupilFinder = new TemplatePupilFinder(fileName[0], status => { }, () => { },
+						(error, message, back) => { });
+					break;
+				case PupilFinderType.HoughCircles:
+					pupilFinder = new HoughPupilFinder(fileName[0], status => { }, () => { },
+						(error, message, back) => { });
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 		}
 	}
 }
