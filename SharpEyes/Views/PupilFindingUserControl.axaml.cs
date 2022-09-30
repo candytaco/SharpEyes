@@ -108,6 +108,7 @@ namespace SharpEyes.Views
 				// TODO: implement delegates, either here, or in the PupilFinder class
 				case PupilFinderType.Template:
 					pupilFinder = new TemplatePupilFinder(fileName[0], viewModel);
+					TemplateFinderConfigPanel.PupilFinder = pupilFinder;
 					break;
 				case PupilFinderType.HoughCircles:
 					pupilFinder = new HoughPupilFinder(fileName[0], viewModel);

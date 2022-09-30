@@ -65,7 +65,7 @@ namespace SharpEyes.ViewModels
 		public int NumTemplatesToMatch { get; set; } = 2;
 
 		// view model hierarchy
-		private PupilFindingUserControlViewModel? parent = null;
+		public PupilFindingUserControlViewModel? Parent { get; private set; } = null;
 
 		public TemplatePupilFinderConfigUserControlViewModel()
 			:this(null)
@@ -81,7 +81,7 @@ namespace SharpEyes.ViewModels
 			AddCurrentAsAntiTemplateCommand = ReactiveCommand.Create(AddCurrentAsAntiTemplate);
 			RemoveCurrentAntiTemplateCommand = ReactiveCommand.Create(RemoveCurrentAntiTemplate);
 			ChangeAntiTemplatePreviewIndexCommand = ReactiveCommand.Create<int>(ChangeAntiTemplatePreviewIndex);
-			this.parent = parent;
+			this.Parent = parent;
 		}
 
 		// Command implementations

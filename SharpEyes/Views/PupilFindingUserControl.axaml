@@ -126,7 +126,8 @@
           </Expander>
 
           <!--Pupil finder options-->
-          <uc:TemplatePupilFinderConfigUserControl Name="TemplateFinderConfigPanel" DataContext="{Binding TemplatePupilFinderConfigUserControlViewModel}"/>
+          <uc:TemplatePupilFinderConfigUserControl Name="TemplateFinderConfigPanel" 
+                                                   DataContext="{Binding TemplatePupilFinderConfigUserControlViewModel}"/>
           <!--Confidence options-->
           <Expander Header="Confidence options" IsExpanded="False">
             <StackPanel>
