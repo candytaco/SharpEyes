@@ -297,11 +297,11 @@ namespace SharpEyes.ViewModels
 		public int ExponentialDecayTimeConstant { get; set; } = 30;
 
 		// children view models
-		public TemplatePupilFinderConfigUserControlViewModel templatePupilFinderConfigUserControlViewModel { get; }
+		public TemplatePupilFinderConfigUserControlViewModel TemplatePupilFinderConfigUserControlViewModel { get; }
 
 		public PupilFindingUserControlViewModel()
 		{
-			templatePupilFinderConfigUserControlViewModel = new TemplatePupilFinderConfigUserControlViewModel(this);
+			TemplatePupilFinderConfigUserControlViewModel = new TemplatePupilFinderConfigUserControlViewModel(this);
 			LoadVideoCommand = ReactiveCommand.Create(LoadVideo);
 		}
 

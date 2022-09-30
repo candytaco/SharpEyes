@@ -94,8 +94,6 @@ namespace SharpEyes.Views
 
 		public async void LoadVideo(object sender, RoutedEventArgs e)
 		{
-			TemplateFinderConfigPanel.DataContext = viewModel.templatePupilFinderConfigUserControlViewModel;
-
 			OpenFileDialog openFileDialog = new OpenFileDialog()
 			{
 				Title = "Load eyetracking video"
@@ -130,8 +128,8 @@ namespace SharpEyes.Views
 
 			if (pupilFinder is TemplatePupilFinder templatePupilFinder)
 			{
-				viewModel.templatePupilFinderConfigUserControlViewModel.CurrentTemplateIndex = 0;
-				viewModel.templatePupilFinderConfigUserControlViewModel.TemplatePreviewImage =
+				viewModel.TemplatePupilFinderConfigUserControlViewModel.CurrentTemplateIndex = 0;
+				viewModel.TemplatePupilFinderConfigUserControlViewModel.TemplatePreviewImage =
 					templatePupilFinder.GetTemplateImage(0);
 			}
 		}

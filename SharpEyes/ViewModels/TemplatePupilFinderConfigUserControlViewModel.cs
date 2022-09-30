@@ -21,7 +21,6 @@ namespace SharpEyes.ViewModels
 		// templates section
 		public bool AutoAddNewTemplate { get; set; } = true;
 		private int _currentTemplateIndex = 0;
-
 		public int CurrentTemplateIndex
 		{
 			get => _currentTemplateIndex;
