@@ -413,8 +413,18 @@ namespace Eyetracking
 				Cv2.CvtColor(cvFrame, grayFrame, ColorConversionCodes.RGB2GRAY);
 				FilterCurrentFrame();
 			}
-
 			return success;
+		}
+
+		public void UpdateDisplays()
+		{
+			ViewModel.CurrentVideoFrame = CurrentFrameNumber;
+			ViewModel.CurrentVideoTime = FramesToTimecode(CurrentFrameNumber);
+			ViewModel.VideoFrame = GetFrameForDisplay();
+			ViewModel.PupilX = pupilLocations[CurrentFrameNumber, 0];
+			ViewModel.PupilY = pupilLocations[CurrentFrameNumber, 1];
+			ViewModel.PupilDiameter = pupilLocations[CurrentFrameNumber, 2];
+			ViewModel.PupilConfidence = pupilLocations[CurrentFrameNumber, 3];
 		}
 
 		public void FilterCurrentFrame()

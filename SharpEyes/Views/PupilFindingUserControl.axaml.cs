@@ -4,6 +4,7 @@ using SharpEyes.ViewModels;
 using Avalonia.Input;
 using Avalonia;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using Eyetracking;
 
 namespace SharpEyes.Views
@@ -17,9 +18,13 @@ namespace SharpEyes.Views
 
 		public PupilFinder? pupilFinder = null;
 
+		private DispatcherTimer videoPlaybackTimer;
+
 		public PupilFindingUserControl()
 		{
 			InitializeComponent();
+			videoPlaybackTimer = new DispatcherTimer(DispatcherPriority.Render);
+			videoPlaybackTimer.Tick += this.VideoTimerTick;
 		}
 
 		private void SetCanvasChildElementPosition(Point point)
@@ -117,6 +122,8 @@ namespace SharpEyes.Views
 					throw new ArgumentOutOfRangeException();
 			}
 
+			videoPlaybackTimer.Interval = TimeSpan.FromMilliseconds(1000.0 / (double)pupilFinder.fps);
+
 			pupilFinder.ReadFrame();
 			viewModel.VideoFrame = pupilFinder.GetFrameForDisplay(false);
 
@@ -166,6 +173,49 @@ namespace SharpEyes.Views
 			{
 				pupilFinder.FindPupils();
 			}
+		}
+
+		private void VideoTimerTick(object? sender, EventArgs e)
+		{
+			if (pupilFinder.CurrentFrameNumber >= pupilFinder.frameCount - 1)
+				PlayPauseButton_OnClick(null, null);
+			pupilFinder.ReadGrayscaleFrame();
+			pupilFinder.UpdateDisplays();
+		}
+
+		private void PlayPauseButton_OnClick(object? sender, RoutedEventArgs e)
+		{
+			if (viewModel.IsVideoPlaying)
+				videoPlaybackTimer.Stop();
+			else
+				videoPlaybackTimer.Start();
+			viewModel.IsVideoPlaying = !viewModel.IsVideoPlaying;
+		}
+
+		private void PreviousFrameButton_OnClick(object? sender, RoutedEventArgs e)
+		{
+			
+		}
+
+		private void NextFrameButton_OnClick(object? sender, RoutedEventArgs e)
+		{
+			
+		}
+
+		private void VideoTimeSlider_OnPointerPressed(object? sender, PointerPressedEventArgs e)
+		{
+			
+		}
+
+		private void VideoTimeSlider_OnPointerMoved(object? sender, PointerEventArgs e)
+		{
+			
+		}
+
+		private void VideoTimeSlider_OnPointerReleased(object? sender, PointerReleasedEventArgs e)
+		{
+			
+
 		}
 	}
 }

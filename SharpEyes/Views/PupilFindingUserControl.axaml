@@ -57,16 +57,17 @@
       <!--Video playback controls and display-->
       <StackPanel Orientation="Vertical" Grid.Row="2">
         <Slider Name="VideoTimeSlider" Margin="0 0 4 4" Minimum="0" 
-                Maximum="{Binding TotalVideoFrames}" Value="{Binding CurrentVideoFrame}"></Slider>
+                Maximum="{Binding TotalVideoFrames}" Value="{Binding CurrentVideoFrame}"
+                PointerPressed="VideoTimeSlider_OnPointerPressed" PointerMoved="VideoTimeSlider_OnPointerMoved" PointerReleased="VideoTimeSlider_OnPointerReleased"></Slider>
         <Panel>
           <TextBlock Name="CurrentVideoTimeTextBlock" HorizontalAlignment="Left" VerticalAlignment="Center" Text="{Binding CurrentVideoTime}"/>
           <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
             <Button Name="PreviousFrameButton" ToolTip.Tip="Previous Frame" Height="32" VerticalContentAlignment="Center"
-                    Command="{Binding PreviousFrameCommand}">⮜</Button>
+                    Click="PreviousFrameButton_OnClick">⮜</Button>
             <Button Name="PlayPauseButton" Height="32" VerticalContentAlignment="Center" Margin="2 0 2 0" Content="{Binding PlayPauseButtonText}"
-                    Command="{Binding PlayPauseCommand}"/>
+                    Click="PlayPauseButton_OnClick"/>
             <Button Name="NextFrameButton" ToolTip.Tip="Next Frame" Height="32" VerticalContentAlignment="Center"
-                    Command="{Binding NextFrameCommand}">⮞</Button>
+                    Click="NextFrameButton_OnClick">⮞</Button>
           </StackPanel>
           <TextBlock Name="TotalVideoTimeTextBlock" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="4 0 4 0" Text="{Binding TotalVideoTime}"/>
         </Panel>

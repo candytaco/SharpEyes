@@ -125,7 +125,17 @@ namespace SharpEyes.ViewModels
 			set => this.RaiseAndSetIfChanged(ref _totalVideoTime, value);
 		}
 		public string PlayPauseButtonText => IsVideoPlaying ? "Pause" : "Play";
-		public bool IsVideoPlaying { get; private set; } = false;
+		private bool _isVideoPlaying = false;
+
+		public bool IsVideoPlaying
+		{
+			get => _isVideoPlaying;
+			set
+			{
+				this.RaiseAndSetIfChanged(ref _isVideoPlaying, value);
+				this.RaisePropertyChanged("PlayPauseButtonText");
+			}
+		}
 		private int _currentVideoFrame = 0;
 		public int CurrentVideoFrame
 		{
