@@ -20,8 +20,18 @@ namespace SharpEyes.ViewModels
 
 		// templates section
 		public bool AutoAddNewTemplates { get; set; } = true;
-		public int CurrentTemplateIndex { get; set; } = 0;
-		public int TotalTemplateCount { get; private set; } = 0;
+		private int _currentTemplateIndex = 0;
+
+		public int CurrentTemplateIndex
+		{
+			get => _currentTemplateIndex;
+			set
+			{
+				this.RaiseAndSetIfChanged(ref _currentTemplateIndex, value);
+				this.RaisePropertyChanged("TemplateIndexText");
+			}
+		}
+		public int TotalTemplateCount { get; set; } = 0;
 		public string TemplateIndexText => String.Format("{0}/{1}", CurrentTemplateIndex, TotalTemplateCount);
 		private Bitmap? templatePreviewImage = null;
 		public Bitmap? TemplatePreviewImage

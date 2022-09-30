@@ -236,7 +236,13 @@ namespace Eyetracking
 				WorkerReportsProgress = true,
 				WorkerSupportsCancellation = true
 			};
-			
+
+			// get window size from the viewmodel
+			top = (int)ViewModel.PupilWindowTop;
+			left = (int)ViewModel.PupilWindowLeft;
+			bottom = (int)ViewModel.PupilWindowHeight + top;
+			right = (int)ViewModel.PupilWindowWidth + left;
+
 			double cumulativeConfidence;
 			int frames;
 
@@ -611,6 +617,10 @@ namespace Eyetracking
 				antiResults = new List<Mat>(antiTemplates.Count);
 				for (int i = 0; i < antiTemplates.Count; i++)
 					antiResults.Add(new Mat());
+
+				ViewModel.templatePupilFinderConfigUserControlViewModel.TotalTemplateCount = NumTemplates;
+				ViewModel.templatePupilFinderConfigUserControlViewModel.CurrentTemplateIndex = 0;
+				ViewModel.templatePupilFinderConfigUserControlViewModel.TemplatePreviewImage = GetTemplateImage(0);
 			}
 			catch (InvalidDataException)
 			{

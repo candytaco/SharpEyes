@@ -96,6 +96,20 @@ namespace SharpEyes.ViewModels
 		}
 
 		// video playback
+		private int _videoWidth = 400;
+		public int VideoWidth
+		{
+			get => _videoWidth;
+			set => this.RaiseAndSetIfChanged(ref _videoWidth, value);
+		}
+
+		private int _videoHeight = 300;
+		public int VideoHeight
+		{
+			get => _videoHeight;
+			set => this.RaiseAndSetIfChanged(ref _videoHeight, value);
+		}
+
 		private string _currentVideoTime = "0:00:00;00";
 
 		public string CurrentVideoTime

@@ -125,6 +125,13 @@ namespace SharpEyes.Views
 				if (viewModel.AutoReadTimestamps)
 					pupilFinder.ParseTimeStamps();
 			}
+
+			if (pupilFinder is TemplatePupilFinder templatePupilFinder)
+			{
+				viewModel.templatePupilFinderConfigUserControlViewModel.CurrentTemplateIndex = 0;
+				viewModel.templatePupilFinderConfigUserControlViewModel.TemplatePreviewImage =
+					templatePupilFinder.GetTemplateImage(0);
+			}
 		}
 
 		public async void ReadTimestamps(object sender, RoutedEventArgs e)

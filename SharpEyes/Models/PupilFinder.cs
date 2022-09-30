@@ -263,6 +263,12 @@ namespace Eyetracking
 
 			ViewModel.TotalVideoFrames = frameCount;
 			ViewModel.TotalVideoTime = FramesToTimecode(frameCount);
+			ViewModel.PupilWindowTop = top;
+			ViewModel.PupilWindowLeft = left;
+			ViewModel.PupilWindowWidth = right - left;
+			ViewModel.PupilWindowHeight = bottom - top;
+			ViewModel.VideoHeight = height;
+			ViewModel.VideoWidth = width;
 		}
 
 		/// <summary>
