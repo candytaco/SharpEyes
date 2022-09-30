@@ -15,7 +15,7 @@ namespace SharpEyes.Views
 		private Point? windowInitialPoint = null;
 		private PupilFindingUserControlViewModel? viewModel => (PupilFindingUserControlViewModel)this.DataContext;
 
-		private PupilFinder? pupilFinder = null;
+		public PupilFinder? pupilFinder = null;
 
 		public PupilFindingUserControl()
 		{

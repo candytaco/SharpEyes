@@ -49,7 +49,7 @@ namespace Eyetracking
 		Exponential,    // fade exponentially
 	}
 
-	internal abstract class PupilFinder
+	public abstract class PupilFinder
 	{
 		/// <summary>
 		/// Median function, since numsharp does not implement a median

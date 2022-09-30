@@ -16,7 +16,7 @@ using SharpEyes.ViewModels;
 namespace Eyetracking
 {
 
-	class TemplatePupilFinder : PupilFinder
+	public class TemplatePupilFinder : PupilFinder
 	{
 		/// <summary>
 		/// Templates for a dark pupil on a light background
