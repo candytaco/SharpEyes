@@ -470,6 +470,8 @@ namespace Eyetracking
 				OnFramesPupilsProcessedDelegate(false, null, stepBack);
 				CancelPupilFindingDelegate -= worker.CancelAsync;
 				ViewModel.IsProgressBarVisible = false;
+				if (ViewModel.AutoEnterPupilEditMode)
+					ViewModel.IsMovingPupil = true;
 			};
 
 			ViewModel.IsProgressBarVisible = true;
