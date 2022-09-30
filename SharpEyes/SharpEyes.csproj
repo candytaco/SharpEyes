@@ -31,4 +31,7 @@
     <PackageReference Include="Sentry" Version="3.21.0" />
     <PackageReference Include="XamlNameReferenceGenerator" Version="1.3.4" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\**" />
+  </ItemGroup>
 </Project>
