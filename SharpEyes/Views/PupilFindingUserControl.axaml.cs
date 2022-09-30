@@ -94,6 +94,26 @@ namespace SharpEyes.Views
 		public void VideoCanvasMouseUp(object sender, PointerReleasedEventArgs e)
 		{
 			isMouseDownOnVideoCanvas = false;
+			if (viewModel.EditingState == EditingState.MovePupil)
+			{
+				viewModel.PupilConfidence = 1;
+				int frameDecay;
+				ManualUpdateMode mode;
+				if (viewModel.UseNoDecay) // this is a dummy
+					return;
+				if (viewModel.UseLinearDecay)
+				{
+					frameDecay = viewModel.LinearDecayFrames;
+					mode = ManualUpdateMode.Linear;
+				}
+				else
+				{
+					frameDecay = viewModel.ExponentialDecayTimeConstant;
+					mode = ManualUpdateMode.Exponential;
+				}
+				pupilFinder.ManuallyUpdatePupilLocations(pupilFinder.CurrentFrameNumber, 
+					viewModel.PupilX, viewModel.PupilY, viewModel.PupilRadius, frameDecay, mode);
+			}
 		}
 
 		public void VideoCanvasScroll(object sender, PointerWheelEventArgs e)
