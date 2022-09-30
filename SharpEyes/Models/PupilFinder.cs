@@ -423,7 +423,7 @@ namespace Eyetracking
 			ViewModel.VideoFrame = GetFrameForDisplay();
 			ViewModel.PupilX = pupilLocations[CurrentFrameNumber, 0];
 			ViewModel.PupilY = pupilLocations[CurrentFrameNumber, 1];
-			ViewModel.PupilDiameter = pupilLocations[CurrentFrameNumber, 2];
+			ViewModel.PupilDiameter = pupilLocations[CurrentFrameNumber, 2] * 2;
 			ViewModel.PupilConfidence = pupilLocations[CurrentFrameNumber, 3];
 		}
 
