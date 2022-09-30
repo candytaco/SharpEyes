@@ -52,10 +52,17 @@ namespace SharpEyes.ViewModels
 
 		// match options
 		public int SelectedMetricIndex { get; set; } = 3;
+		/// <summary>
+		/// Use all templates? If false, use only recent templates
+		/// </summary>
 		public bool UseAllTemplates { get; set; } = true;
 		public int NumTemplatesToUse { get; set; } = 128;
+		/// <summary>
+		/// Use every template? If false, use a random subset of templates
+		/// </summary>
 		public bool UseEveryTemplate { get; set; } = true;
 		public int FractionOfTemplatesToUse { get; set; } = 75;
+		public int NumTemplatesToMatch { get; set; } = 2;
 
 		// view model hierarchy
 		private PupilFindingUserControlViewModel? parent = null;

@@ -155,9 +155,12 @@ namespace Eyetracking
 		private Bitmap bitmapFrame = null;
 
 		// pupil finding stuff
-		public int left, right, top, bottom;    // window within which to look for pupil
-		public int minRadius = 6;               // min/max pupil sizes
-		public int maxRadius = 24;
+		public int left => ViewModel.PupilWindowLeft;
+		public int right => left + ViewModel.PupilWindowWidth;
+		public int top => ViewModel.PupilWindowTop;
+		public int bottom => top + ViewModel.PupilWindowHeight;
+		public int minRadius => (int)((double)ViewModel.MinPupilDiameter / 2);               // min/max pupil sizes
+		public int maxRadius => (int)((double)ViewModel.MaxPupilDiameter / 2);
 		public int nThreads = 1;
 		public double WindowBrightness
 		{
@@ -198,10 +201,10 @@ namespace Eyetracking
 		}
 		public bool isAnyFrameProcessed { get; protected set; } = false;
 
-		public int bilateralBlurSize = 0;
-		public int medianBlurSize = 0;
-		public double bilateralSigmaColor = 0;
-		public double bilateralSigmaSpace = 0;
+		public int bilateralBlurSize => ViewModel.UseBilateralBlur ? ViewModel.BilateralBlurSize : 0;
+		public int medianBlurSize => ViewModel.UseMedianBlur ? ViewModel.MedianBlurSize : 0;
+		public double bilateralSigmaColor => ViewModel.BilateralBlurSigmaColor;
+		public double bilateralSigmaSpace => ViewModel.BilateralBlurSigmaSpace;
 
 		// UI delegates/references
 		public SetStatusDelegate SetStatusDelegate { get; private set; }
@@ -250,11 +253,6 @@ namespace Eyetracking
 
 			red = colorChannels[0];
 
-			top = 0;
-			left = 0;
-			right = width;
-			bottom = height;
-
 			isFrameProcessed = new bool[frameCount];
 			for (int i = 0; i < frameCount; i++)
 			{
@@ -263,10 +261,10 @@ namespace Eyetracking
 
 			ViewModel.TotalVideoFrames = frameCount;
 			ViewModel.TotalVideoTime = FramesToTimecode(frameCount);
-			ViewModel.PupilWindowTop = top;
-			ViewModel.PupilWindowLeft = left;
-			ViewModel.PupilWindowWidth = right - left;
-			ViewModel.PupilWindowHeight = bottom - top;
+			ViewModel.PupilWindowTop = 0;
+			ViewModel.PupilWindowLeft = 0;
+			ViewModel.PupilWindowWidth = width;
+			ViewModel.PupilWindowHeight = height;
 			ViewModel.VideoHeight = height;
 			ViewModel.VideoWidth = width;
 		}

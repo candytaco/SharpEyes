@@ -56,10 +56,10 @@ namespace SharpEyes.Views
 					}
 					left = left >= 0 ? left : 0;
 					top = top >= 0 ? top : 0;
-					viewModel.PupilWindowLeft = left;
-					viewModel.PupilWindowTop = top;
-					viewModel.PupilWindowWidth = right <= VideoCanvas.Width ? right - left : VideoCanvas.Width - left;
-					viewModel.PupilWindowHeight = bottom <= VideoCanvas.Height ? bottom - top : VideoCanvas.Height - top;
+					viewModel.PupilWindowLeft = (int)Math.Round(left);
+					viewModel.PupilWindowTop = (int)Math.Round(top);
+					viewModel.PupilWindowWidth = right <= VideoCanvas.Width ? (int)Math.Round(right - left) : (int)Math.Round(VideoCanvas.Width - left);
+					viewModel.PupilWindowHeight = bottom <= VideoCanvas.Height ? (int)Math.Round(bottom - top) : (int)Math.Round(VideoCanvas.Height - top);
 
 					break;
 				default:

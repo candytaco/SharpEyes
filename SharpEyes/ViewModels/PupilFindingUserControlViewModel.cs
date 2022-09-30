@@ -211,26 +211,26 @@ namespace SharpEyes.ViewModels
 				this.RaisePropertyChanged("PupilConfidenceText");
 			}
 		}
-		private double _pupilWindowLeft = 0;
-		public double PupilWindowLeft
+		private int _pupilWindowLeft = 0;
+		public int PupilWindowLeft
 		{
 			get => _pupilWindowLeft;
 			set => this.RaiseAndSetIfChanged(ref _pupilWindowLeft, value);
 		}
-		private double _pupilWindowTop = 0;
-		public double PupilWindowTop
+		private int _pupilWindowTop = 0;
+		public int PupilWindowTop
 		{
 			get => _pupilWindowTop;
 			set => this.RaiseAndSetIfChanged(ref _pupilWindowTop, value);
 		}
-		private double _pupilWindowWidth = 0;
-		public double PupilWindowWidth
+		private int _pupilWindowWidth = 0;
+		public int PupilWindowWidth
 		{
 			get => _pupilWindowWidth;
 			set => this.RaiseAndSetIfChanged(ref _pupilWindowWidth, value);
 		}
-		private double _pupilWindowHeight = 0;
-		public double PupilWindowHeight
+		private int _pupilWindowHeight = 0;
+		public int PupilWindowHeight
 		{
 			get => _pupilWindowHeight;
 			set => this.RaiseAndSetIfChanged(ref _pupilWindowHeight, value);

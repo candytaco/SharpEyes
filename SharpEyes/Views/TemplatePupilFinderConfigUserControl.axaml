@@ -103,6 +103,19 @@
             <ComboBoxItem>Normed correlation coefficient</ComboBoxItem>
           </ComboBox>
         </StackPanel>
+        <ToggleSwitch Name="MatchMultipleTemplatesToggleSwitch" IsChecked="True" OnContent="Match multiple templates"
+                      OffContent="Match multiple templates">
+          <ToolTip.Tip>
+            <TextBlock>Match multiple templates and take the weighted average of the best matches</TextBlock>
+          </ToolTip.Tip>
+        </ToggleSwitch>
+        <StackPanel Orientation="Horizontal" Margin="0 8"
+                    IsVisible="{Binding #MatchMultipleTemplatesToggleSwitch.IsChecked}">
+          <TextBlock VerticalAlignment="Center">Match</TextBlock>
+          <NumericUpDown Margin="8 0" Width="125" Minimum="2" Maximum="32"
+                         Value="{Binding NumTemplatesToMatch}"></NumericUpDown>
+          <TextBlock VerticalAlignment="Center">templates</TextBlock>
+        </StackPanel>
         <ToggleSwitch Name="UseRecentTemplateToggleSwitch" OnContent="Use all templates" OffContent="Use all templates" IsChecked="{Binding UseAllTemplates}"/>
         <StackPanel Orientation="Horizontal" Margin="0 8" IsVisible="{Binding !#UseRecentTemplateToggleSwitch.IsChecked}">
           <TextBlock VerticalAlignment="Center" Margin="0 0 4 0">Use</TextBlock>
@@ -118,5 +131,5 @@
       </StackPanel>
     </Expander>
 
-   </StackPanel>
+  </StackPanel>
 </UserControl>

@@ -29,10 +29,10 @@ namespace Eyetracking
 		// used for blink detection and bad pupil identification
 		public double meanPupilBrightness { get; private set; } = -1;
 		public double stdevPupilBrightness { get; private set; } = -1;
-		public double pupilBrightnessThreshold = 2;	// number of stdevs above mean pupil brightness to break
+		public double pupilBrightnessThreshold => ViewModel.BlinkRejectionPupilSigma;	// number of stdevs above mean pupil brightness to break
 		public double? meanWindowBrightness { get; private set; } = null;
 		public double? stdevWindowBrightness { get; private set; } = null;
-		public double windowBrightnessThreshold = 2; // number of stdevs above mean window brightness to count as a blink
+		public double windowBrightnessThreshold => ViewModel.BlinkRejectionBlinkSigma; // number of stdevs above mean window brightness to count as a blink
 
 		/// <summary>
 		/// Templates for rejecting matches
@@ -40,13 +40,9 @@ namespace Eyetracking
 		public List<Template> antiTemplates { get; private set; }
 		public List<Mat> antiResults { get; private set; }
 		public int NumAntiTemplates => antiTemplates.Count;
-
-		private double _fractionToUse = 1;
-		public double fractionToUse
-		{
-			get { return _fractionToUse; }
-			set { _fractionToUse = value; }
-		}
+		
+		public double fractionToUse =>
+			ConfigViewModel.UseEveryTemplate ? 1 : (double)ConfigViewModel.FractionOfTemplatesToUse / 100;
 
 		public string autoTemplatesFileName
 		{
@@ -62,7 +58,7 @@ namespace Eyetracking
 		/// How many of the templates to actually use, since more accurate templates may be added
 		/// throughout the run. If 0, use all.
 		/// </summary>
-		public int NumActiveTemplates = 0;
+		public int NumActiveTemplates => ConfigViewModel.UseAllTemplates ? 0 : ConfigViewModel.NumTemplatesToUse;
 
 		/// <summary>
 		/// Are we using custom templates?
@@ -76,16 +72,12 @@ namespace Eyetracking
 		/// </summary>
 		private double[,] topMatches = null;
 
-		public TemplateMatchModes TemplateMatchMode = TemplateMatchModes.CCoeffNormed;
+		public TemplateMatchModes TemplateMatchMode => (TemplateMatchModes)ConfigViewModel.SelectedMetricIndex;
 
-		public int NumMatches
-		{
-			get => topMatches?.Length / 4 ?? 1;	// .length on a 2D array is num elements
-			set
-			{
-				topMatches = value > 1 ? new double[value, 4] : null;
-			}
-		}
+		public TemplatePupilFinderConfigUserControlViewModel ConfigViewModel =>
+			ViewModel != null ? ViewModel.TemplatePupilFinderConfigUserControlViewModel : null;
+
+		public int NumTemplatesToMatch => ConfigViewModel.NumTemplatesToMatch;
 
 		public TemplatePupilFinder(string videoFileName, PupilFindingUserControlViewModel viewModel = null)
 			: base(videoFileName, viewModel)
@@ -237,11 +229,7 @@ namespace Eyetracking
 				WorkerSupportsCancellation = true
 			};
 
-			// get window size from the viewmodel
-			top = (int)ViewModel.PupilWindowTop;
-			left = (int)ViewModel.PupilWindowLeft;
-			bottom = (int)ViewModel.PupilWindowHeight + top;
-			right = (int)ViewModel.PupilWindowWidth + left;
+			topMatches = NumTemplatesToMatch > 1 ? new double[NumTemplatesToMatch, 4] : null;
 
 			double cumulativeConfidence;
 			int frames;
@@ -337,7 +325,7 @@ namespace Eyetracking
 
 								lock (templateLock)
 								{
-									if (NumMatches == 1) // only need highest match and so write directly
+									if (NumTemplatesToMatch == 1) // only need highest match and so write directly
 									{
 										if (maxVal > bestCorrelationOnThisFrame)
 										{
@@ -361,7 +349,7 @@ namespace Eyetracking
 									}
 									else // have to store values to intermediate and then do weighted average
 									{
-										for (int j = 0; j < NumMatches; j++)
+										for (int j = 0; j < NumTemplatesToMatch; j++)
 										{
 											// look over existing stored matches, and if this is better than any
 											// immediately overwrite that one
@@ -391,13 +379,13 @@ namespace Eyetracking
 							}
 						});
 
-						if (NumMatches > 1) // calculate weighted average
+						if (NumTemplatesToMatch > 1) // calculate weighted average
 						{
 							pupilLocations[CurrentFrameNumber, 0] =
 								pupilLocations[CurrentFrameNumber, 1] =
 									pupilLocations[CurrentFrameNumber, 2] = 0;
 							double sum = 0;
-							for (int j = 0; j < NumMatches; j++)
+							for (int j = 0; j < NumTemplatesToMatch; j++)
 							{
 								// we still only store single hishest value as the confidence value
 								if (topMatches[j, 3] > bestCorrelationOnThisFrame)
@@ -412,7 +400,7 @@ namespace Eyetracking
 							pupilLocations[CurrentFrameNumber, 1] /= sum;
 							pupilLocations[CurrentFrameNumber, 2] /= sum;
 
-							for (int j = 0; j < NumMatches; j++)
+							for (int j = 0; j < NumTemplatesToMatch; j++)
 							for (int k = 0; k < 4; k++)
 								topMatches[j, k] = -1;
 						}
