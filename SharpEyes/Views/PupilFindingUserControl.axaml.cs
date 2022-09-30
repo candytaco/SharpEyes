@@ -94,6 +94,8 @@ namespace SharpEyes.Views
 
 		public async void LoadVideo(object sender, RoutedEventArgs e)
 		{
+			TemplateFinderConfigPanel.DataContext = viewModel.templatePupilFinderConfigUserControlViewModel;
+
 			OpenFileDialog openFileDialog = new OpenFileDialog()
 			{
 				Title = "Load eyetracking video"
