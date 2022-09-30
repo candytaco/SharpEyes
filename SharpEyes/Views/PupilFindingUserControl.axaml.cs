@@ -3,8 +3,11 @@ using System;
 using SharpEyes.ViewModels;
 using Avalonia.Input;
 using Avalonia;
+using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
+using ColorTextBlock.Avalonia;
 using Eyetracking;
 
 namespace SharpEyes.Views
@@ -19,6 +22,9 @@ namespace SharpEyes.Views
 		public PupilFinder? pupilFinder = null;
 
 		private DispatcherTimer videoPlaybackTimer;
+		private bool isDraggingVideoSlider = false;
+
+		private bool areThumbEventsAttached = false;
 
 		public PupilFindingUserControl()
 		{
@@ -97,8 +103,21 @@ namespace SharpEyes.Views
 				viewModel.PupilDiameter += e.Delta.Y;
 		}
 
+		private void AttachThumbEvents()
+		{
+			if (!areThumbEventsAttached)
+			{
+				Thumb thumb = VideoTimeSlider.FindDescendantOfType<Thumb>();
+				thumb.DragStarted += VideoTimeSlider_DragStarted;
+				thumb.DragDelta += VideoTimeSlider_Drag;
+				thumb.DragCompleted += VideoTimeSlider_DragFinished;
+				areThumbEventsAttached = true;
+			}
+		}
+
 		public async void LoadVideo(object sender, RoutedEventArgs e)
 		{
+			AttachThumbEvents();
 			OpenFileDialog openFileDialog = new OpenFileDialog()
 			{
 				Title = "Load eyetracking video"
@@ -202,20 +221,26 @@ namespace SharpEyes.Views
 			
 		}
 
-		private void VideoTimeSlider_OnPointerPressed(object? sender, PointerPressedEventArgs e)
+		private void VideoTimeSlider_DragStarted(object sender, VectorEventArgs e)
 		{
-			
+			if (viewModel.IsVideoPlaying)
+				PlayPauseButton_OnClick(null, null);
+			isDraggingVideoSlider = true;
 		}
 
-		private void VideoTimeSlider_OnPointerMoved(object? sender, PointerEventArgs e)
+		private void VideoTimeSlider_Drag(object sender, VectorEventArgs e)
 		{
-			
+			if (isDraggingVideoSlider)
+			{
+				pupilFinder.Seek(viewModel.CurrentVideoFrame);
+				pupilFinder.ReadGrayscaleFrame();
+				pupilFinder.UpdateDisplays();
+			}
 		}
 
-		private void VideoTimeSlider_OnPointerReleased(object? sender, PointerReleasedEventArgs e)
+		private void VideoTimeSlider_DragFinished(object sender, VectorEventArgs e)
 		{
-			
-
+			isDraggingVideoSlider = false;
 		}
 	}
 }
