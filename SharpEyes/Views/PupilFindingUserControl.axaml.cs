@@ -99,8 +99,22 @@ namespace SharpEyes.Views
 		public void VideoCanvasScroll(object sender, PointerWheelEventArgs e)
 		{
 			// e.Delta.Y encodes the number of clicks of the wheel, with + being up, - being down
-			if (viewModel.EditingState == EditingState.MovePupil)
-				viewModel.PupilDiameter += e.Delta.Y;
+			switch (viewModel.EditingState)
+			{
+				case EditingState.None:
+					if (e.Delta.Y > 0)
+						PreviousFrameButton_OnClick(null, null);
+					else
+						NextFrameButton_OnClick(null, null);
+					break;
+				case EditingState.DrawWindow:
+					break;
+				case EditingState.MovePupil:
+					viewModel.PupilDiameter += e.Delta.Y;
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 		}
 
 		private void AttachThumbEvents()
@@ -213,12 +227,28 @@ namespace SharpEyes.Views
 
 		private void PreviousFrameButton_OnClick(object? sender, RoutedEventArgs e)
 		{
-			
+			if (pupilFinder.CurrentFrameNumber <= 0)
+			{
+				return;
+			}
+
+			pupilFinder.CancelPupilFindingDelegate?.Invoke();
+			pupilFinder.Seek(viewModel.CurrentVideoFrame - 1);
+			pupilFinder.ReadGrayscaleFrame();
+			pupilFinder.UpdateDisplays();
 		}
 
 		private void NextFrameButton_OnClick(object? sender, RoutedEventArgs e)
 		{
-			
+			if (pupilFinder.CurrentFrameNumber >= pupilFinder.frameCount - 1)
+			{
+				return;
+			}
+
+			pupilFinder.CancelPupilFindingDelegate?.Invoke();
+			pupilFinder.Seek(viewModel.CurrentVideoFrame + 1);
+			pupilFinder.ReadGrayscaleFrame();
+			pupilFinder.UpdateDisplays();
 		}
 
 		private void VideoTimeSlider_DragStarted(object sender, VectorEventArgs e)
