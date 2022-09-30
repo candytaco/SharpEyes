@@ -7,6 +7,10 @@ namespace SharpEyes.Views
 		public MainWindow()
 		{
 			InitializeComponent();
+			//ExtendClientAreaToDecorationsHint = true;
+			ExtendClientAreaTitleBarHeightHint = -1;
+
+			TransparencyLevelHint = WindowTransparencyLevel.AcrylicBlur;
 		}
 	}
 }

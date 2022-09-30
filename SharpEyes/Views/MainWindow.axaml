@@ -9,6 +9,7 @@
         x:Class="SharpEyes.Views.MainWindow"
         Icon="/Assets/icons8-iris-scan-96.ico"
         TransparencyLevelHint="AcrylicBlur"
+        WindowStartupLocation="CenterScreen" Background="#c0202020"
         Title="SharpEyes">
 
     <Design.DataContext>
@@ -20,6 +21,9 @@
       <Setter Property="HorizontalAlignment" Value="Right"/>
       <Setter Property="Height" Value="48"/>
     </Style>
+      <Style Selector="TitleBar">
+          <Setter Property="Background" Value="#00000000" />
+      </Style>
   </Window.Styles>
 
   <Grid>

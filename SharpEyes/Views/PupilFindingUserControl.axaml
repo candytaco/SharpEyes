@@ -39,7 +39,8 @@
 
       <!--Video video box-->
       <Viewbox Grid.Row="1" Stretch="Uniform">
-        <Canvas Name="VideoCanvas" Width="{Binding VideoWidth}" Height="{Binding VideoHeight}" PointerPressed="VideoCanvasMouseDown"
+        <Canvas Name="VideoCanvas" Width="{Binding VideoWidth}" Height="{Binding VideoHeight}" 
+                PointerPressed="VideoCanvasMouseDown"
                 PointerMoved="VideoCanvasMouseMove" PointerReleased="VideoCanvasMouseUp"
                 PointerWheelChanged="VideoCanvasScroll" Background="Transparent">
           <Image Name="VideoFrameImage" Source="{Binding VideoFrame}" 
