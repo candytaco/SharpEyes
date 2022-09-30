@@ -19,7 +19,7 @@ namespace SharpEyes.ViewModels
 		public ReactiveCommand<int, Unit>? ChangeAntiTemplatePreviewIndexCommand { get; } = null;
 
 		// templates section
-		public bool AutoAddNewTemplates { get; set; } = true;
+		public bool AutoAddNewTemplate { get; set; } = true;
 		private int _currentTemplateIndex = 0;
 
 		public int CurrentTemplateIndex
