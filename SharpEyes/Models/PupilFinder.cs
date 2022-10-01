@@ -237,6 +237,8 @@ namespace Eyetracking
 			else
 				timeStamps = Num.zeros((frameCount, 4), NPTypeCode.Int32);
 
+			ViewModel.IsTimestampsRead = isTimestampParsed;
+
 			if (File.Exists(autoPupilsFileName))
 				LoadPupilLocations(autoPupilsFileName);
 			else
@@ -368,6 +370,8 @@ namespace Eyetracking
 						break;
 					}
 				}
+
+				ViewModel.IsTimestampsRead = true;
 			};
 
 			ViewModel.IsProgressBarVisible = true;

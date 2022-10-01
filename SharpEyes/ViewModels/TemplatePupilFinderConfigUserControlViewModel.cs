@@ -66,7 +66,7 @@ namespace SharpEyes.ViewModels
 
 		// view model hierarchy
 		public PupilFindingUserControlViewModel? Parent { get; private set; } = null;
-
+		
 		public TemplatePupilFinderConfigUserControlViewModel()
 			:this(null)
 		{

@@ -33,8 +33,10 @@
       <StackPanel Orientation="Horizontal" Grid.Row="0">
         <Button Name="LoadVideoButton" Margin="4" Click="LoadVideo">Load Video</Button>
         <TextBlock VerticalAlignment="Center" Margin="4">|</TextBlock>
-        <ToggleButton Name="DrawWindowButton" Margin="4" IsChecked="{Binding IsDrawingWindow}">Draw Window</ToggleButton>
-        <ToggleButton Name="MovePupilButton" Margin="4" IsChecked="{Binding IsMovingPupil}">Move Pupil</ToggleButton>
+        <ToggleButton Name="DrawWindowButton" Margin="4" IsChecked="{Binding IsDrawingWindow}"
+                      IsEnabled="{Binding CanFindPupils}">Draw Window</ToggleButton>
+        <ToggleButton Name="MovePupilButton" Margin="4" IsChecked="{Binding IsMovingPupil}"
+                      IsEnabled="{Binding CanFindPupils}">Move Pupil</ToggleButton>
       </StackPanel>
 
       <!--Video video box-->
@@ -47,28 +49,29 @@
                  Width="{Binding VideoWidth}" Height="{Binding VideoHeight}"/>
           <Rectangle Name="PupilWindowRectangle" Width="{Binding PupilWindowWidth}" Height="{Binding PupilWindowHeight}"
                      Canvas.Left="{Binding PupilWindowLeft}" Canvas.Top="{Binding PupilWindowTop}"
-                     Stroke="DodgerBlue" StrokeThickness="4"/>
+                     Stroke="DodgerBlue" StrokeThickness="4" IsVisible="{Binding CanFindPupils}"/>
           <Ellipse Name="PupilEllipse" Width="{Binding PupilDiameter}" Height="{Binding #PupilEllipse.Width}"
-                   Stroke="LimeGreen" StrokeThickness="4" Opacity="50"
-                   Canvas.Left="{Binding PupilCircleLeft}" Canvas.Top="{Binding PupilCircleTop}"/>
+                   Stroke="LimeGreen" StrokeThickness="4" Opacity="50" IsVisible="{Binding CanFindPupils}"
+                   Canvas.Left="{Binding PupilCircleLeft}" 
+                   Canvas.Top="{Binding PupilCircleTop}"/>
 
         </Canvas>
       </Viewbox>
 
       <!--Video playback controls and display-->
       <StackPanel Orientation="Vertical" Grid.Row="2">
-        <Slider Name="VideoTimeSlider" Margin="0 0 4 4" Minimum="0"
+        <Slider Name="VideoTimeSlider" Margin="0 0 4 4" Minimum="0" IsEnabled="{Binding IsVideoLoaded}"
                 Maximum="{Binding TotalVideoFrames}" Value="{Binding CurrentVideoFrame}"
                 />
         <Panel>
           <TextBlock Name="CurrentVideoTimeTextBlock" HorizontalAlignment="Left" VerticalAlignment="Center" Text="{Binding CurrentVideoTime}"/>
           <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
             <Button Name="PreviousFrameButton" ToolTip.Tip="Previous Frame" Height="32" VerticalContentAlignment="Center"
-                    Click="PreviousFrameButton_OnClick">⮜</Button>
+                    Click="PreviousFrameButton_OnClick" IsEnabled="{Binding IsVideoLoaded}">⮜</Button>
             <Button Name="PlayPauseButton" Height="32" VerticalContentAlignment="Center" Margin="2 0 2 0" Content="{Binding PlayPauseButtonText}"
-                    Click="PlayPauseButton_OnClick"/>
+                    Click="PlayPauseButton_OnClick" IsEnabled="{Binding IsVideoLoaded}"/>
             <Button Name="NextFrameButton" ToolTip.Tip="Next Frame" Height="32" VerticalContentAlignment="Center"
-                    Click="NextFrameButton_OnClick">⮞</Button>
+                    Click="NextFrameButton_OnClick" IsEnabled="{Binding IsVideoLoaded}">⮞</Button>
           </StackPanel>
           <TextBlock Name="TotalVideoTimeTextBlock" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="4 0 4 0" Text="{Binding TotalVideoTime}"/>
         </Panel>
@@ -93,8 +96,9 @@
       </StackPanel>
       <TextBlock Name="PupilConfidenceTextBlock" Width="150" Text="{Binding PupilConfidenceText}" DockPanel.Dock="Top"/>
       <Button DockPanel.Dock="Top" Name="FindPupilsButton" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4 2"
+              IsEnabled="{Binding CanFindPupils}"
               Click="FindPupilsButton_Click" Content="{Binding PupilFindingButtonText}"/>
-      <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center" Margin="4 4 4 8">
+      <StackPanel IsEnabled="{Binding CanFindPupils}" DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center" Margin="4 4 4 8">
         <ToggleSwitch Name="AllFramesToggleSwitch" Margin="4 2 16 2" Width="130" OnContent="All frames"
                       OffContent="Fixed count" IsThreeState="False" HorizontalContentAlignment="Center"
                       IsChecked="{Binding ProcessAllFrames}"/>
@@ -103,7 +107,8 @@
           <TextBlock VerticalAlignment="Center" Margin="16 2 4 2">Frames</TextBlock>
         </StackPanel>
       </StackPanel>
-      <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center" Margin="6">
+      <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center" Margin="6"
+                  IsEnabled="{Binding CanFindPupils}">
         <TextBlock Margin="4 2" VerticalAlignment="Center">Pupil finder type</TextBlock>
         <ComboBox Margin="4 2" VerticalContentAlignment="Center" VerticalAlignment="Center" Name="PupilFinderComboBox" SelectedIndex="{Binding PupilFinderTypeIndex}">
           <ComboBoxItem>Template</ComboBoxItem>
@@ -114,7 +119,8 @@
       <!--Pupil finding options-->
       <ScrollViewer DockPanel.Dock="Top" Margin="2">
         <StackPanel>
-          <Expander Margin="0 8 0 0 " Header="Pupil Size"  HorizontalContentAlignment="Center" IsExpanded="False">
+          <Expander Margin="0 8 0 0 " Header="Pupil Size"  HorizontalContentAlignment="Center" IsExpanded="False"
+                    IsEnabled="{Binding CanFindPupils}">
             <StackPanel>
               <StackPanel Orientation="Horizontal">
                 <TextBlock VerticalAlignment="Center" Width="100">Min Diameter</TextBlock>
@@ -128,10 +134,10 @@
           </Expander>
 
           <!--Pupil finder options-->
-          <uc:TemplatePupilFinderConfigUserControl Name="TemplateFinderConfigPanel" 
+          <uc:TemplatePupilFinderConfigUserControl Name="TemplateFinderConfigPanel" IsEnabled="{Binding Parent.CanFindPupils}"
                                                    DataContext="{Binding TemplatePupilFinderConfigUserControlViewModel}"/>
           <!--Confidence options-->
-          <Expander Header="Confidence options" IsExpanded="False">
+          <Expander Header="Confidence options" IsExpanded="False" IsEnabled="{Binding CanFindPupils}">
             <StackPanel>
               <ToggleSwitch Name="PauseOnLowConfidenceToggleSwitch" OffContent="Stop on low confidence" OnContent="Stop on low confidence"
                             IsChecked="{Binding StopOnLowConfidence}"/>
@@ -166,7 +172,9 @@
           </Expander>
 
           <!--Timestamp reading options-->
-          <Expander Margin="0 8 0 0 " Header="Timestamps"  HorizontalContentAlignment="Center" IsExpanded="{Binding ShowTimestampParsing}" Name="TimestampParsingExpander">
+          <Expander Margin="0 8 0 0 " Header="Timestamps"  HorizontalContentAlignment="Center" 
+                    IsEnabled="{Binding IsVideoLoaded}"
+                    IsExpanded="{Binding ShowTimestampParsing}" Name="TimestampParsingExpander">
             <StackPanel>
               <ToggleSwitch Name="AutoReadTimestampsToggleSwitch" OffContent="Auto read timestamps" OnContent="Auto read timestamps" IsChecked="{Binding AutoReadTimestamps}"/>
               <StackPanel Orientation="Horizontal" Margin="0 8 0 0 " HorizontalAlignment="Center">
@@ -178,7 +186,7 @@
             </StackPanel>
           </Expander>
           <!--Image filtering options-->
-          <Expander Header="Image Pre-filtering" IsExpanded="False">
+          <Expander Header="Image Pre-filtering" IsExpanded="False" IsEnabled="{Binding IsVideoLoaded}">
             <StackPanel>
               <ToggleSwitch Name="BilateralBlurToggleSwitch" OnContent="Bilateral blur" OffContent="Bilateral blur" IsChecked="{Binding UseBilateralBlur}"/>
               <StackPanel IsVisible="{Binding #BilateralBlurToggleSwitch.IsChecked}">
@@ -205,7 +213,7 @@
             </StackPanel>
           </Expander>
           <!--Manual adjustment options-->
-          <Expander Header="Manual adjust options" IsExpanded="False">
+          <Expander Header="Manual adjust options" IsExpanded="False" IsEnabled="{Binding CanFindPupils}">
             <StackPanel>
               <ToggleSwitch Name="AutoEnterPupilEditModeToggleSwitch" OffContent="Auto enter pupil edit mode on pause"
                             OnContent="Auto enter pupil edit mode on pause" IsChecked="{Binding AutoEnterPupilEditMode}"/>

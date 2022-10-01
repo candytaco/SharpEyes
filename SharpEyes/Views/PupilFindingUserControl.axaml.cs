@@ -175,10 +175,12 @@ namespace SharpEyes.Views
 					throw new ArgumentOutOfRangeException();
 			}
 
+			viewModel.IsVideoLoaded = true;
+
 			videoPlaybackTimer.Interval = TimeSpan.FromMilliseconds(1000.0 / (double)pupilFinder.fps);
 
-			pupilFinder.ReadFrame();
-			viewModel.VideoFrame = pupilFinder.GetFrameForDisplay(false);
+			pupilFinder.ReadGrayscaleFrame();
+			pupilFinder.UpdateDisplays();
 
 			if (!pupilFinder.isTimestampParsed)
 			{

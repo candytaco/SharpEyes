@@ -189,7 +189,7 @@ namespace SharpEyes.ViewModels
 		}
 		public double PupilCircleLeft => _pupilX - PupilRadius;
 		public double PupilCircleTop => _pupilY - PupilRadius;
-		private double _pupilDiameter = 64;
+		private double _pupilDiameter = double.NaN;
 		public double PupilRadius => _pupilDiameter / 2;
 		public double PupilDiameter
 		{
@@ -288,7 +288,6 @@ namespace SharpEyes.ViewModels
 			set => this.RaiseAndSetIfChanged(ref _showTimestampParsing, value);
 		}
 		public bool AutoReadTimestamps => true;
-		public bool IsTimestampsRead { get; private set; } = false;
 
 		// image pre-filtering
 		public bool UseBilateralBlur { get; set; } = false;
@@ -305,6 +304,32 @@ namespace SharpEyes.ViewModels
 		public bool UseNoDecay { get; set; } = false;
 		public int LinearDecayFrames { get; set; } = 180;
 		public int ExponentialDecayTimeConstant { get; set; } = 30;
+
+
+		// general state things for figuring out what buttons are active
+		private bool _isVideoLoaded = false;
+		public bool IsVideoLoaded
+		{
+			get => _isVideoLoaded;
+			set
+			{
+				this.RaiseAndSetIfChanged(ref _isVideoLoaded, value);
+				this.RaisePropertyChanged("CanFindPupils");
+			}
+		}
+
+		private bool _isTimestampsRead = false;
+		public bool IsTimestampsRead
+		{
+			get => _isTimestampsRead;
+			set
+			{
+				this.RaiseAndSetIfChanged(ref _isTimestampsRead, value);
+				this.RaisePropertyChanged("CanFindPupils");
+			}
+		}
+
+		public bool CanFindPupils => _isTimestampsRead && _isVideoLoaded;
 
 		// children view models
 		public TemplatePupilFinderConfigUserControlViewModel TemplatePupilFinderConfigUserControlViewModel { get; }
