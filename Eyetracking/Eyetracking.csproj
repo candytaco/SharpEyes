@@ -93,6 +93,12 @@
   <PropertyGroup>
     <ApplicationIcon>icons8-iris-scan-96.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Linux Release|AnyCPU'">
+    <OutputPath>bin\Linux Release\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Linux Release|x64'">
+    <OutputPath>bin\x64\Linux Release\</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="alglib.net, Version=3.17.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\alglib.net.3.17.0\lib\net45\alglib.net.dll</HintPath>

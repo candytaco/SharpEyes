@@ -137,6 +137,10 @@ namespace SharpEyes.Views
 			}
 		}
 
+		/// <summary>
+		/// Attaches event handlers on to the thumb in the video slider, because Avalonia XAML
+		/// does not expose those properties
+		/// </summary>
 		private void AttachThumbEvents()
 		{
 			if (!areThumbEventsAttached)
