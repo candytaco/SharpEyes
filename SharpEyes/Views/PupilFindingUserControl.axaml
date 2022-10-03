@@ -102,7 +102,7 @@
       <Button DockPanel.Dock="Top" Name="FindPupilsButton" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4 2"
               IsEnabled="{Binding CanFindPupils}"
               Command="{Binding FindPupilsCommand}"
-              HotKey="Shift+Space"
+              HotKey="F"
               Content="{Binding PupilFindingButtonText}"/>
       <StackPanel IsEnabled="{Binding CanFindPupils}" DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center" Margin="4 4 4 8">
         <ToggleSwitch Name="AllFramesToggleSwitch" Margin="4 2 16 2" Width="130" OnContent="All frames"
