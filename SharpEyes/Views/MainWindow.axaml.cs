@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Avalonia.Controls;
 
 namespace SharpEyes.Views
@@ -11,6 +12,11 @@ namespace SharpEyes.Views
 			ExtendClientAreaTitleBarHeightHint = -1;
 
 			TransparencyLevelHint = WindowTransparencyLevel.AcrylicBlur;
+		}
+
+		private void Window_OnClosing(object? sender, CancelEventArgs e)
+		{
+			PupilFindingUserControl.OnClosing();
 		}
 	}
 }

@@ -506,5 +506,16 @@ namespace SharpEyes.ViewModels
 				pupilFinder.LoadTimestamps(fileName[0]);
 			}
 		}
+
+		public void OnClosing()
+		{
+			if (pupilFinder != null)
+			{
+				pupilFinder.SavePupilLocations();
+				pupilFinder.SaveTimestamps();
+				if (pupilFinder is TemplatePupilFinder templatePupilFinder)
+					templatePupilFinder.SaveTemplates();
+			}
+		}
 	}
 }

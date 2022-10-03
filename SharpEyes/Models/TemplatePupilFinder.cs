@@ -147,7 +147,7 @@ namespace Eyetracking
 
 			matchResults.Add(new Mat());
 
-			UpdateTemplateBrightness();			
+			UpdateTemplateBrightness();
 		}
 
 		/// <summary>

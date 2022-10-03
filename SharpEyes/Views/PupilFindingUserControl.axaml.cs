@@ -168,5 +168,10 @@ namespace SharpEyes.Views
 		{
 			isDraggingVideoSlider = false;
 		}
+
+		public void OnClosing()
+		{
+			viewModel.OnClosing();
+		}
 	}
 }

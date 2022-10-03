@@ -10,6 +10,7 @@
         Icon="/Assets/icons8-iris-scan-96.ico"
         TransparencyLevelHint="AcrylicBlur"
         WindowStartupLocation="CenterScreen" Background="#c0202020"
+        Closing="Window_OnClosing"
         Title="SharpEyes">
 
     <Design.DataContext>
@@ -31,6 +32,7 @@
     <TabControl ZIndex="-1">
       <TabItem Header="Pupil Finding" VerticalContentAlignment="Center">
         <uc:PupilFindingUserControl HorizontalAlignment="Stretch" VerticalContentAlignment="Stretch"
+                                    Name="PupilFindingUserControl"
                                     DataContext="{Binding pupilFindingUserControlViewModel}"/>
       </TabItem>
       <TabItem Header="Calibration">
