@@ -558,7 +558,10 @@ namespace Eyetracking
 				fade = (updateMode == ManualUpdateMode.Exponential) ? dD * Math.Exp(-1 * (double)i / frameDecay) : (double)(frameDecay - i) / frameDecay;
 				pupilLocations[i + startFrame, 0] += fade * dX;
 				pupilLocations[i + startFrame, 1] += fade * dY;
-				pupilLocations[i + startFrame, 2] += fade * dR;
+				if (double.IsFinite(pupilLocations[i + startFrame, 2]))
+					pupilLocations[i + startFrame, 2] += fade * dR;
+				else
+					pupilLocations[i + startFrame, 2] = radius;
 			}
 		}
 

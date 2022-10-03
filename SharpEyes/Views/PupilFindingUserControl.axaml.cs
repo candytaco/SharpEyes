@@ -36,6 +36,8 @@ namespace SharpEyes.Views
 				case EditingState.MovePupil:
 					viewModel.PupilX = point.X;
 					viewModel.PupilY = point.Y;
+					if (Double.IsNaN(viewModel.PupilDiameter))
+						viewModel.PupilDiameter = 36;
 					break;
 				case EditingState.DrawWindow:
 					if (windowInitialPoint == null)
