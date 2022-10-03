@@ -304,6 +304,7 @@ namespace Eyetracking
 		public void ParseTimeStamps()
 		{
 			ViewModel.CanPlayVideo = false;
+			Seek(0);
 			SetStatusDelegate("Parsing timestamps 0%");
 			DateTime start = DateTime.Now;
 			BackgroundWorker worker = new BackgroundWorker
