@@ -60,18 +60,18 @@
 
       <!--Video playback controls and display-->
       <StackPanel Orientation="Vertical" Grid.Row="2">
-        <Slider Name="VideoTimeSlider" Margin="0 0 4 4" Minimum="0" IsEnabled="{Binding IsVideoLoaded}"
+        <Slider Name="VideoTimeSlider" Margin="0 0 4 4" Minimum="0" IsEnabled="{Binding CanPlayVideo}"
                 Maximum="{Binding TotalVideoFrames}" Value="{Binding CurrentVideoFrame}"
                 />
         <Panel>
           <TextBlock Name="CurrentVideoTimeTextBlock" HorizontalAlignment="Left" VerticalAlignment="Center" Text="{Binding CurrentVideoTime}"/>
           <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
             <Button Name="PreviousFrameButton" ToolTip.Tip="Previous Frame" Height="32" VerticalContentAlignment="Center"
-                    Click="PreviousFrameButton_OnClick" IsEnabled="{Binding IsVideoLoaded}">⮜</Button>
+                    Click="PreviousFrameButton_OnClick" IsEnabled="{Binding CanPlayVideo}">⮜</Button>
             <Button Name="PlayPauseButton" Height="32" VerticalContentAlignment="Center" Margin="2 0 2 0" Content="{Binding PlayPauseButtonText}"
-                    Click="PlayPauseButton_OnClick" IsEnabled="{Binding IsVideoLoaded}"/>
+                    Click="PlayPauseButton_OnClick" IsEnabled="{Binding CanPlayVideo}"/>
             <Button Name="NextFrameButton" ToolTip.Tip="Next Frame" Height="32" VerticalContentAlignment="Center"
-                    Click="NextFrameButton_OnClick" IsEnabled="{Binding IsVideoLoaded}">⮞</Button>
+                    Click="NextFrameButton_OnClick" IsEnabled="{Binding CanPlayVideo}">⮞</Button>
           </StackPanel>
           <TextBlock Name="TotalVideoTimeTextBlock" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="4 0 4 0" Text="{Binding TotalVideoTime}"/>
         </Panel>
@@ -173,7 +173,7 @@
 
           <!--Timestamp reading options-->
           <Expander Margin="0 8 0 0 " Header="Timestamps"  HorizontalContentAlignment="Center" 
-                    IsEnabled="{Binding IsVideoLoaded}"
+                    IsEnabled="{Binding CanPlayVideo}"
                     IsExpanded="{Binding ShowTimestampParsing}" Name="TimestampParsingExpander">
             <StackPanel>
               <ToggleSwitch Name="AutoReadTimestampsToggleSwitch" OffContent="Auto read timestamps" OnContent="Auto read timestamps" IsChecked="{Binding AutoReadTimestamps}"/>
@@ -186,7 +186,7 @@
             </StackPanel>
           </Expander>
           <!--Image filtering options-->
-          <Expander Header="Image Pre-filtering" IsExpanded="False" IsEnabled="{Binding IsVideoLoaded}">
+          <Expander Header="Image Pre-filtering" IsExpanded="False" IsEnabled="{Binding CanPlayVideo}">
             <StackPanel>
               <ToggleSwitch Name="BilateralBlurToggleSwitch" OnContent="Bilateral blur" OffContent="Bilateral blur" IsChecked="{Binding UseBilateralBlur}"/>
               <StackPanel IsVisible="{Binding #BilateralBlurToggleSwitch.IsChecked}">
