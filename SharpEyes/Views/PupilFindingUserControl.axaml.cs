@@ -38,6 +38,7 @@ namespace SharpEyes.Views
 					viewModel.PupilY = point.Y;
 					if (Double.IsNaN(viewModel.PupilDiameter))
 						viewModel.PupilDiameter = 36;
+					viewModel.IsPupilManuallyEdited = true;
 					break;
 				case EditingState.DrawWindow:
 					if (windowInitialPoint == null)
