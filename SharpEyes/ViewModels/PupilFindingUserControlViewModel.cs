@@ -82,6 +82,8 @@ namespace SharpEyes.ViewModels
 			}
 		}
 
+		public bool IsPupilManuallyEdited { get; set; } = false;
+
 		// progress bar
 		private string _statusText = "Idle";
 		public string StatusText
@@ -433,6 +435,11 @@ namespace SharpEyes.ViewModels
 				pupilFinder.CancelPupilFindingDelegate();
 			else
 			{
+				if (IsPupilManuallyEdited && TemplatePupilFinderConfigUserControlViewModel.AutoAddNewTemplate)
+				{
+					TemplatePupilFinderConfigUserControlViewModel.AddCurrentAsTemplate();
+					IsPupilManuallyEdited = false;
+				}
 				pupilFinder.FindPupils();
 			}
 		}
