@@ -303,6 +303,7 @@ namespace Eyetracking
 		/// </summary>
 		public void ParseTimeStamps()
 		{
+			ViewModel.CanPlayVideo = false;
 			SetStatusDelegate("Parsing timestamps 0%");
 			DateTime start = DateTime.Now;
 			BackgroundWorker worker = new BackgroundWorker
@@ -372,6 +373,7 @@ namespace Eyetracking
 				}
 
 				ViewModel.IsTimestampsRead = true;
+				ViewModel.CanPlayVideo = true;
 			};
 
 			ViewModel.IsProgressBarVisible = true;
