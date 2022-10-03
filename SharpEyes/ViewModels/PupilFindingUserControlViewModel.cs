@@ -35,9 +35,9 @@ namespace SharpEyes.ViewModels
 		// Commands
 		public ReactiveCommand<Unit, Unit>? LoadVideoCommand { get; } = null;
 		public ReactiveCommand<Unit, Unit>? FindPupilsCommand { get; } = null;
-		public ReactiveCommand<Unit, Unit>? PlayPauseCommand { get; } = null;
-		public ReactiveCommand<Unit, Unit>? PreviousFrameCommand { get; } = null;
-		public ReactiveCommand<Unit, Unit>? NextFrameCommand { get; } = null;
+		public ReactiveCommand<Unit, Unit>? PlayPauseCommand { get; private set; } = null;
+		public ReactiveCommand<Unit, Unit>? PreviousFrameCommand { get; private set; } = null;
+		public ReactiveCommand<Unit, Unit>? NextFrameCommand { get; private set;  } = null;
 		public ReactiveCommand<Unit, Unit>? ReadTimestampsCommand { get; } = null;
 		public ReactiveCommand<Unit, Unit>? LoadTimestampsCommand { get; } = null;
 
@@ -366,9 +366,6 @@ namespace SharpEyes.ViewModels
 
 			LoadVideoCommand = ReactiveCommand.Create(LoadVideo);
 			FindPupilsCommand = ReactiveCommand.Create(FindPupils);
-			PlayPauseCommand = ReactiveCommand.Create(PlayPause);
-			PreviousFrameCommand = ReactiveCommand.Create(PreviousFrame);
-			NextFrameCommand = ReactiveCommand.Create(NextFrame);
 			ReadTimestampsCommand = ReactiveCommand.Create(ReadTimestamps);
 			LoadTimestampsCommand = ReactiveCommand.Create(LoadTimeStamps);
 		}
@@ -424,6 +421,13 @@ namespace SharpEyes.ViewModels
 				TemplatePupilFinderConfigUserControlViewModel.CurrentTemplateIndex = 0;
 				TemplatePupilFinderConfigUserControlViewModel.TemplatePreviewImage =
 					templatePupilFinder.GetTemplateImage(0);
+			}
+
+			if (PlayPauseCommand == null)
+			{
+				PreviousFrameCommand = ReactiveCommand.Create(PreviousFrame);
+				NextFrameCommand = ReactiveCommand.Create(NextFrame);
+				PlayPauseCommand = ReactiveCommand.Create(PlayPause);
 			}
 		}
 

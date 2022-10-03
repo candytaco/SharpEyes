@@ -121,9 +121,9 @@ namespace SharpEyes.Views
 			{
 				case EditingState.None:
 					if (e.Delta.Y > 0)
-						viewModel.PreviousFrame();
+						viewModel.PreviousFrameCommand?.Execute();
 					else
-						viewModel.NextFrame();
+						viewModel.NextFrameCommand?.Execute();
 					break;
 				case EditingState.DrawWindow:
 					break;
