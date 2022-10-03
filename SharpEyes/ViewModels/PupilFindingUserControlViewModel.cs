@@ -126,7 +126,7 @@ namespace SharpEyes.ViewModels
 		}
 		public string PlayPauseButtonText => IsVideoPlaying ? "Pause" : "Play";
 		private bool _isVideoPlaying = false;
-
+		
 		public bool IsVideoPlaying
 		{
 			get => _isVideoPlaying;
@@ -307,13 +307,13 @@ namespace SharpEyes.ViewModels
 
 
 		// general state things for figuring out what buttons are active
-		private bool _isVideoLoaded = false;
-		public bool IsVideoLoaded
+		private bool _canPlayVideo = false;
+		public bool CanPlayVideo
 		{
-			get => _isVideoLoaded;
+			get => _canPlayVideo;
 			set
 			{
-				this.RaiseAndSetIfChanged(ref _isVideoLoaded, value);
+				this.RaiseAndSetIfChanged(ref _canPlayVideo, value);
 				this.RaisePropertyChanged("CanFindPupils");
 			}
 		}
@@ -329,7 +329,7 @@ namespace SharpEyes.ViewModels
 			}
 		}
 
-		public bool CanFindPupils => _isTimestampsRead && _isVideoLoaded;
+		public bool CanFindPupils => _isTimestampsRead && _canPlayVideo;
 
 		// children view models
 		public TemplatePupilFinderConfigUserControlViewModel TemplatePupilFinderConfigUserControlViewModel { get; }

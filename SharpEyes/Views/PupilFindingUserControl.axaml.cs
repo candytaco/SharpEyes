@@ -179,7 +179,7 @@ namespace SharpEyes.Views
 					throw new ArgumentOutOfRangeException();
 			}
 
-			viewModel.IsVideoLoaded = true;
+			viewModel.CanPlayVideo = true;
 
 			videoPlaybackTimer.Interval = TimeSpan.FromMilliseconds(1000.0 / (double)pupilFinder.fps);
 
