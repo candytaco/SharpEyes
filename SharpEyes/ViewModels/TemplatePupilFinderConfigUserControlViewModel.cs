@@ -36,7 +36,7 @@ namespace SharpEyes.ViewModels
 				this.RaisePropertyChanged("TemplateIndexText");
 			}
 		}
-		public int TotalTemplateCount { get; set; } = 0;
+		public int TotalTemplateCount => TemplatePupilFinder != null ? TemplatePupilFinder.NumTemplates : 0;
 		public string TemplateIndexText => String.Format("{0}/{1}", CurrentTemplateIndex + 1, TotalTemplateCount);
 		private Bitmap? templatePreviewImage = null;
 		public Bitmap? TemplatePreviewImage
@@ -47,7 +47,7 @@ namespace SharpEyes.ViewModels
 
 		// anti-templates section
 		public int CurrentAntiTemplateIndex { get; set; } = 0;
-		public int TotalAntiTemplateCount { get; private set; } = 0;
+		public int TotalAntiTemplateCount => TemplatePupilFinder != null ? TemplatePupilFinder.NumAntiTemplates : 0;
 		public string AntiTemplateIndexText => String.Format("{0}/{1}", CurrentAntiTemplateIndex + 1, TotalAntiTemplateCount);
 		private Bitmap? antiTemplatePreviewImage = null;
 		public Bitmap? AntiTemplatePreviewImage

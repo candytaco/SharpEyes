@@ -608,7 +608,6 @@ namespace Eyetracking
 				for (int i = 0; i < antiTemplates.Count; i++)
 					antiResults.Add(new Mat());
 
-				ViewModel.TemplatePupilFinderConfigUserControlViewModel.TotalTemplateCount = NumTemplates;
 				ViewModel.TemplatePupilFinderConfigUserControlViewModel.CurrentTemplateIndex = 0;
 				ViewModel.TemplatePupilFinderConfigUserControlViewModel.TemplatePreviewImage = GetTemplateImage(0);
 			}
