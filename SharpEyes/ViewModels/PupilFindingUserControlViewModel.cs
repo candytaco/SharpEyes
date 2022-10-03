@@ -2,8 +2,12 @@
 using System.Collections.Generic;
 using System.Reactive;
 using System.Text;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media.Imaging;
+using Avalonia.Threading;
+using Eyetracking;
 using ReactiveUI;
 
 namespace SharpEyes.ViewModels
@@ -24,15 +28,24 @@ namespace SharpEyes.ViewModels
 
 	public class PupilFindingUserControlViewModel : ViewModelBase
 	{
+		// =========
+		// UI things
+		// =========
+
 		// Commands
 		public ReactiveCommand<Unit, Unit>? LoadVideoCommand { get; } = null;
 		public ReactiveCommand<Unit, Unit>? FindPupilsCommand { get; } = null;
 		public ReactiveCommand<Unit, Unit>? PlayPauseCommand { get; } = null;
 		public ReactiveCommand<Unit, Unit>? PreviousFrameCommand { get; } = null;
 		public ReactiveCommand<Unit, Unit>? NextFrameCommand { get; } = null;
-		public ReactiveCommand<Unit, Unit>? VideoSliderUpdatedCommand { get; } = null;
 		public ReactiveCommand<Unit, Unit>? ReadTimestampsCommand { get; } = null;
 		public ReactiveCommand<Unit, Unit>? LoadTimestampsCommand { get; } = null;
+
+		// == window reference. needed for showing dialogs ==
+		public Window? MainWindow =>
+			Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+				? desktop.MainWindow
+				: null;
 
 		// == UI elements ==
 		private EditingState _editingState = EditingState.None;
@@ -334,37 +347,160 @@ namespace SharpEyes.ViewModels
 		// children view models
 		public TemplatePupilFinderConfigUserControlViewModel TemplatePupilFinderConfigUserControlViewModel { get; }
 
+
+		// ============
+		// Logic things
+		// ============
+
+
+		public PupilFinder? pupilFinder = null;
+
+		private DispatcherTimer videoPlaybackTimer;
+
 		public PupilFindingUserControlViewModel()
 		{
 			TemplatePupilFinderConfigUserControlViewModel = new TemplatePupilFinderConfigUserControlViewModel(this);
+
+			videoPlaybackTimer = new DispatcherTimer(DispatcherPriority.Render);
+			videoPlaybackTimer.Tick += this.VideoTimerTick;
+
 			LoadVideoCommand = ReactiveCommand.Create(LoadVideo);
+			FindPupilsCommand = ReactiveCommand.Create(FindPupils);
+			PlayPauseCommand = ReactiveCommand.Create(PlayPause);
+			PreviousFrameCommand = ReactiveCommand.Create(PreviousFrame);
+			NextFrameCommand = ReactiveCommand.Create(NextFrame);
+			ReadTimestampsCommand = ReactiveCommand.Create(ReadTimestamps);
+			LoadTimestampsCommand = ReactiveCommand.Create(LoadTimeStamps);
+		}
+
+		private void VideoTimerTick(object? sender, EventArgs e)
+		{
+			if (pupilFinder.CurrentFrameNumber >= pupilFinder.frameCount - 1)
+				PlayPause();
+			pupilFinder.ReadGrayscaleFrame();
+			pupilFinder.UpdateDisplays();
 		}
 
 		// command backings
-		public void LoadVideo()
+		public async void LoadVideo()
 		{
+			OpenFileDialog openFileDialog = new OpenFileDialog()
+			{
+				Title = "Load eyetracking video"
+			};
+			string[] fileName = await openFileDialog.ShowAsync(MainWindow);
 
+			if (fileName == null || fileName.Length == 0)
+				return;
+
+			switch (PupilFinderType)
+			{
+				case PupilFinderType.Template:
+					pupilFinder = new TemplatePupilFinder(fileName[0], this);
+					break;
+				case PupilFinderType.HoughCircles:
+					pupilFinder = new HoughPupilFinder(fileName[0], this);
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
+
+			CanPlayVideo = true;
+
+			videoPlaybackTimer.Interval = TimeSpan.FromMilliseconds(1000.0 / (double)pupilFinder.fps);
+
+			pupilFinder.ReadGrayscaleFrame();
+			pupilFinder.UpdateDisplays();
+
+			if (!pupilFinder.isTimestampParsed)
+			{
+				ShowTimestampParsing = true;
+				if (AutoReadTimestamps)
+					pupilFinder.ParseTimeStamps();
+			}
+
+			if (pupilFinder is TemplatePupilFinder templatePupilFinder)
+			{
+				TemplatePupilFinderConfigUserControlViewModel.CurrentTemplateIndex = 0;
+				TemplatePupilFinderConfigUserControlViewModel.TemplatePreviewImage =
+					templatePupilFinder.GetTemplateImage(0);
+			}
 		}
 
 		public void FindPupils()
 		{
-
+			if (IsFindingPupils)
+				pupilFinder.CancelPupilFindingDelegate();
+			else
+			{
+				pupilFinder.FindPupils();
+			}
 		}
 
 		public void PlayPause()
 		{
-
+			if (IsVideoPlaying)
+				videoPlaybackTimer.Stop();
+			else
+				videoPlaybackTimer.Start();
+			IsVideoPlaying = !IsVideoPlaying;
 		}
 
 		public void PreviousFrame()
 		{
+			if (pupilFinder.CurrentFrameNumber <= 0)
+			{
+				return;
+			}
 
+			pupilFinder.CancelPupilFindingDelegate?.Invoke();
+			ShowFrame(CurrentVideoFrame - 1);
 		}
 
 		public void NextFrame()
 		{
+			if (pupilFinder.CurrentFrameNumber >= pupilFinder.frameCount - 1)
+			{
+				return;
+			}
 
+			pupilFinder.CancelPupilFindingDelegate?.Invoke();
+			ShowFrame(CurrentVideoFrame + 1);
 		}
 
+		public void ShowFrame()
+		{
+			ShowFrame(CurrentVideoFrame);
+		}
+
+		public void ShowFrame(int frame)
+		{
+			pupilFinder.Seek(frame);
+			pupilFinder.ReadGrayscaleFrame();
+			pupilFinder.UpdateDisplays();
+		}
+
+		public void ReadTimestamps()
+		{
+			if (pupilFinder != null)
+				pupilFinder.ParseTimeStamps();
+		}
+
+		public async void LoadTimeStamps()
+		{
+			if (pupilFinder != null)
+			{
+				OpenFileDialog openFileDialog = new OpenFileDialog()
+				{
+					Title = "Load timestamps...",
+					Filters = { new FileDialogFilter() { Name = "Numpy File (*.npy)", Extensions = { "npy" } } }
+				};
+				string[] fileName = await openFileDialog.ShowAsync(MainWindow);
+
+				if (fileName == null || fileName.Length == 0)
+					return;
+				pupilFinder.LoadTimestamps(fileName[0]);
+			}
+		}
 	}
 }

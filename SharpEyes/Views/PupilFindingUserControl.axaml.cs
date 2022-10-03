@@ -19,9 +19,6 @@ namespace SharpEyes.Views
 		private Point? windowInitialPoint = null;
 		private PupilFindingUserControlViewModel? viewModel => (PupilFindingUserControlViewModel)this.DataContext;
 
-		public PupilFinder? pupilFinder = null;
-
-		private DispatcherTimer videoPlaybackTimer;
 		private bool isDraggingVideoSlider = false;
 
 		private bool areThumbEventsAttached = false;
@@ -29,8 +26,6 @@ namespace SharpEyes.Views
 		public PupilFindingUserControl()
 		{
 			InitializeComponent();
-			videoPlaybackTimer = new DispatcherTimer(DispatcherPriority.Render);
-			videoPlaybackTimer.Tick += this.VideoTimerTick;
 			this.GotFocus += (sender, args) => { AttachThumbEvents(); };
 		}
 
@@ -112,7 +107,7 @@ namespace SharpEyes.Views
 					frameDecay = viewModel.ExponentialDecayTimeConstant;
 					mode = ManualUpdateMode.Exponential;
 				}
-				pupilFinder.ManuallyUpdatePupilLocations(pupilFinder.CurrentFrameNumber, 
+				viewModel.pupilFinder.ManuallyUpdatePupilLocations(viewModel.pupilFinder.CurrentFrameNumber, 
 					viewModel.PupilX, viewModel.PupilY, viewModel.PupilRadius, frameDecay, mode);
 			}
 		}
@@ -124,9 +119,9 @@ namespace SharpEyes.Views
 			{
 				case EditingState.None:
 					if (e.Delta.Y > 0)
-						PreviousFrameButton_OnClick(null, null);
+						viewModel.PreviousFrame();
 					else
-						NextFrameButton_OnClick(null, null);
+						viewModel.NextFrame();
 					break;
 				case EditingState.DrawWindow:
 					break;
@@ -154,144 +149,17 @@ namespace SharpEyes.Views
 			}
 		}
 
-		public async void LoadVideo(object sender, RoutedEventArgs e)
-		{
-			OpenFileDialog openFileDialog = new OpenFileDialog()
-			{
-				Title = "Load eyetracking video"
-			};
-			string[] fileName = await openFileDialog.ShowAsync((Window)this.VisualRoot);
-
-			if (fileName == null || fileName.Length == 0)
-				return;
-
-			switch (viewModel.PupilFinderType)
-			{
-				// TODO: implement delegates, either here, or in the PupilFinder class
-				case PupilFinderType.Template:
-					pupilFinder = new TemplatePupilFinder(fileName[0], viewModel);
-					TemplateFinderConfigPanel.PupilFinder = pupilFinder;
-					break;
-				case PupilFinderType.HoughCircles:
-					pupilFinder = new HoughPupilFinder(fileName[0], viewModel);
-					break;
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
-
-			viewModel.CanPlayVideo = true;
-
-			videoPlaybackTimer.Interval = TimeSpan.FromMilliseconds(1000.0 / (double)pupilFinder.fps);
-
-			pupilFinder.ReadGrayscaleFrame();
-			pupilFinder.UpdateDisplays();
-
-			if (!pupilFinder.isTimestampParsed)
-			{
-				viewModel.ShowTimestampParsing = true;
-				if (viewModel.AutoReadTimestamps)
-					pupilFinder.ParseTimeStamps();
-			}
-
-			if (pupilFinder is TemplatePupilFinder templatePupilFinder)
-			{
-				viewModel.TemplatePupilFinderConfigUserControlViewModel.CurrentTemplateIndex = 0;
-				viewModel.TemplatePupilFinderConfigUserControlViewModel.TemplatePreviewImage =
-					templatePupilFinder.GetTemplateImage(0);
-			}
-		}
-
-		public async void ReadTimestamps(object sender, RoutedEventArgs e)
-		{
-			if (pupilFinder != null)
-				pupilFinder.ParseTimeStamps();
-		}
-
-		public async void LoadTimestamps(object sender, RoutedEventArgs e)
-		{
-			if (pupilFinder != null)
-			{
-				OpenFileDialog openFileDialog = new OpenFileDialog()
-				{
-					Title = "Load timestamps...",
-					Filters = {new FileDialogFilter(){Name = "Numpy File (*.npy)", Extensions = {"npy"}}}
-				};
-				string[] fileName = await openFileDialog.ShowAsync((Window)this.VisualRoot);
-
-				if (fileName == null || fileName.Length == 0)
-					return;
-				pupilFinder.LoadTimestamps(fileName[0]);
-			}
-		}
-
-		public async void FindPupilsButton_Click(object sender, RoutedEventArgs e)
-		{
-			if (viewModel.IsFindingPupils)
-				pupilFinder.CancelPupilFindingDelegate();
-			else
-			{
-				pupilFinder.FindPupils();
-			}
-		}
-
-		private void VideoTimerTick(object? sender, EventArgs e)
-		{
-			if (pupilFinder.CurrentFrameNumber >= pupilFinder.frameCount - 1)
-				PlayPauseButton_OnClick(null, null);
-			pupilFinder.ReadGrayscaleFrame();
-			pupilFinder.UpdateDisplays();
-		}
-
-		private void PlayPauseButton_OnClick(object? sender, RoutedEventArgs e)
-		{
-			if (viewModel.IsVideoPlaying)
-				videoPlaybackTimer.Stop();
-			else
-				videoPlaybackTimer.Start();
-			viewModel.IsVideoPlaying = !viewModel.IsVideoPlaying;
-		}
-
-		private void PreviousFrameButton_OnClick(object? sender, RoutedEventArgs e)
-		{
-			if (pupilFinder.CurrentFrameNumber <= 0)
-			{
-				return;
-			}
-
-			pupilFinder.CancelPupilFindingDelegate?.Invoke();
-			pupilFinder.Seek(viewModel.CurrentVideoFrame - 1);
-			pupilFinder.ReadGrayscaleFrame();
-			pupilFinder.UpdateDisplays();
-		}
-
-		private void NextFrameButton_OnClick(object? sender, RoutedEventArgs e)
-		{
-			if (pupilFinder.CurrentFrameNumber >= pupilFinder.frameCount - 1)
-			{
-				return;
-			}
-
-			pupilFinder.CancelPupilFindingDelegate?.Invoke();
-			pupilFinder.Seek(viewModel.CurrentVideoFrame + 1);
-			pupilFinder.ReadGrayscaleFrame();
-			pupilFinder.UpdateDisplays();
-		}
-
 		private void VideoTimeSlider_DragStarted(object sender, VectorEventArgs e)
 		{
 			if (viewModel.IsVideoPlaying)
-				PlayPauseButton_OnClick(null, null);
+				viewModel.PlayPause();
 			isDraggingVideoSlider = true;
 		}
 
 		private void VideoTimeSlider_Drag(object sender, VectorEventArgs e)
 		{
 			if (isDraggingVideoSlider)
-			{
-				pupilFinder.Seek(viewModel.CurrentVideoFrame);
-				pupilFinder.ReadGrayscaleFrame();
-				pupilFinder.UpdateDisplays();
-			}
+				viewModel.ShowFrame();
 		}
 
 		private void VideoTimeSlider_DragFinished(object sender, VectorEventArgs e)

@@ -9,6 +9,10 @@ namespace SharpEyes.ViewModels
 {
 	public class TemplatePupilFinderConfigUserControlViewModel : ViewModelBase
 	{
+		// =========
+		// UI things
+		// =========
+
 		// Commands
 		public ReactiveCommand<Unit, Unit>? AddCurrentAsTemplateCommand { get; } = null;
 		public ReactiveCommand<Unit, Unit>? RemoveCurrentTemplateCommand { get; } = null;
