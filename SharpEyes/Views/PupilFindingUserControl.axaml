@@ -198,7 +198,8 @@
               <StackPanel IsVisible="{Binding #BilateralBlurToggleSwitch.IsChecked}">
                 <StackPanel Orientation="Horizontal">
                   <TextBlock VerticalAlignment="Center" Width="60">Blur size</TextBlock>
-                  <NumericUpDown Name="BilateralBlurUpDown" Value="{Binding BilateralBlurSize}" Minimum="1" Increment="1" Margin="8 0 0 0" Width="120"/>
+                  <NumericUpDown Name="BilateralBlurUpDown" Value="{Binding BilateralBlurSize}" 
+                                 Minimum="1" Increment="1" Margin="8 0 0 0" Width="120"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0 4 0 0">
                   <TextBlock VerticalAlignment="Center" Width="60">σ Color</TextBlock>
@@ -213,7 +214,8 @@
               <StackPanel IsVisible="{Binding #MedianBlurToggleSwitch.IsChecked}">
                 <StackPanel Orientation="Horizontal">
                   <TextBlock VerticalAlignment="Center" Width="60">Blur size</TextBlock>
-                  <NumericUpDown Name="MedianBlurUpDown" Value="{Binding MedianBlurSize}" Minimum="1" Increment="1" Margin="8 0 0 0" Width="120"/>
+                  <NumericUpDown Name="MedianBlurUpDown" Value="{Binding MedianBlurSize}" 
+                                 Minimum="1" Increment="2" Margin="8 0 0 0" Width="120"/>
                 </StackPanel>
               </StackPanel>
             </StackPanel>

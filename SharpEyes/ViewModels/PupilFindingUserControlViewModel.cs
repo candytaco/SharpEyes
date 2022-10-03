@@ -305,11 +305,11 @@ namespace SharpEyes.ViewModels
 		public bool AutoReadTimestamps => true;
 
 		// image pre-filtering
-		public bool UseBilateralBlur { get; set; } = false;
+		public bool UseBilateralBlur { get; set; } = true;
 		public int BilateralBlurSize { get; set; } = 1;
 		public int BilateralBlurSigmaColor { get; set; } = 30;
 		public int BilateralBlurSigmaSpace { get; set; } = 10;
-		public bool UseMedianBlur { get; set; } = false;
+		public bool UseMedianBlur { get; set; } = true;
 		public int MedianBlurSize { get; set; } = 1;
 
 		// manual adjustment
