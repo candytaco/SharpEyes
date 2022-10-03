@@ -31,6 +31,7 @@ namespace SharpEyes.Views
 			InitializeComponent();
 			videoPlaybackTimer = new DispatcherTimer(DispatcherPriority.Render);
 			videoPlaybackTimer.Tick += this.VideoTimerTick;
+			this.GotFocus += (sender, args) => { AttachThumbEvents(); };
 		}
 
 		private void SetCanvasChildElementPosition(Point point)
@@ -155,7 +156,6 @@ namespace SharpEyes.Views
 
 		public async void LoadVideo(object sender, RoutedEventArgs e)
 		{
-			AttachThumbEvents();
 			OpenFileDialog openFileDialog = new OpenFileDialog()
 			{
 				Title = "Load eyetracking video"
