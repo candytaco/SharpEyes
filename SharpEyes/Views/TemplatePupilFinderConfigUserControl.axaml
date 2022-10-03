@@ -32,20 +32,25 @@
               <Button.CommandParameter>
                 <sys:Int32>1</sys:Int32>
               </Button.CommandParameter>
-              Next
+                Next
             </Button>
           </Panel>
         </StackPanel>
         <DockPanel Margin="8 0">
-          <Button Margin="0 4" Name="AddNewTemplateButton" DockPanel.Dock="Top"
-                  Command="{Binding AddCurrentAsTemplateCommand}">Add current</Button>
+            <Button Margin="0 4" Name="AddNewTemplateButton" DockPanel.Dock="Top"
+                    Command="{Binding AddCurrentAsTemplateCommand}"
+                    HotKey="Shift+E"
+            >Add current
+          </Button>
           <ToggleSwitch Margin="0 4" Name="AutoAddTemplateToggleSwitch"
                         OnContent="Auto add" OffContent="Auto add"
                         ToolTip.Tip="Automatically add manually edited pupils as templates"
                         IsThreeState="False" IsChecked="{Binding AutoAddNewTemplate}"
                         DockPanel.Dock="Top"/>
           <Button Margin="0 4" Name="RemoveTemplateButton" DockPanel.Dock="Top"
-                  Command="{Binding RemoveCurrentTemplateCommand}">Remove</Button>
+                  Command="{Binding RemoveCurrentTemplateCommand}"
+                  HotKey="Shift+R"
+                  >Remove</Button>
           <Button Name="ResetTemplatesButton" Margin="0 4"  VerticalAlignment="Bottom" HorizontalAlignment="Right"
                   Command="{Binding RemoveCurrentAntiTemplateCommand}">Reset templates</Button>
         </DockPanel>

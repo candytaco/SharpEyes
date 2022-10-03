@@ -31,7 +31,8 @@
 
       <!--Top button row-->
       <StackPanel Orientation="Horizontal" Grid.Row="0">
-        <Button Name="LoadVideoButton" Margin="4" Command="{Binding LoadVideoCommand}">Load Video</Button>
+        <Button Name="LoadVideoButton" Margin="4" Command="{Binding LoadVideoCommand}"
+                HotKey="Ctrl+O">Load Video</Button>
         <TextBlock VerticalAlignment="Center" Margin="4">|</TextBlock>
         <ToggleButton Name="DrawWindowButton" Margin="4" IsChecked="{Binding IsDrawingWindow}"
                       IsEnabled="{Binding CanFindPupils}">Draw Window</ToggleButton>
@@ -67,11 +68,14 @@
           <TextBlock Name="CurrentVideoTimeTextBlock" HorizontalAlignment="Left" VerticalAlignment="Center" Text="{Binding CurrentVideoTime}"/>
           <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
             <Button Name="PreviousFrameButton" ToolTip.Tip="Previous Frame" Height="32" VerticalContentAlignment="Center"
-                    Command="{Binding PreviousFrameCommand}" IsEnabled="{Binding CanPlayVideo}">⮜</Button>
+                    Command="{Binding PreviousFrameCommand}" HotKey="Q"
+                    IsEnabled="{Binding CanPlayVideo}">⮜</Button>
             <Button Name="PlayPauseButton" Height="32" VerticalContentAlignment="Center" Margin="2 0 2 0" Content="{Binding PlayPauseButtonText}"
-                    Command="{Binding PlayPauseCommand}" IsEnabled="{Binding CanPlayVideo}"/>
+                    Command="{Binding PlayPauseCommand}" HotKey="Space"
+                    IsEnabled="{Binding CanPlayVideo}"/>
             <Button Name="NextFrameButton" ToolTip.Tip="Next Frame" Height="32" VerticalContentAlignment="Center"
-                    Command="{Binding NextFrameCommand}" IsEnabled="{Binding CanPlayVideo}">⮞</Button>
+                    Command="{Binding NextFrameCommand}" HotKey="W"
+                    IsEnabled="{Binding CanPlayVideo}">⮞</Button>
           </StackPanel>
           <TextBlock Name="TotalVideoTimeTextBlock" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="4 0 4 0" Text="{Binding TotalVideoTime}"/>
         </Panel>
@@ -98,6 +102,7 @@
       <Button DockPanel.Dock="Top" Name="FindPupilsButton" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4 2"
               IsEnabled="{Binding CanFindPupils}"
               Command="{Binding FindPupilsCommand}"
+              HotKey="Shift+Space"
               Content="{Binding PupilFindingButtonText}"/>
       <StackPanel IsEnabled="{Binding CanFindPupils}" DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center" Margin="4 4 4 8">
         <ToggleSwitch Name="AllFramesToggleSwitch" Margin="4 2 16 2" Width="130" OnContent="All frames"
