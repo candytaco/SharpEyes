@@ -368,6 +368,9 @@ namespace SharpEyes.ViewModels
 			FindPupilsCommand = ReactiveCommand.Create(FindPupils);
 			ReadTimestampsCommand = ReactiveCommand.Create(ReadTimestamps);
 			LoadTimestampsCommand = ReactiveCommand.Create(LoadTimeStamps);
+			PreviousFrameCommand = ReactiveCommand.Create(PreviousFrame);
+			NextFrameCommand = ReactiveCommand.Create(NextFrame);
+			PlayPauseCommand = ReactiveCommand.Create(PlayPause);
 		}
 
 		private void VideoTimerTick(object? sender, EventArgs e)
@@ -422,13 +425,6 @@ namespace SharpEyes.ViewModels
 				TemplatePupilFinderConfigUserControlViewModel.TemplatePreviewImage =
 					templatePupilFinder.GetTemplateImage(0);
 			}
-
-			if (PlayPauseCommand == null)
-			{
-				PreviousFrameCommand = ReactiveCommand.Create(PreviousFrame);
-				NextFrameCommand = ReactiveCommand.Create(NextFrame);
-				PlayPauseCommand = ReactiveCommand.Create(PlayPause);
-			}
 		}
 
 		public void FindPupils()
@@ -452,6 +448,8 @@ namespace SharpEyes.ViewModels
 
 		public void PreviousFrame()
 		{
+			if (!CanPlayVideo) return;
+
 			if (pupilFinder.CurrentFrameNumber <= 0)
 			{
 				return;
@@ -463,6 +461,8 @@ namespace SharpEyes.ViewModels
 
 		public void NextFrame()
 		{
+			if (!CanPlayVideo) return;
+
 			if (pupilFinder.CurrentFrameNumber >= pupilFinder.frameCount - 1)
 			{
 				return;
