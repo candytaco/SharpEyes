@@ -38,6 +38,12 @@
                       IsEnabled="{Binding CanFindPupils}">Draw Window</ToggleButton>
         <ToggleButton Name="MovePupilButton" Margin="4" IsChecked="{Binding IsMovingPupil}"
                       IsEnabled="{Binding CanFindPupils}">Move Pupil</ToggleButton>
+
+          <TextBlock VerticalAlignment="Center" Margin="4">|</TextBlock>
+          <Button Name="SaveDataButton" Margin="4" Command="{Binding SaveDataCommand}" HotKey="Ctrl-S"
+                  IsEnabled="{Binding IsDataDirty}">
+              Save Data
+          </Button>
       </StackPanel>
 
       <!--Video video box-->

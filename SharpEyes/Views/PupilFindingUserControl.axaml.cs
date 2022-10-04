@@ -112,6 +112,7 @@ namespace SharpEyes.Views
 				}
 				viewModel.pupilFinder.ManuallyUpdatePupilLocations(viewModel.pupilFinder.CurrentFrameNumber, 
 					viewModel.PupilX, viewModel.PupilY, viewModel.PupilRadius, frameDecay, mode);
+				viewModel.IsDataDirty = true;
 			}
 		}
 

@@ -128,6 +128,8 @@ namespace SharpEyes.ViewModels
 
 				if (TemplatePupilFinder.NumTemplates > 1 && RemoveCurrentTemplateCommand == null)
 					RemoveCurrentTemplateCommand = ReactiveCommand.Create(RemoveCurrentTemplate);
+
+				Parent.IsDataDirty = true;
 			}
 		}
 
@@ -139,6 +141,7 @@ namespace SharpEyes.ViewModels
 				SetTemplatePreviewIndex(CurrentTemplateIndex - 1);
 				if (TemplatePupilFinder.NumTemplates < 2)
 					RemoveCurrentTemplateCommand = null;
+				Parent.IsDataDirty = true;
 			}
 		}
 
@@ -183,6 +186,8 @@ namespace SharpEyes.ViewModels
 
 				if (TemplatePupilFinder.NumAntiTemplates > 0 && RemoveCurrentAntiTemplateCommand == null)
 					RemoveCurrentAntiTemplateCommand = ReactiveCommand.Create(RemoveCurrentAntiTemplate);
+
+				Parent.IsDataDirty = true;
 			}
 		}
 
@@ -194,6 +199,7 @@ namespace SharpEyes.ViewModels
 				SetTemplatePreviewIndex(CurrentAntiTemplateIndex - 1);
 				if (TemplatePupilFinder.NumAntiTemplates < 1)
 					RemoveCurrentAntiTemplateCommand = null;
+				Parent.IsDataDirty = true;
 			}
 		}
 
@@ -201,7 +207,7 @@ namespace SharpEyes.ViewModels
 		{
 			SetAntiTemplatePreviewIndex(CurrentAntiTemplateIndex + delta);
 		}
-
+		
 
 		private void SetTemplatePreviewIndex(int index)
 		{

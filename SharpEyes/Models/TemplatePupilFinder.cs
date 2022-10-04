@@ -472,6 +472,7 @@ namespace Eyetracking
 				ViewModel.IsProgressBarVisible = false;
 				if (ViewModel.AutoEnterPupilEditMode)
 					ViewModel.IsMovingPupil = true;
+				ViewModel.IsDataDirty = true;
 			};
 
 			ViewModel.IsProgressBarVisible = true;

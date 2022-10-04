@@ -40,6 +40,7 @@ namespace SharpEyes.ViewModels
 		public ReactiveCommand<Unit, Unit>? NextFrameCommand { get; private set;  } = null;
 		public ReactiveCommand<Unit, Unit>? ReadTimestampsCommand { get; } = null;
 		public ReactiveCommand<Unit, Unit>? LoadTimestampsCommand { get; } = null;
+		public ReactiveCommand<Unit, Unit>? SaveDataCommand { get; private set; } = null;
 
 		// == window reference. needed for showing dialogs ==
 		public Window? MainWindow =>
@@ -274,7 +275,6 @@ namespace SharpEyes.ViewModels
 		public PupilFinderType PupilFinderType => (PupilFinderType)PupilFinderTypeIndex;
 
 		private bool _isFindingPupils = false;
-
 		public bool IsFindingPupils
 		{
 			get => _isFindingPupils;
@@ -285,6 +285,12 @@ namespace SharpEyes.ViewModels
 			}
 		}
 		public string PupilFindingButtonText => IsFindingPupils ? "Cancel" : "Find Pupils";
+		private bool _isDataDirty = false;
+		public bool IsDataDirty
+		{
+			get => _isDataDirty;
+			set => this.RaiseAndSetIfChanged(ref _isDataDirty, value);
+		}
 
 		// confidence options - here because they can apply to all pupil finders
 		public bool StopOnLowConfidence { get; set; } = true;
@@ -373,6 +379,7 @@ namespace SharpEyes.ViewModels
 			PreviousFrameCommand = ReactiveCommand.Create(PreviousFrame);
 			NextFrameCommand = ReactiveCommand.Create(NextFrame);
 			PlayPauseCommand = ReactiveCommand.Create(PlayPause);
+			SaveDataCommand = ReactiveCommand.Create(SaveData);
 		}
 
 		private void VideoTimerTick(object? sender, EventArgs e)
@@ -514,6 +521,10 @@ namespace SharpEyes.ViewModels
 			}
 		}
 
+		public void SaveData()
+		{
+			IsDataDirty = false;
+		}
 		public void OnClosing()
 		{
 			if (pupilFinder != null)
