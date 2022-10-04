@@ -17,6 +17,7 @@ namespace SharpEyes
 		{
 			Console.SetOut(TextWriter.Null);
 			AppBuilder builder = BuildAvaloniaApp();
+#if !DEBUG
 			try
 			{
 				builder.StartWithClassicDesktopLifetime(args);
@@ -26,6 +27,9 @@ namespace SharpEyes
 				if (builder.Instance.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime { MainWindow: MainWindow window })
 					window.GlobalExceptionHandler(e);
 			}
+#else
+			builder.StartWithClassicDesktopLifetime(args);
+#endif
 		}
 
 		// Avalonia configuration, don't remove; also used by visual designer.
