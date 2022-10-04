@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.ReactiveUI;
 using System;
 using System.IO;
+using SharpEyes.Views;
 
 namespace SharpEyes
 {
@@ -15,8 +16,16 @@ namespace SharpEyes
 		public static void Main(string[] args)
 		{
 			Console.SetOut(TextWriter.Null);
-			BuildAvaloniaApp()
-				.StartWithClassicDesktopLifetime(args);
+			AppBuilder builder = BuildAvaloniaApp();
+			try
+			{
+				builder.StartWithClassicDesktopLifetime(args);
+			}
+			catch (Exception e)
+			{
+				if (builder.Instance.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime { MainWindow: MainWindow window })
+					window.GlobalExceptionHandler(e);
+			}
 		}
 
 		// Avalonia configuration, don't remove; also used by visual designer.
