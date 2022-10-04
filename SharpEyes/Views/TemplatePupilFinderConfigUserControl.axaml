@@ -39,7 +39,7 @@
         <DockPanel Margin="8 0">
             <Button Margin="0 4" Name="AddNewTemplateButton" DockPanel.Dock="Top"
                     Command="{Binding AddCurrentAsTemplateCommand}"
-                    HotKey="Shift+E"
+                    HotKey="E"
             >Add current
           </Button>
           <ToggleSwitch Margin="0 4" Name="AutoAddTemplateToggleSwitch"
@@ -49,7 +49,7 @@
                         DockPanel.Dock="Top"/>
           <Button Margin="0 4" Name="RemoveTemplateButton" DockPanel.Dock="Top"
                   Command="{Binding RemoveCurrentTemplateCommand}"
-                  HotKey="Shift+R"
+                  HotKey="R"
                   >Remove</Button>
           <Button Name="ResetTemplatesButton" Margin="0 4"  VerticalAlignment="Bottom" HorizontalAlignment="Right"
                   Command="{Binding RemoveCurrentAntiTemplateCommand}">Reset templates</Button>
@@ -84,9 +84,11 @@
         </StackPanel>
         <StackPanel Margin="8 0">
           <Button Margin="0 4" Name="AddNewAntiTemplateButton"
-                  Command="{Binding AddCurrentAsAntiTemplateCommand}">Add current</Button>
+                  Command="{Binding AddCurrentAsAntiTemplateCommand}"
+                  HotKey="Shift+E">Add current</Button>
           <Button Margin="0 4" Name="RemoveAntiTemplateButton" 
-                  Command="{Binding RemoveCurrentAntiTemplateCommand}">Remove</Button>
+                  Command="{Binding RemoveCurrentAntiTemplateCommand}"
+                  HotKey="Shift+R">Remove</Button>
         </StackPanel>
       </StackPanel>
     </Expander>

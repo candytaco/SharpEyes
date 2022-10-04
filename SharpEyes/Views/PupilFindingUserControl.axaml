@@ -35,9 +35,11 @@
                 HotKey="Ctrl+O">Load Video</Button>
         <TextBlock VerticalAlignment="Center" Margin="4">|</TextBlock>
         <ToggleButton Name="DrawWindowButton" Margin="4" IsChecked="{Binding IsDrawingWindow}"
-                      IsEnabled="{Binding CanFindPupils}">Draw Window</ToggleButton>
+                      IsEnabled="{Binding CanFindPupils}"
+                      HotKey="1">Draw Window</ToggleButton>
         <ToggleButton Name="MovePupilButton" Margin="4" IsChecked="{Binding IsMovingPupil}"
-                      IsEnabled="{Binding CanFindPupils}">Move Pupil</ToggleButton>
+                      IsEnabled="{Binding CanFindPupils}"
+                      HotKey="2">Move Pupil</ToggleButton>
 
           <TextBlock VerticalAlignment="Center" Margin="4">|</TextBlock>
           <Button Name="SaveDataButton" Margin="4" Command="{Binding SaveDataCommand}" HotKey="Ctrl+S"
