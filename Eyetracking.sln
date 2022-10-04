@@ -14,6 +14,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpEyes", "SharpEyes\SharpEyes.csproj", "{3C072F52-388D-4D1C-A82E-B37713B80488}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrashReporter", "CrashReporter\CrashReporter.csproj", "{8D6A52A1-4E9D-4959-A149-347E5A4BCAB1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,6 +49,18 @@ Global
 		{3C072F52-388D-4D1C-A82E-B37713B80488}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3C072F52-388D-4D1C-A82E-B37713B80488}.Release|x64.ActiveCfg = Release|Any CPU
 		{3C072F52-388D-4D1C-A82E-B37713B80488}.Release|x64.Build.0 = Release|Any CPU
+		{8D6A52A1-4E9D-4959-A149-347E5A4BCAB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D6A52A1-4E9D-4959-A149-347E5A4BCAB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D6A52A1-4E9D-4959-A149-347E5A4BCAB1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8D6A52A1-4E9D-4959-A149-347E5A4BCAB1}.Debug|x64.Build.0 = Debug|Any CPU
+		{8D6A52A1-4E9D-4959-A149-347E5A4BCAB1}.Linux Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D6A52A1-4E9D-4959-A149-347E5A4BCAB1}.Linux Release|Any CPU.Build.0 = Release|Any CPU
+		{8D6A52A1-4E9D-4959-A149-347E5A4BCAB1}.Linux Release|x64.ActiveCfg = Release|Any CPU
+		{8D6A52A1-4E9D-4959-A149-347E5A4BCAB1}.Linux Release|x64.Build.0 = Release|Any CPU
+		{8D6A52A1-4E9D-4959-A149-347E5A4BCAB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D6A52A1-4E9D-4959-A149-347E5A4BCAB1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D6A52A1-4E9D-4959-A149-347E5A4BCAB1}.Release|x64.ActiveCfg = Release|Any CPU
+		{8D6A52A1-4E9D-4959-A149-347E5A4BCAB1}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
