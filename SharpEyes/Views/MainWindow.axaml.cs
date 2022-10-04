@@ -181,10 +181,10 @@ namespace SharpEyes.Views
 			{
 				StartInfo = new ProcessStartInfo()
 				{
-					FileName = "ldconfig -p",
-					UseShellExecute = true,
+					FileName = "/sbin/ldconfig",
+					Arguments = "-p",
+					UseShellExecute = false,
 					RedirectStandardOutput = true,
-					CreateNoWindow = true
 				}
 			};
 			ldconfig.Start();
