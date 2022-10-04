@@ -179,6 +179,7 @@ namespace SharpEyes.ViewModels
 			get => _framesProcessedPreviewImage;
 			set => this.RaiseAndSetIfChanged(ref _framesProcessedPreviewImage, value);
 		}
+		public double FramesProcessedPreviewWidth { get; set; }
 
 		// pupil overlay info
 		private double _pupilX = 0;
@@ -438,6 +439,9 @@ namespace SharpEyes.ViewModels
 				TemplatePupilFinderConfigUserControlViewModel.TemplatePreviewImage =
 					templatePupilFinder.GetTemplateImage(0);
 			}
+
+			FramesProcessedPreviewImage =
+				pupilFinder.GetFramesProcessedPreviewImage(1920, 6);
 		}
 
 		public void FindPupils()
