@@ -393,6 +393,10 @@ namespace SharpEyes.ViewModels
 		// command backings
 		public async void LoadVideo()
 		{
+			// save stuff if a video is already loaded
+			if (pupilFinder != null)
+				SaveData();
+
 			OpenFileDialog openFileDialog = new OpenFileDialog()
 			{
 				Title = "Load eyetracking video"
@@ -524,9 +528,6 @@ namespace SharpEyes.ViewModels
 		public void SaveData()
 		{
 			IsDataDirty = false;
-		}
-		public void OnClosing()
-		{
 			if (pupilFinder != null)
 			{
 				pupilFinder.SavePupilLocations();
@@ -534,6 +535,10 @@ namespace SharpEyes.ViewModels
 				if (pupilFinder is TemplatePupilFinder templatePupilFinder)
 					templatePupilFinder.SaveTemplates();
 			}
+		}
+		public void OnClosing()
+		{
+			SaveData();
 		}
 	}
 }
