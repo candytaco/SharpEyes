@@ -60,7 +60,7 @@
                      Canvas.Left="{Binding PupilWindowLeft}" Canvas.Top="{Binding PupilWindowTop}"
                      Stroke="DodgerBlue" StrokeThickness="4" IsVisible="{Binding CanFindPupils}"/>
           <Ellipse Name="PupilEllipse" Width="{Binding PupilDiameter}" Height="{Binding #PupilEllipse.Width}"
-                   Stroke="LimeGreen" StrokeThickness="{Binding PupilStrokeThickness}" 
+                   Stroke="{Binding PupilStrokeColor}" StrokeThickness="{Binding PupilStrokeThickness}" 
                    Opacity="{Binding PupilStrokeOpacity}"
                    IsVisible="{Binding CanFindPupils}"
                    Canvas.Left="{Binding PupilCircleLeft}"
@@ -138,7 +138,7 @@
       <!--Pupil finding options-->
       <ScrollViewer DockPanel.Dock="Top" Margin="2">
         <StackPanel>
-          <Expander Margin="0 8 0 0 " Header="Pupil Size"  HorizontalContentAlignment="Center" IsExpanded="True"
+          <Expander Margin="0 8 0 0 " Header="Pupil Size"  HorizontalContentAlignment="Center" IsExpanded="False"
                     IsEnabled="{Binding CanFindPupils}">
             <StackPanel>
               <StackPanel Orientation="Horizontal">

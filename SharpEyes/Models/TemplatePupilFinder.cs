@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Threading.Tasks;
 using OpenCvSharp;
 using System.Runtime.Serialization.Formatters.Binary;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using MessageBox.Avalonia;
 using MessageBox.Avalonia.BaseWindows.Base;
@@ -462,7 +463,10 @@ namespace Eyetracking
 				TimeSpan elapsed = DateTime.Now - start;
 				string additionalMessage = "";
 				if (stepBack)
+				{
 					additionalMessage = "Confidence fell below threshold";
+					ViewModel.PupilStrokeColor = Colors.OrangeRed;
+				}
 				else if (e.Cancelled)
 					additionalMessage = "Pupil finding cancelled";
 				SetStatusDelegate(string.Format("Idle.{3} {0} frames processed in {1:c} ({2} fps)", framesProcessed, elapsed, (int)(framesProcessed / elapsed.TotalSeconds), 

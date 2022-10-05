@@ -5,6 +5,7 @@ using System.Text;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Eyetracking;
@@ -37,7 +38,7 @@ namespace SharpEyes.ViewModels
 		public ReactiveCommand<Unit, Unit>? FindPupilsCommand { get; } = null;
 		public ReactiveCommand<Unit, Unit>? PlayPauseCommand { get; private set; } = null;
 		public ReactiveCommand<Unit, Unit>? PreviousFrameCommand { get; private set; } = null;
-		public ReactiveCommand<Unit, Unit>? NextFrameCommand { get; private set;  } = null;
+		public ReactiveCommand<Unit, Unit>? NextFrameCommand { get; private set; } = null;
 		public ReactiveCommand<Unit, Unit>? ReadTimestampsCommand { get; } = null;
 		public ReactiveCommand<Unit, Unit>? LoadTimestampsCommand { get; } = null;
 		public ReactiveCommand<Unit, Unit>? SaveDataCommand { get; private set; } = null;
@@ -83,7 +84,17 @@ namespace SharpEyes.ViewModels
 			}
 		}
 
-		public bool IsPupilManuallyEdited { get; set; } = false;
+		private bool _isPupilManuallyEdited = false;
+		public bool IsPupilManuallyEdited
+		{
+			get => _isPupilManuallyEdited;
+			set
+			{
+				_isPupilManuallyEdited = value;
+				if (value)
+					PupilStrokeColor = Colors.LimeGreen;
+			}
+		}
 
 		// progress bar
 		private string _statusText = "Idle";
@@ -142,7 +153,7 @@ namespace SharpEyes.ViewModels
 		}
 		public string PlayPauseButtonText => IsVideoPlaying ? "Pause" : "Play";
 		private bool _isVideoPlaying = false;
-		
+
 		public bool IsVideoPlaying
 		{
 			get => _isVideoPlaying;
@@ -165,7 +176,7 @@ namespace SharpEyes.ViewModels
 			get => _totalVideoFrames;
 			set => this.RaiseAndSetIfChanged(ref _totalVideoFrames, value);
 		}
-		
+
 		private Bitmap? _videoFrame = null;
 		public Bitmap? VideoFrame
 		{
@@ -281,6 +292,13 @@ namespace SharpEyes.ViewModels
 		{
 			get => _pupilStrokeOpacity;
 			set => this.RaiseAndSetIfChanged(ref _pupilStrokeOpacity, value);
+		}
+
+		private Color _pupilStrokeColor = Colors.LimeGreen;
+		public Color PupilStrokeColor
+		{
+			get => _pupilStrokeColor;
+			set => this.RaiseAndSetIfChanged(ref _pupilStrokeColor, value);
 		}
 
 		// pupil finding info
@@ -492,6 +510,8 @@ namespace SharpEyes.ViewModels
 					TemplatePupilFinderConfigUserControlViewModel.AddCurrentAsTemplate();
 					IsPupilManuallyEdited = false;
 				}
+
+				PupilStrokeColor = Colors.LimeGreen;
 				pupilFinder.FindPupils();
 			}
 
