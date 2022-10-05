@@ -414,6 +414,11 @@ namespace SharpEyes.ViewModels
 			{
 				Title = "Load eyetracking video"
 			};
+			openFileDialog.Filters.Add(new FileDialogFilter()
+			{
+				Name = "AVI",
+				Extensions = { "avi" }
+			});
 			string[] fileName = await openFileDialog.ShowAsync(MainWindow);
 
 			if (fileName == null || fileName.Length == 0)

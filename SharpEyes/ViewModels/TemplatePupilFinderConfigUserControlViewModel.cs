@@ -1,4 +1,5 @@
-﻿using Avalonia.Media.Imaging;
+﻿using Avalonia.Controls;
+using Avalonia.Media.Imaging;
 using Eyetracking;
 using OpenCvSharp.Flann;
 using ReactiveUI;
@@ -19,6 +20,7 @@ namespace SharpEyes.ViewModels
 		public ReactiveCommand<Unit, Unit>? AddCurrentAsTemplateCommand { get; } = null;
 		public ReactiveCommand<Unit, Unit>? RemoveCurrentTemplateCommand { get; private set; } = null;
 		public ReactiveCommand<int, Unit>? ChangeTemplatePreviewIndexCommand { get; } = null;
+		public ReactiveCommand<Unit, Unit>? LoadTemplatesCommand { get; private set; } = null;
 		public ReactiveCommand<Unit, Unit>? ResetTemplatesCommand { get; private set; } = null;
 		public ReactiveCommand<Unit, Unit>? AddCurrentAsAntiTemplateCommand { get; } = null;
 		public ReactiveCommand<Unit, Unit>? RemoveCurrentAntiTemplateCommand { get; private set; } = null;
@@ -99,6 +101,7 @@ namespace SharpEyes.ViewModels
 			RemoveCurrentTemplateCommand = ReactiveCommand.Create(RemoveCurrentTemplate);
 			ChangeTemplatePreviewIndexCommand = ReactiveCommand.Create<int>(ChangeTemplatePreviewIndex);
 			ResetTemplatesCommand = ReactiveCommand.Create(ResetTemplates);
+			LoadTemplatesCommand = ReactiveCommand.Create(LoadTemplates);
 			AddCurrentAsAntiTemplateCommand = ReactiveCommand.Create(AddCurrentAsAntiTemplate);
 			RemoveCurrentAntiTemplateCommand = ReactiveCommand.Create(RemoveCurrentAntiTemplate);
 			ChangeAntiTemplatePreviewIndexCommand = ReactiveCommand.Create<int>(ChangeAntiTemplatePreviewIndex);
@@ -152,6 +155,30 @@ namespace SharpEyes.ViewModels
 		public void ChangeTemplatePreviewIndex(int delta)
 		{
 			SetTemplatePreviewIndex(CurrentTemplateIndex + delta);
+		}
+
+		public async void LoadTemplates()
+		{
+			if (TemplatePupilFinder == null)
+				return;
+
+			OpenFileDialog openFileDialog = new OpenFileDialog()
+			{
+				Title = "Load saved templates"
+			};
+			openFileDialog.Filters.Add(new FileDialogFilter()
+			{
+				Name = "Data file",
+				Extensions = { "dat" }
+			});
+			string[] fileName = await openFileDialog.ShowAsync(Parent.MainWindow);
+
+			if (fileName == null || fileName.Length == 0)
+				return;
+
+			TemplatePupilFinder.LoadTemplates(fileName[0]);
+			SetTemplatePreviewIndex(0);
+			SetAntiTemplatePreviewIndex(0);
 		}
 
 		public void ResetTemplates()
