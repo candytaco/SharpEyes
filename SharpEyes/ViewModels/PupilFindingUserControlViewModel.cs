@@ -474,6 +474,8 @@ namespace SharpEyes.ViewModels
 				}
 				pupilFinder.FindPupils();
 			}
+
+			IsFindingPupils = !IsFindingPupils;
 		}
 
 		public void PlayPause()
