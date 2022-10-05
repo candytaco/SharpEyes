@@ -427,7 +427,7 @@ namespace Eyetracking
 		{
 			ViewModel.CurrentVideoFrame = CurrentFrameNumber;
 			ViewModel.CurrentVideoTime = FramesToTimecode(CurrentFrameNumber);
-			ViewModel.VideoFrame = GetFrameForDisplay();
+			ViewModel.VideoFrame = GetFrameForDisplay(ViewModel.ShowFilteredImage);
 			ViewModel.PupilX = pupilLocations[CurrentFrameNumber, 0];
 			ViewModel.PupilY = pupilLocations[CurrentFrameNumber, 1];
 			ViewModel.PupilDiameter = pupilLocations[CurrentFrameNumber, 2] * 2;
@@ -471,15 +471,7 @@ namespace Eyetracking
 
 			isBitmapFrameGrayscale = filtered;
 			isCVFrameConverted = true;
-			MemoryStream imageStream;
-			if (filtered)
-			{
-				imageStream = filteredFrame.ToMemoryStream(".bmp");
-			}
-			else
-			{
-				imageStream = cvFrame.ToMemoryStream(".bmp");
-			}
+			MemoryStream imageStream = filtered ? filteredFrame.ToMemoryStream(".bmp") : cvFrame.ToMemoryStream(".bmp");
 
 			imageStream.Seek(0, SeekOrigin.Begin);
 			bitmapFrame = new Bitmap(imageStream);

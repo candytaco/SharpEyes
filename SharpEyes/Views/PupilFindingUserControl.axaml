@@ -205,7 +205,11 @@
           <!--Image filtering options-->
           <Expander Header="Image Pre-filtering" IsExpanded="False" IsEnabled="{Binding CanPlayVideo}">
             <StackPanel>
-              <ToggleSwitch Name="BilateralBlurToggleSwitch" OnContent="Bilateral blur" OffContent="Bilateral blur" IsChecked="{Binding UseBilateralBlur}"/>
+                <ToggleSwitch Name="ShowFilteredImageToggleSwitch" OnContent="Show filtered image" OffContent="Show filtered image"
+                              IsChecked="{Binding ShowFilteredImage}"/>
+                <ToggleSwitch Name="BilateralBlurToggleSwitch" OnContent="Bilateral blur" OffContent="Bilateral blur" 
+                              Margin="0 4 0 0"
+                              IsChecked="{Binding UseBilateralBlur}"/>
               <StackPanel IsVisible="{Binding #BilateralBlurToggleSwitch.IsChecked}">
                 <StackPanel Orientation="Horizontal">
                   <TextBlock VerticalAlignment="Center" Width="60">Blur size</TextBlock>

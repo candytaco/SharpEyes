@@ -312,12 +312,24 @@ namespace SharpEyes.ViewModels
 		public bool AutoReadTimestamps => true;
 
 		// image pre-filtering
+		private bool _showFilteredImage = false;
+		public bool ShowFilteredImage
+		{
+			get => _showFilteredImage;
+			set
+			{
+				if (pupilFinder != null)
+					pupilFinder.UpdateDisplays();
+				this.RaiseAndSetIfChanged(ref _showFilteredImage, value);
+			}
+		}
+
 		public bool UseBilateralBlur { get; set; } = true;
-		public int BilateralBlurSize { get; set; } = 1;
+		public int BilateralBlurSize { get; set; } = 3;
 		public int BilateralBlurSigmaColor { get; set; } = 30;
 		public int BilateralBlurSigmaSpace { get; set; } = 10;
 		public bool UseMedianBlur { get; set; } = true;
-		public int MedianBlurSize { get; set; } = 1;
+		public int MedianBlurSize { get; set; } = 3;
 
 		// manual adjustment
 		public bool AutoEnterPupilEditMode { get; set; } = true;
