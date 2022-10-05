@@ -60,7 +60,7 @@
                      Canvas.Left="{Binding PupilWindowLeft}" Canvas.Top="{Binding PupilWindowTop}"
                      Stroke="DodgerBlue" StrokeThickness="4" IsVisible="{Binding CanFindPupils}"/>
           <Ellipse Name="PupilEllipse" Width="{Binding PupilDiameter}" Height="{Binding #PupilEllipse.Width}"
-                   Stroke="{Binding PupilStrokeColor}" StrokeThickness="{Binding PupilStrokeThickness}" 
+                   Stroke="{Binding PupilStrokeBrush}" StrokeThickness="{Binding PupilStrokeThickness}" 
                    Opacity="{Binding PupilStrokeOpacity}"
                    IsVisible="{Binding CanFindPupils}"
                    Canvas.Left="{Binding PupilCircleLeft}"

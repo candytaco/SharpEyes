@@ -293,13 +293,17 @@ namespace SharpEyes.ViewModels
 			get => _pupilStrokeOpacity;
 			set => this.RaiseAndSetIfChanged(ref _pupilStrokeOpacity, value);
 		}
-
-		private Color _pupilStrokeColor = Colors.LimeGreen;
 		public Color PupilStrokeColor
 		{
-			get => _pupilStrokeColor;
-			set => this.RaiseAndSetIfChanged(ref _pupilStrokeColor, value);
+			get => PupilStrokeBrush.Color;
+			set
+			{
+				PupilStrokeBrush.Color = value;
+				this.RaisePropertyChanged("PupilStrokeBrush");
+			}
 		}
+
+		public SolidColorBrush PupilStrokeBrush { get; set; } =  new SolidColorBrush(Colors.LimeGreen);
 
 		// pupil finding info
 		public string PupilXText => String.Format("X: {0:F1}", PupilX);
