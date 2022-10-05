@@ -16,6 +16,7 @@ namespace SharpEyes.Views
 	{
 		// for moving the pupil and window
 		private bool isMouseDownOnVideoCanvas = false;
+		private double lastPupilStrokeOpacity = -1;
 		private Point? windowInitialPoint = null;
 		private PupilFindingUserControlViewModel? viewModel => (PupilFindingUserControlViewModel)this.DataContext;
 
@@ -34,6 +35,12 @@ namespace SharpEyes.Views
 			switch (viewModel.EditingState)
 			{
 				case EditingState.MovePupil:
+					if (lastPupilStrokeOpacity < 0)
+					{
+						lastPupilStrokeOpacity = viewModel.PupilStrokeOpacity;
+						viewModel.PupilStrokeOpacity /= 2;
+					}
+
 					viewModel.PupilX = point.X;
 					viewModel.PupilY = point.Y;
 					if (Double.IsNaN(viewModel.PupilDiameter))
@@ -113,6 +120,8 @@ namespace SharpEyes.Views
 				viewModel.pupilFinder.ManuallyUpdatePupilLocations(viewModel.pupilFinder.CurrentFrameNumber, 
 					viewModel.PupilX, viewModel.PupilY, viewModel.PupilRadius, frameDecay, mode);
 				viewModel.IsDataDirty = true;
+				viewModel.PupilStrokeOpacity = lastPupilStrokeOpacity;
+				lastPupilStrokeOpacity = -1;
 			}
 		}
 

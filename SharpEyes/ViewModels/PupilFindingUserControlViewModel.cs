@@ -206,6 +206,7 @@ namespace SharpEyes.ViewModels
 		}
 		public double PupilCircleLeft => _pupilX - PupilRadius;
 		public double PupilCircleTop => _pupilY - PupilRadius;
+
 		private double _pupilDiameter = double.NaN;
 		public double PupilRadius => _pupilDiameter / 2;
 		public double PupilDiameter
@@ -228,6 +229,7 @@ namespace SharpEyes.ViewModels
 				this.RaisePropertyChanged("PupilCircleTop");
 			}
 		}
+
 		private double _pupilConfidence = Double.NaN;
 		public double PupilConfidence
 		{
@@ -238,29 +240,47 @@ namespace SharpEyes.ViewModels
 				this.RaisePropertyChanged("PupilConfidenceText");
 			}
 		}
+
 		private int _pupilWindowLeft = 0;
 		public int PupilWindowLeft
 		{
 			get => _pupilWindowLeft;
 			set => this.RaiseAndSetIfChanged(ref _pupilWindowLeft, value);
 		}
+
 		private int _pupilWindowTop = 0;
 		public int PupilWindowTop
 		{
 			get => _pupilWindowTop;
 			set => this.RaiseAndSetIfChanged(ref _pupilWindowTop, value);
 		}
+
 		private int _pupilWindowWidth = 0;
 		public int PupilWindowWidth
 		{
 			get => _pupilWindowWidth;
 			set => this.RaiseAndSetIfChanged(ref _pupilWindowWidth, value);
 		}
+
 		private int _pupilWindowHeight = 0;
 		public int PupilWindowHeight
 		{
 			get => _pupilWindowHeight;
 			set => this.RaiseAndSetIfChanged(ref _pupilWindowHeight, value);
+		}
+
+		private double _pupilStrokeThickness = 4.0;
+		public double PupilStrokeThickness
+		{
+			get => _pupilStrokeThickness;
+			set => this.RaiseAndSetIfChanged(ref _pupilStrokeThickness, value);
+		}
+
+		private double _pupilStrokeOpacity = 0.75;
+		public double PupilStrokeOpacity
+		{
+			get => _pupilStrokeOpacity;
+			set => this.RaiseAndSetIfChanged(ref _pupilStrokeOpacity, value);
 		}
 
 		// pupil finding info

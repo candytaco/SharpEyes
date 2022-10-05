@@ -41,27 +41,29 @@
                       IsEnabled="{Binding CanFindPupils}"
                       HotKey="2">Move Pupil</ToggleButton>
 
-          <TextBlock VerticalAlignment="Center" Margin="4">|</TextBlock>
-          <Button Name="SaveDataButton" Margin="4" Command="{Binding SaveDataCommand}" HotKey="Ctrl+S"
-                  IsEnabled="{Binding IsDataDirty}">
-              Save Data
-          </Button>
+        <TextBlock VerticalAlignment="Center" Margin="4">|</TextBlock>
+        <Button Name="SaveDataButton" Margin="4" Command="{Binding SaveDataCommand}" HotKey="Ctrl+S"
+                IsEnabled="{Binding IsDataDirty}">
+          Save Data
+        </Button>
       </StackPanel>
 
       <!--Video video box-->
       <Viewbox Grid.Row="1" Stretch="Uniform">
-        <Canvas Name="VideoCanvas" Width="{Binding VideoWidth}" Height="{Binding VideoHeight}" 
+        <Canvas Name="VideoCanvas" Width="{Binding VideoWidth}" Height="{Binding VideoHeight}"
                 PointerPressed="VideoCanvasMouseDown"
                 PointerMoved="VideoCanvasMouseMove" PointerReleased="VideoCanvasMouseUp"
                 PointerWheelChanged="VideoCanvasScroll" Background="Transparent">
-          <Image Name="VideoFrameImage" Source="{Binding VideoFrame}" 
+          <Image Name="VideoFrameImage" Source="{Binding VideoFrame}"
                  Width="{Binding VideoWidth}" Height="{Binding VideoHeight}"/>
           <Rectangle Name="PupilWindowRectangle" Width="{Binding PupilWindowWidth}" Height="{Binding PupilWindowHeight}"
                      Canvas.Left="{Binding PupilWindowLeft}" Canvas.Top="{Binding PupilWindowTop}"
                      Stroke="DodgerBlue" StrokeThickness="4" IsVisible="{Binding CanFindPupils}"/>
           <Ellipse Name="PupilEllipse" Width="{Binding PupilDiameter}" Height="{Binding #PupilEllipse.Width}"
-                   Stroke="LimeGreen" StrokeThickness="4" Opacity="50" IsVisible="{Binding CanFindPupils}"
-                   Canvas.Left="{Binding PupilCircleLeft}" 
+                   Stroke="LimeGreen" StrokeThickness="{Binding PupilStrokeThickness}" 
+                   Opacity="{Binding PupilStrokeOpacity}"
+                   IsVisible="{Binding CanFindPupils}"
+                   Canvas.Left="{Binding PupilCircleLeft}"
                    Canvas.Top="{Binding PupilCircleTop}"/>
 
         </Canvas>
@@ -69,11 +71,11 @@
 
       <!--Video playback controls and display-->
       <StackPanel Orientation="Vertical" Grid.Row="2">
-          <Image Height="6" HorizontalAlignment="Stretch" Name="FramesProcessedPreview" 
-                 Margin="1 0 5 -32"
-                 Source="{Binding FramesProcessedPreviewImage}"/>
-          <Slider Name="VideoTimeSlider" Margin="0 0 4 4" Minimum="0" IsEnabled="{Binding CanPlayVideo}"
-                  Maximum="{Binding TotalVideoFrames}" Value="{Binding CurrentVideoFrame}"
+        <Image Height="6" HorizontalAlignment="Stretch" Name="FramesProcessedPreview"
+               Margin="1 0 5 -32"
+               Source="{Binding FramesProcessedPreviewImage}"/>
+        <Slider Name="VideoTimeSlider" Margin="0 0 4 4" Minimum="0" IsEnabled="{Binding CanPlayVideo}"
+                Maximum="{Binding TotalVideoFrames}" Value="{Binding CurrentVideoFrame}"
           />
         <Panel>
           <TextBlock Name="CurrentVideoTimeTextBlock" HorizontalAlignment="Left" VerticalAlignment="Center" Text="{Binding CurrentVideoTime}"/>
@@ -136,16 +138,24 @@
       <!--Pupil finding options-->
       <ScrollViewer DockPanel.Dock="Top" Margin="2">
         <StackPanel>
-          <Expander Margin="0 8 0 0 " Header="Pupil Size"  HorizontalContentAlignment="Center" IsExpanded="False"
+          <Expander Margin="0 8 0 0 " Header="Pupil Size"  HorizontalContentAlignment="Center" IsExpanded="True"
                     IsEnabled="{Binding CanFindPupils}">
             <StackPanel>
               <StackPanel Orientation="Horizontal">
-                <TextBlock VerticalAlignment="Center" Width="100">Min Diameter</TextBlock>
+                <TextBlock VerticalAlignment="Center" Width="110">Min Diameter</TextBlock>
                 <NumericUpDown Name="MinDiameterUpDown" Margin="4 0 0 0" Width="150" Value="{Binding MinPupilDiameter}" Increment="1" Minimum="1"/>
               </StackPanel>
               <StackPanel Margin="0 8 0 0" Orientation="Horizontal">
-                <TextBlock VerticalAlignment="Center" Width="100">Max Diameter</TextBlock>
+                <TextBlock VerticalAlignment="Center" Width="110">Max Diameter</TextBlock>
                 <NumericUpDown Name="MaxDiameterUpDown" Margin="4 0 0 0" Width="150" Value="{Binding MaxPupilDiameter}" Increment="1" Minimum="2"/>
+              </StackPanel>
+              <StackPanel Margin="0 8 0 0" Orientation="Horizontal">
+                <TextBlock VerticalAlignment="Center" Width="110">Stroke thickness</TextBlock>
+                <NumericUpDown Name="StrokeThicknessUpDown" Margin="4 0 0 0" Width="150" Value="{Binding PupilStrokeThickness}" Increment="0.1" Minimum="0.1"/>
+              </StackPanel>
+              <StackPanel Margin="0 8 0 0" Orientation="Horizontal">
+                <TextBlock VerticalAlignment="Center" Width="110">Stroke opacity</TextBlock>
+                <NumericUpDown Name="StrokeOpacityUpDown" Margin="4 0 0 0" Width="150" Value="{Binding PupilStrokeOpacity}" Increment="0.05" Minimum="0.05" Maximum="1.0"/>
               </StackPanel>
             </StackPanel>
           </Expander>
@@ -189,7 +199,7 @@
           </Expander>
 
           <!--Timestamp reading options-->
-          <Expander Margin="0 8 0 0 " Header="Timestamps"  HorizontalContentAlignment="Center" 
+          <Expander Margin="0 8 0 0 " Header="Timestamps"  HorizontalContentAlignment="Center"
                     IsEnabled="{Binding CanPlayVideo}"
                     IsExpanded="{Binding ShowTimestampParsing}" Name="TimestampParsingExpander">
             <StackPanel>
@@ -205,15 +215,15 @@
           <!--Image filtering options-->
           <Expander Header="Image Pre-filtering" IsExpanded="False" IsEnabled="{Binding CanPlayVideo}">
             <StackPanel>
-                <ToggleSwitch Name="ShowFilteredImageToggleSwitch" OnContent="Show filtered image" OffContent="Show filtered image"
-                              IsChecked="{Binding ShowFilteredImage}"/>
-                <ToggleSwitch Name="BilateralBlurToggleSwitch" OnContent="Bilateral blur" OffContent="Bilateral blur" 
-                              Margin="0 4 0 0"
-                              IsChecked="{Binding UseBilateralBlur}"/>
+              <ToggleSwitch Name="ShowFilteredImageToggleSwitch" OnContent="Show filtered image" OffContent="Show filtered image"
+                            IsChecked="{Binding ShowFilteredImage}"/>
+              <ToggleSwitch Name="BilateralBlurToggleSwitch" OnContent="Bilateral blur" OffContent="Bilateral blur"
+                            Margin="0 4 0 0"
+                            IsChecked="{Binding UseBilateralBlur}"/>
               <StackPanel IsVisible="{Binding #BilateralBlurToggleSwitch.IsChecked}">
                 <StackPanel Orientation="Horizontal">
                   <TextBlock VerticalAlignment="Center" Width="60">Blur size</TextBlock>
-                  <NumericUpDown Name="BilateralBlurUpDown" Value="{Binding BilateralBlurSize}" 
+                  <NumericUpDown Name="BilateralBlurUpDown" Value="{Binding BilateralBlurSize}"
                                  Minimum="1" Increment="1" Margin="8 0 0 0" Width="120"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0 4 0 0">
@@ -229,7 +239,7 @@
               <StackPanel IsVisible="{Binding #MedianBlurToggleSwitch.IsChecked}">
                 <StackPanel Orientation="Horizontal">
                   <TextBlock VerticalAlignment="Center" Width="60">Blur size</TextBlock>
-                  <NumericUpDown Name="MedianBlurUpDown" Value="{Binding MedianBlurSize}" 
+                  <NumericUpDown Name="MedianBlurUpDown" Value="{Binding MedianBlurSize}"
                                  Minimum="1" Increment="2" Margin="8 0 0 0" Width="120"/>
                 </StackPanel>
               </StackPanel>
