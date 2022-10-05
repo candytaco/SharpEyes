@@ -131,6 +131,7 @@ namespace SharpEyes.Views
 					break;
 				case EditingState.MovePupil:
 					viewModel.PupilDiameter += e.Delta.Y;
+					viewModel.IsPupilManuallyEdited = true;
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
