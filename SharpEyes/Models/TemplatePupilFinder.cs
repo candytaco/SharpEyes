@@ -475,6 +475,7 @@ namespace Eyetracking
 				ViewModel.IsDataDirty = true;
 				ViewModel.FramesProcessedPreviewImage =
 					GetFramesProcessedPreviewImage(1920, 4);
+				ViewModel.IsFindingPupils = false;
 			};
 
 			ViewModel.IsProgressBarVisible = true;
