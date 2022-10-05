@@ -15,7 +15,7 @@ namespace CrashReporter
 		{
 			if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 			{
-				desktop.MainWindow = new MainWindow();
+				desktop.MainWindow = new MainWindow(desktop.Args.Length > 0 ? desktop.Args[0] : null);
 			}
 
 			base.OnFrameworkInitializationCompleted();

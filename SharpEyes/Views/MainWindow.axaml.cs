@@ -33,7 +33,7 @@ namespace SharpEyes.Views
 				MessageBoxManager.GetMessageBoxStandardWindow("Internal error",
 					"SharpEyes has encountered an internal error and is exiting.\nAn error report will be sent",
 					ButtonEnum.Ok, MessageBox.Avalonia.Enums.Icon.Error);
-			SentrySdk.CaptureException(e);
+			SentryId eventID = SentrySdk.CaptureException(e);
 			messageBox.ShowDialog(this).Wait(2000);
 		}
 

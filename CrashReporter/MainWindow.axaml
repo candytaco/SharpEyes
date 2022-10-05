@@ -2,8 +2,20 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" Width="400" d:DesignHeight="300"
-        x:Class="CrashReporter.MainWindow"
-        Title="Crash Reporter">
-    Welcome to Avalonia!
+        mc:Ignorable="d" Width="500" Height="150"
+        x:Class="CrashReporter.MainWindow" WindowStartupLocation="CenterScreen" Background="#c0202020"
+        CanResize="False" SystemDecorations="None"
+        Title="Crash Reporter" Name="CrashReporterWindow">
+  <DockPanel>
+    <TextBlock DockPanel.Dock="Top" Margin="8" HorizontalAlignment="Center">
+      SharpEyes has encountered an internal error and exited.
+      A crash report has been generated and sent.
+    </TextBlock>
+    <TextBlock DockPanel.Dock="Top" HorizontalAlignment="Center" Text="{Binding ElementName=CrashReporterWindow, Path=IDDisplayText}"/>
+    <StackPanel DockPanel.Dock="Bottom" HorizontalAlignment="Center" Orientation="Horizontal">
+      <Button Name="SubmitReportButton" Margin="2" Click="SubmitReportButton_OnClick">Submit bug report</Button>
+      <Button Name="RestartButton" Margin="2" Click="RestartButton_OnClick">Restart</Button>
+      <Button Name="ExitButton" Margin="2" Click="ExitButton_OnClick">Exit</Button>
+    </StackPanel>
+  </DockPanel>
 </Window>
