@@ -34,7 +34,13 @@ namespace SharpEyes.Views
 					"SharpEyes has encountered an internal error and is exiting.\nAn error report will be sent",
 					ButtonEnum.Ok, MessageBox.Avalonia.Enums.Icon.Error);
 			SentryId eventID = SentrySdk.CaptureException(e);
-			messageBox.ShowDialog(this).Wait(2000);
+			ProcessStartInfo startInfo = new ProcessStartInfo()
+			{
+				FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "CrashReporter.exe" : "CrashReporter",
+				Arguments = eventID.ToString(),
+				UseShellExecute = true
+			};
+			Process.Start(startInfo);
 		}
 
 		private void Window_OnClosing(object? sender, CancelEventArgs e)
