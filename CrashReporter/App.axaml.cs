@@ -1,3 +1,4 @@
+using System;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
@@ -15,7 +16,7 @@ namespace CrashReporter
 		{
 			if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 			{
-				desktop.MainWindow = new MainWindow(desktop.Args.Length > 0 ? desktop.Args[0] : null);
+				desktop.MainWindow = new MainWindow();
 			}
 
 			base.OnFrameworkInitializationCompleted();

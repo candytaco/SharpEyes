@@ -1,23 +1,23 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
 
 namespace CrashReporter
 {
 	public partial class MainWindow : Window
 	{
-		public string? SentryEventID { get; set; } = null;
+		public string? SentryEventID => Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+			? desktop.Args[0]
+			: null;
+		private bool isWindows = true;
 		public MainWindow()
 		{
 			InitializeComponent();
-		}
-
-		public MainWindow(string sentryEventID)
-		{
-			InitializeComponent();
-			SentryEventID = sentryEventID;
+			isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 		}
 
 		public string IDDisplayText => SentryEventID == null
@@ -26,21 +26,43 @@ namespace CrashReporter
 
 		private void SubmitReportButton_OnClick(object? sender, RoutedEventArgs e)
 		{
-			System.Diagnostics.Process.Start(new ProcessStartInfo(
-			"https://github.com/candytaco/SharpEyes/issues/new/choose")
+			ProcessStartInfo startInfo = new ProcessStartInfo()
 			{
+				FileName = isWindows
+					? "https://github.com/candytaco/SharpEyes/issues/new/choose"
+					: "xdg-open",
 				UseShellExecute = true
-			});
+			};
+			if (!isWindows)
+				startInfo.Arguments = "https://github.com/candytaco/SharpEyes/issues/new/choose";
+			try
+			{
+				System.Diagnostics.Process.Start(startInfo);
+			}
+			catch
+			{
+			}
+
 			Close();
 		}
 
 		private void RestartButton_OnClick(object? sender, RoutedEventArgs e)
 		{
-			System.Diagnostics.Process.Start(new ProcessStartInfo(
-				"SharpEyes")
+			ProcessStartInfo startInfo = new ProcessStartInfo()
 			{
+				FileName = isWindows
+					? "SharpEyes.exe"
+					: "SharpEyes",
 				UseShellExecute = true
-			});
+			};
+			try
+			{
+				System.Diagnostics.Process.Start(startInfo);
+			}
+			catch
+			{
+			}
+
 			Close();
 		}
 

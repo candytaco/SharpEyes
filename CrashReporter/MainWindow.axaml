@@ -4,7 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" Width="500" Height="150"
         x:Class="CrashReporter.MainWindow" WindowStartupLocation="CenterScreen" Background="#c0202020"
-        CanResize="False" SystemDecorations="None"
+        CanResize="False"
         Title="Crash Reporter" Name="CrashReporterWindow">
   <DockPanel>
     <TextBlock DockPanel.Dock="Top" Margin="8" HorizontalAlignment="Center">
