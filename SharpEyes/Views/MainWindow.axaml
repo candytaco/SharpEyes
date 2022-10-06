@@ -39,7 +39,9 @@
         <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center">Calibration not yet implemented</TextBlock>
       </TabItem>
       <TabItem Header="Stimulus &#38; Gaze" VerticalContentAlignment="Center">
-        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center">Stimulus view yet implemented</TextBlock>
+        <uc:StimulusGazeUserControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                    Name="StimulusGazeUserControl"
+                                    DataContext="{Binding stimulusGazeViewModel}"/>
       </TabItem>
     </TabControl>
   </Grid>

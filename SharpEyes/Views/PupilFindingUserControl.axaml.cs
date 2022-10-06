@@ -183,7 +183,7 @@ namespace SharpEyes.Views
 
 		public void OnClosing()
 		{
-			viewModel.OnClosing();
+			viewModel?.OnClosing();
 		}
 	}
 }
