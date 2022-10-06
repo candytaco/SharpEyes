@@ -690,7 +690,7 @@ namespace Eyetracking
 			{
 				ViewModel.CurrentVideoFrame = CurrentFrameNumber;
 				ViewModel.CurrentVideoTime = FramesToTimecode(CurrentFrameNumber);
-				ViewModel.VideoFrame = GetFrameForDisplay(/*ShowFilteredVideoButton.IsChecked.Value TODO: add toggle switch to show filtered video*/);
+				ViewModel.VideoFrame = GetFrameForDisplay(ViewModel.ShowFilteredImage);
 
 				ViewModel.PupilX = pupilLocations[CurrentFrameNumber, 0];
 				ViewModel.PupilY = pupilLocations[CurrentFrameNumber, 1];
