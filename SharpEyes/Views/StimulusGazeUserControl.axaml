@@ -125,7 +125,7 @@
                     VerticalAlignment="Top">
               <StackPanel>
                   <Button Margin="4">Add keyframe</Button>
-                  <DataGrid Name="KeyFramesDataGrid" Margin="4" AutoGenerateColumns="False">
+                  <DataGrid Name="KeyFramesDataGrid" Margin="4" AutoGenerateColumns="False" Items="{Binding VideoKeyFrames}">
                       <DataGrid.Columns>
                           <DataGridTextColumn Header="Stimulus time" Binding="{Binding VideoTimeStamp}"/>
                           <DataGridTextColumn Header="Gaze data index" Binding="{Binding DataIndex}"/>

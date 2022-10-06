@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Eyetracking;
 using ReactiveUI;
 
 namespace SharpEyes.ViewModels
@@ -190,6 +191,14 @@ namespace SharpEyes.ViewModels
 		{
 			get => _trailLength;
 			set => this.RaiseAndSetIfChanged(ref _trailLength, value);
+		}
+
+		private List<VideoKeyFrame> _videoKeyFrames = new List<VideoKeyFrame>();
+
+		public List<VideoKeyFrame> VideoKeyFrames
+		{
+			get => _videoKeyFrames;
+			set => this.RaiseAndSetIfChanged(ref _videoKeyFrames, value);
 		}
 	}
 }
