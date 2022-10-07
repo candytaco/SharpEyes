@@ -33,7 +33,7 @@
         <TextBlock VerticalAlignment="Center" Margin="4">|</TextBlock>
         <Button Name="LoadGazeButton" Margin="4"
                       Command="{Binding LoadGazeCommand}"
-                      HotKey="Ctrl+L">LoadGaze</Button>
+                      HotKey="Ctrl+L">Load Gaze</Button>
         <ToggleButton Name="MoveGazeButton" Margin="4" IsChecked="{Binding IsMovingGaze}"
                       IsEnabled="{Binding IsGazeLoaded}"
                       HotKey="2">Move Gaze</ToggleButton>
