@@ -11,6 +11,7 @@ using MessageBox.Avalonia.BaseWindows.Base;
 using MessageBox.Avalonia.Enums;
 using SharpEyes.ViewModels;
 using Num = NumSharp.np;
+using SharpEyes.Models;
 
 namespace Eyetracking
 {
@@ -49,7 +50,7 @@ namespace Eyetracking
 		Exponential,    // fade exponentially
 	}
 
-	public abstract class PupilFinder
+	public abstract class PupilFinder : VideoReader
 	{
 		/// <summary>
 		/// Median function, since numsharp does not implement a median
@@ -74,14 +75,8 @@ namespace Eyetracking
 			int middle = list.Count / 2;
 			return (list.Count % 2 != 0) ? (double)list[middle] : ((double)list[middle] + (double)list[middle - 1]) / 2;
 		}
-		public static void ShowMessageBox(string title, string body, ButtonEnum buttons = ButtonEnum.Ok, Icon icon = Icon.None)
-		{
-			IMsBoxWindow<MessageBox.Avalonia.Enums.ButtonResult> messageBox =
-				MessageBoxManager.GetMessageBoxStandardWindow(title, body, buttons, icon);
-			messageBox.Show();
-		}
+
 		// video information
-		public string videoFileName { get; private set; }
 		public string autoTimestampFileName
 		{
 			get
@@ -100,49 +95,13 @@ namespace Eyetracking
 									String.Format("{0} pupils.npy", Path.GetFileNameWithoutExtension(videoFileName)));
 			}
 		}
-		protected VideoCapture videoSource = null;
 
 		public PupilFindingUserControlViewModel? ViewModel { get; set; } = null;
 
-		public int width { get; private set; } = -1;
-		public int height { get; private set; } = -1;
-		public int fps { get; private set; } = -1;
-		public int frameCount { get; private set; } = -1;
-		public double duration { get; private set; } = -1.0;
-		protected int framesPerHour = 0;
-		protected int framesPerMinute = 0;
-
 		// parsing video stuff		
-		protected int _currentFrameNumber = -1;
-		/// <summary>
-		/// The current frame number that has been read in. When set, will read that frame!
-		/// Use <see cref="Seek"/> if we do not want to go the frame reading.
-		/// </summary>
-		public int CurrentFrameNumber
-		{
-			get { return _currentFrameNumber; }
-			set
-			{
-				int desired = value;
-				if (desired < 0)
-				{
-					desired = 0;
-				}
-				else if (desired > frameCount - 1)
-				{
-					desired = frameCount - 1;
-				}
-
-				_currentFrameNumber = desired - 1;
-				videoSource.Set(VideoCaptureProperties.PosFrames, desired);
-				ReadGrayscaleFrame();
-			}
-		}
 		// NOTE: IT LOOKS LIKE VideoCaptureProperties.PosFrames is 1-INDEXED!!
 		// or rather, like my previews implementation of CurrentFrameNumber, it is the 0-indexed frame number
 		// of the upcoming frame.
-		public double OpenCVFramePosition { get { return videoSource.Get(VideoCaptureProperties.PosFrames); } }
-		public Mat cvFrame { get; protected set; } = null;
 		protected Mat[] colorChannels = new Mat[3];
 		protected Mat red;
 		public bool isTimestampParsed { get; private set; } = false;
@@ -152,7 +111,6 @@ namespace Eyetracking
 		/// </summary>
 		private bool isCVFrameConverted = false;
 		private bool isBitmapFrameGrayscale = false;
-		private Bitmap bitmapFrame = null;
 
 		// pupil finding stuff
 		public int left => ViewModel.PupilWindowLeft;
@@ -383,31 +341,6 @@ namespace Eyetracking
 		}
 
 		/// <summary>
-		/// Read the next frame and increment the internal counter
-		/// </summary>
-		/// <returns></returns>
-		public bool ReadFrame()
-		{
-			try
-			{
-				bool success = videoSource.Read(cvFrame);
-				if (!success)
-				{
-					return success;
-				}
-
-				_currentFrameNumber++;
-				isCVFrameConverted = false;
-				return success;
-			}
-			catch (AccessViolationException e)
-			{
-				Sentry.SentrySdk.CaptureException(e);
-				return false;
-			}
-		}
-
-		/// <summary>
 		/// Reads the next frame and makes it grayscale
 		/// Also does any needed filtering
 		/// </summary>
@@ -450,52 +383,6 @@ namespace Eyetracking
 				filteringFrame = new Mat();
 			}
 			isCVFrameConverted = false;
-		}
-
-		/// <summary>
-		/// Gets the current frame that has been read in for display
-		/// </summary>
-		/// <param name="filtered">get the filtered frame instead of the RGB frame.</param>
-		/// <returns></returns>
-		public Bitmap GetFrameForDisplay(bool filtered = false)
-		{
-			if (cvFrame == null)
-			{
-				return null;
-			}
-
-			if ((filtered == isBitmapFrameGrayscale) && isCVFrameConverted)
-			{
-				return bitmapFrame;
-			}
-
-			isBitmapFrameGrayscale = filtered;
-			isCVFrameConverted = true;
-			MemoryStream imageStream = filtered ? filteredFrame.ToMemoryStream(".bmp") : cvFrame.ToMemoryStream(".bmp");
-
-			imageStream.Seek(0, SeekOrigin.Begin);
-			bitmapFrame = new Bitmap(imageStream);
-			return bitmapFrame;
-		}
-
-		/// <summary>
-		/// Seek to a frame such that when <see cref="ReadFrame"/> or <see cref="ReadGrayscaleFrame"/> is called,
-		/// this frame is read in.
-		/// </summary>
-		/// <param name="frame">frame to go to</param>
-		public void Seek(int frame)
-		{
-			if (frame < 0)
-			{
-				frame = 0;
-			}
-			else if (frame > frameCount - 1)
-			{
-				frame = frameCount - 1;
-			}
-
-			_currentFrameNumber = frame - 1;
-			videoSource.Set(VideoCaptureProperties.PosFrames, frame);
 		}
 
 		public void SaveTimestamps(string fileName = null)
@@ -684,6 +571,23 @@ namespace Eyetracking
 				ViewModel.StatusText = status != null ? status : "Idle";
 		}
 
+		public void OnFramesProcessed(bool error = false, string message = null, bool stepBack = false)
+		{
+			UpdatePupilFindingButtons(false);
+			UpdateFramesProcessedPreviewImage();
+			
+			// auto save
+			SavePupilLocations();
+			SaveTimestamps();
+			if (this is TemplatePupilFinder templatePupilFinder)
+				templatePupilFinder.SaveTemplates();
+			
+			if (stepBack)
+				UpdateVideoTime(CurrentFrameNumber - ViewModel.LowConfidenceFrameCountThreshold / 2); // don't fully step back because we want the bad frames in saccades
+
+		}
+
+
 		public void UpdateFrame()
 		{
 			try
@@ -707,43 +611,9 @@ namespace Eyetracking
 				ShowMessageBox("Exception", e.ToString(), ButtonEnum.Ok, Icon.Error);
 			}
 		}
-
-		public string FramesToTimecode(int frames)
-		{
-			int hours = frames / framesPerHour;
-			frames -= hours * framesPerHour;
-			int minutes = frames / framesPerMinute;
-			frames -= minutes * framesPerMinute;
-			int seconds = frames / fps;
-			frames -= seconds * fps;
-			return String.Format("{0:00}:{1:00}:{2:00};{3:#00}", hours, minutes, seconds, frames + 1);
-		}
-
-		public void OnFramesProcessed(bool error = false, string message = null, bool stepBack = false)
-		{
-			UpdatePupilFindingButtons(false);
-			UpdateFramesProcessedPreviewImage();
-			
-			// auto save
-			SavePupilLocations();
-			SaveTimestamps();
-			if (this is TemplatePupilFinder templatePupilFinder)
-				templatePupilFinder.SaveTemplates();
-			
-			if (stepBack)
-				UpdateVideoTime(CurrentFrameNumber - ViewModel.LowConfidenceFrameCountThreshold / 2); // don't fully step back because we want the bad frames in saccades
-
-		}
-
 		public void OnTimestampsFound(bool error = false, string message = null, bool stepBack = false)
 		{
 
-		}
-
-		private void UpdateVideoTime(int frame)
-		{
-			CurrentFrameNumber = frame;
-			UpdateFrame();
 		}
 
 		private void UpdateFramesProcessedPreviewImage()
@@ -754,6 +624,44 @@ namespace Eyetracking
 		private void UpdatePupilFindingButtons(bool isPupilFinding)
 		{
 
+		}
+
+		public override Bitmap GetFrameForDisplay(bool filtered = false)
+		{
+			if (cvFrame == null)
+			{
+				return null;
+			}
+
+			if ((filtered == isBitmapFrameGrayscale) && isCVFrameConverted)
+			{
+				return bitmapFrame;
+			}
+
+			isBitmapFrameGrayscale = filtered;
+			isCVFrameConverted = true;
+			MemoryStream imageStream = filtered ? filteredFrame.ToMemoryStream(".bmp") : cvFrame.ToMemoryStream(".bmp");
+
+			imageStream.Seek(0, SeekOrigin.Begin);
+			bitmapFrame = new Bitmap(imageStream);
+			return bitmapFrame;
+		}
+
+		public override bool ReadFrame()
+		{
+			bool success = base.ReadFrame();
+			if (success)
+				isCVFrameConverted = false;
+
+			return success;
+		}
+
+
+
+		protected void UpdateVideoTime(int frame)
+		{
+			CurrentFrameNumber = frame;
+			UpdateFrame();
 		}
 	}
 }

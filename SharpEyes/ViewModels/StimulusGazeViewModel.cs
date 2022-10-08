@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reactive;
 using System.Text;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Eyetracking;
@@ -10,6 +14,16 @@ namespace SharpEyes.ViewModels
 {
 	public class StimulusGazeViewModel : ViewModelBase
 	{
+		// == Commands ==
+		public ReactiveCommand<Unit, Unit> LoadVideoCommand { get; set; }
+		public ReactiveCommand<Unit, Unit>? PlayPauseCommand { get; set; } = null;
+
+		// == window reference for showing dialogs
+		public Window? MainWindow =>
+			Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+				? desktop.MainWindow
+				: null;
+
 		// == UI elements ==
 		private bool _isMovingGaze = false;
 		public bool IsMovingGaze
@@ -46,8 +60,8 @@ namespace SharpEyes.ViewModels
 			get => _progressBarValue;
 			set => this.RaiseAndSetIfChanged(ref _progressBarValue, value);
 		}
+		
 
-		// video playback
 		private int _videoWidth = 1024;
 		public int VideoWidth
 		{
@@ -199,6 +213,34 @@ namespace SharpEyes.ViewModels
 		{
 			get => _videoKeyFrames;
 			set => this.RaiseAndSetIfChanged(ref _videoKeyFrames, value);
+		}
+
+		public StimulusGazeViewModel()
+		{
+			LoadVideoCommand = ReactiveCommand.Create(LoadVideo);
+			PlayPauseCommand = ReactiveCommand.Create(PlayPause);
+		}
+
+		public async void LoadVideo()
+		{
+			OpenFileDialog openFileDialog = new OpenFileDialog()
+			{
+				Title = "Load stimulus video"
+			};
+			openFileDialog.Filters.Add(new FileDialogFilter()
+			{
+				Name = "Videos",
+				Extensions = { "avi", "mkv", "mp4", "m4v" }
+			});
+			string[] fileName = await openFileDialog.ShowAsync(MainWindow);
+
+			if (fileName == null || fileName.Length == 0)
+				return;
+			
+		}
+
+		public void PlayPause()
+		{
 		}
 	}
 }

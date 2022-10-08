@@ -11,8 +11,7 @@
     <vm:PupilFindingUserControlViewModel/>
   </Design.DataContext>
 
-
-  <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="4" ShowGridLines="False">
+    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="4" ShowGridLines="False">
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="*"/>
       <ColumnDefinition Width="350"/>
@@ -82,13 +81,22 @@
           <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
             <Button Name="PreviousFrameButton" ToolTip.Tip="Previous Frame" Height="32" VerticalContentAlignment="Center"
                     Command="{Binding PreviousFrameCommand}" HotKey="Q"
-                    IsEnabled="{Binding CanPlayVideo}">⮜</Button>
-            <Button Name="PlayPauseButton" Height="32" VerticalContentAlignment="Center" Margin="2 0 2 0" Content="{Binding PlayPauseButtonText}"
+                    IsEnabled="{Binding CanPlayVideo}">
+                <Image Source="/Assets/ic_fluent_chevron_left_24_filled.png"/>
+            </Button>
+            <Button Name="PlayPauseButton" Height="32" VerticalContentAlignment="Center" Margin="2 0 2 0" 
                     Command="{Binding PlayPauseCommand}" HotKey="Space"
-                    IsEnabled="{Binding CanPlayVideo}"/>
+                    IsEnabled="{Binding CanPlayVideo}">
+                <Panel>
+                    <Image Source="/Assets/ic_fluent_play_24_filled.png" IsVisible="{Binding !IsVideoPlaying}"/>
+                    <Image Source="/Assets/ic_fluent_pause_24_filled.png" IsVisible="{Binding IsVideoPlaying}"/>
+                </Panel>
+            </Button>
             <Button Name="NextFrameButton" ToolTip.Tip="Next Frame" Height="32" VerticalContentAlignment="Center"
                     Command="{Binding NextFrameCommand}" HotKey="W"
-                    IsEnabled="{Binding CanPlayVideo}">⮞</Button>
+                    IsEnabled="{Binding CanPlayVideo}">
+                <Image Source="/Assets/ic_fluent_chevron_right_24_filled.png"/>
+            </Button>
           </StackPanel>
           <TextBlock Name="TotalVideoTimeTextBlock" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="4 0 4 0" Text="{Binding TotalVideoTime}"/>
         </Panel>

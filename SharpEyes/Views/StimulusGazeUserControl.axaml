@@ -5,6 +5,7 @@
              mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
              xmlns:uc="clr-namespace:SharpEyes.Views"
              xmlns:vm="clr-namespace:SharpEyes.ViewModels"
+             xmlns:VLC="clr-namespace:LibVLCSharp.Avalonia;assembly=LibVLCSharp.Avalonia"
              x:Class="SharpEyes.Views.StimulusGazeUserControl">
   <Design.DataContext>
     <vm:StimulusGazeViewModel/>
@@ -72,14 +73,11 @@
           <TextBlock Name="CurrentVideoTimeTextBlock" HorizontalAlignment="Left" VerticalAlignment="Center" Text="{Binding CurrentVideoTime}"/>
           <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
             <Button Name="PreviousFrameButton" ToolTip.Tip="Previous Frame" Height="32" VerticalContentAlignment="Center"
-                    Command="{Binding PreviousFrameCommand}" HotKey="Q"
-                    IsEnabled="{Binding CanPlayVideo}">⮜</Button>
+                    Command="{Binding PreviousFrameCommand}" HotKey="Q">⮜</Button>
             <Button Name="PlayPauseButton" Height="32" VerticalContentAlignment="Center" Margin="2 0 2 0" Content="{Binding PlayPauseButtonText}"
-                    Command="{Binding PlayPauseCommand}" HotKey="Space"
-                    IsEnabled="{Binding CanPlayVideo}"/>
+                    Command="{Binding PlayPauseCommand}" HotKey="Space"/>
             <Button Name="NextFrameButton" ToolTip.Tip="Next Frame" Height="32" VerticalContentAlignment="Center"
-                    Command="{Binding NextFrameCommand}" HotKey="W"
-                    IsEnabled="{Binding CanPlayVideo}">⮞</Button>
+                    Command="{Binding NextFrameCommand}" HotKey="W">⮞</Button>
           </StackPanel>
           <TextBlock Name="TotalVideoTimeTextBlock" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="4 0 4 0" Text="{Binding TotalVideoTime}"/>
         </Panel>
