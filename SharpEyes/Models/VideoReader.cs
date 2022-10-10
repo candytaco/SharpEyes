@@ -33,20 +33,6 @@ namespace SharpEyes.Models
 		public int frameCount { get; private set; } = -1;
 		public double duration { get; private set; } = -1.0;
 
-		public VideoReader(string videoFileName)
-		{
-			this.videoFileName = videoFileName;
-			videoSource = new VideoCapture(videoFileName);
-
-			width = (int)videoSource.Get(VideoCaptureProperties.FrameWidth);
-			height = (int)videoSource.Get(VideoCaptureProperties.FrameHeight);
-			fps = (int)videoSource.Get(VideoCaptureProperties.Fps);
-			frameCount = (int)videoSource.Get(VideoCaptureProperties.FrameCount);
-			duration = (double)frameCount / fps;
-			framesPerMinute = fps * 60;
-			framesPerHour = framesPerMinute * 60;
-		}
-
 		/// <summary>
 		/// The current frame number that has been read in. When set, will read that frame!
 		/// Use <see cref="Seek"/> if we do not want to do the frame reading.
@@ -76,8 +62,25 @@ namespace SharpEyes.Models
 		{
 			ReadFrame();
 		}
-		
 		public Mat cvFrame { get; protected set; } = null;
+
+		public VideoReader(string videoFileName)
+		{
+			this.videoFileName = videoFileName;
+			videoSource = new VideoCapture(videoFileName);
+
+			width = (int)videoSource.Get(VideoCaptureProperties.FrameWidth);
+			height = (int)videoSource.Get(VideoCaptureProperties.FrameHeight);
+			fps = (int)videoSource.Get(VideoCaptureProperties.Fps);
+			frameCount = (int)videoSource.Get(VideoCaptureProperties.FrameCount);
+			duration = (double)frameCount / fps;
+			framesPerMinute = fps * 60;
+			framesPerHour = framesPerMinute * 60;
+
+			cvFrame = new Mat();
+		}
+
+		
 
 		/// <summary>
 		/// Read the next frame and increment the internal counter

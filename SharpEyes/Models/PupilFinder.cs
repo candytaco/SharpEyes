@@ -197,7 +197,6 @@ namespace Eyetracking
 				pupilLocations *= Num.NaN;	// use NaN to indicate pupil not yet found on this frame
 			}
 
-			cvFrame = new Mat();
 			for (int i = 0; i < 3; i++)
 			{
 				colorChannels[i] = new Mat();
