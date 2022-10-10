@@ -33,9 +33,23 @@ namespace SharpEyes.Models
 		public int frameCount { get; private set; } = -1;
 		public double duration { get; private set; } = -1.0;
 
+		public VideoReader(string videoFileName)
+		{
+			this.videoFileName = videoFileName;
+			videoSource = new VideoCapture(videoFileName);
+
+			width = (int)videoSource.Get(VideoCaptureProperties.FrameWidth);
+			height = (int)videoSource.Get(VideoCaptureProperties.FrameHeight);
+			fps = (int)videoSource.Get(VideoCaptureProperties.Fps);
+			frameCount = (int)videoSource.Get(VideoCaptureProperties.FrameCount);
+			duration = (double)frameCount / fps;
+			framesPerMinute = fps * 60;
+			framesPerHour = framesPerMinute * 60;
+		}
+
 		/// <summary>
 		/// The current frame number that has been read in. When set, will read that frame!
-		/// Use <see cref="Seek"/> if we do not want to go the frame reading.
+		/// Use <see cref="Seek"/> if we do not want to do the frame reading.
 		/// </summary>
 		public int CurrentFrameNumber
 		{
@@ -54,15 +68,15 @@ namespace SharpEyes.Models
 
 				_currentFrameNumber = desired - 1;
 				videoSource.Set(VideoCaptureProperties.PosFrames, desired);
-				ReadGrayscaleFrame();
+				OnCurrentFrameNumberSet();
 			}
 		}
 
-		public virtual void ReadGrayscaleFrame()
+		protected virtual void OnCurrentFrameNumberSet()
 		{
+			ReadFrame();
 		}
-
-		public double OpenCVFramePosition { get { return videoSource.Get(VideoCaptureProperties.PosFrames); } }
+		
 		public Mat cvFrame { get; protected set; } = null;
 
 		/// <summary>
@@ -133,12 +147,6 @@ namespace SharpEyes.Models
 			int seconds = frames / fps;
 			frames -= seconds * fps;
 			return String.Format("{0:00}:{1:00}:{2:00};{3:#00}", hours, minutes, seconds, frames + 1);
-		}
-
-		protected void UpdateVideoTime(int frame)
-		{
-			CurrentFrameNumber = frame;
-			UpdateFrame();
 		}
 	}
 }

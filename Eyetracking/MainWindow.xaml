@@ -60,21 +60,20 @@
         </Grid.RowDefinitions>
         <Menu Height="23" VerticalAlignment="Top" IsMainMenu="True" Margin="0,0,0,0" Grid.ColumnSpan="2" Grid.Row="0">
             <MenuItem Header="_File" Name="fileMenu">
-                <MenuItem Header="_Open Video" Name="openFileMenuItem" Click="OpenFileMenuItem_Click"></MenuItem>
-                <MenuItem Header="Load _Timestamps" Name="loadSavedDataMenuItem" Click="LoadSavedDataMenuItem_Click"></MenuItem>
+                <MenuItem Header="_Open Video" Name="openFileMenuItem" Click="OpenFileMenuItem_Click" />
+                <MenuItem Header="Load _Timestamps" Name="loadSavedDataMenuItem" Click="LoadSavedDataMenuItem_Click" />
                 <MenuItem Header="Load Eyetracking" Name="loadSavedEyetrackingMenuItem" Click="LoadSavedEyetrackingMenuItem_Click" />
                 <MenuItem Header="Load Templates" Name="loadSavedTemplatesMenuItem" Click="LoadSavedTemplatesMenuItem_Click" IsEnabled="False"/>
                 <Separator/>
-                <MenuItem Header="_Save Timestamps" Name="saveTimestampsMenuItem" Click="SaveTimeStampsMenuItemClick" IsEnabled="False"></MenuItem>
-                <MenuItem Header="_Save Eyetracking" Name="saveEyetrackingMenuItem" Click="SaveEyetrackingMenuItem_Click" IsEnabled="False"></MenuItem>
+                <MenuItem Header="_Save Timestamps" Name="saveTimestampsMenuItem" Click="SaveTimeStampsMenuItemClick" IsEnabled="False" />
+                <MenuItem Header="_Save Eyetracking" Name="saveEyetrackingMenuItem" Click="SaveEyetrackingMenuItem_Click" IsEnabled="False" />
                 <MenuItem Header="Save Templates" Name="saveTemplatesMenuItem" Click="SaveTemplatesMenuItem_Click" IsEnabled="False"/>
                 <MenuItem Header="Save Gaze Trace" Name="saveGazeTraceMenuItem" Click="saveGazeTraceMenuItem_Click" IsEnabled="False"/>
                 <MenuItem Header="Save All" Name="saveAllMenuItem" Click="SaveAllMenuItem_Click" IsEnabled="False"/>
                 <MenuItem Header="Auto save on exit" Name="AutoSaveOnExitMenuItem" IsCheckable="True" IsChecked="True"/>
-                <Separator></Separator>
+                <Separator />
             </MenuItem>
-            <MenuItem Header="_Edit" Name="editMenu">
-            </MenuItem>
+            <MenuItem Header="_Edit" Name="editMenu" />
             <MenuItem Header="_Tools" Name="toolsMenu">
                 <MenuItem Header="_Stimulus view" Name="StimulusViewMenuItem" Click="StimulusViewMenuItem_Click"/>
                 <MenuItem Header="_Stimulus view with gaze" Name="StimulusViewWithGazeMenuitem" Click="StimulusViewWithGazeMenuitem_Click"/>
@@ -173,9 +172,7 @@
                             <Style TargetType="TabItem">
                                 <Setter Property="Template">
                                     <Setter.Value>
-                                        <ControlTemplate TargetType="TabItem">
-
-                                        </ControlTemplate>
+                                        <ControlTemplate TargetType="TabItem" />
                                     </Setter.Value>
                                 </Setter>
                             </Style>
@@ -282,9 +279,7 @@
                             <Style TargetType="TabItem">
                                 <Setter Property="Template">
                                     <Setter.Value>
-                                        <ControlTemplate TargetType="TabItem">
-
-                                        </ControlTemplate>
+                                        <ControlTemplate TargetType="TabItem" />
                                     </Setter.Value>
                                 </Setter>
                             </Style>

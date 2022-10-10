@@ -171,20 +171,12 @@ namespace Eyetracking
 		public CancelPupilFindingDelegate CancelPupilFindingDelegate;	// delegate for interrupting pupil finding
 
 		public PupilFinder(string videoFileName, PupilFindingUserControlViewModel viewModel = null)
+			: base(videoFileName)
 		{
-			this.videoFileName = videoFileName;
 			ViewModel = viewModel;
 			SetStatusDelegate = SetStatus;
 			UpdateFrameDelegate = UpdateFrame;
 			OnFramesPupilsProcessedDelegate = OnFramesProcessed;
-			videoSource = new VideoCapture(videoFileName);
-			width = (int)videoSource.Get(VideoCaptureProperties.FrameWidth);
-			height = (int)videoSource.Get(VideoCaptureProperties.FrameHeight);
-			fps = (int)videoSource.Get(VideoCaptureProperties.Fps);
-			frameCount = (int)videoSource.Get(VideoCaptureProperties.FrameCount);
-			duration = (double)frameCount / fps;
-			framesPerMinute = fps * 60;
-			framesPerHour = framesPerMinute * 60;
 
 			// try to auto load stuff if they exist
 			if (File.Exists(autoTimestampFileName))
@@ -227,6 +219,11 @@ namespace Eyetracking
 			ViewModel.PupilWindowHeight = height;
 			ViewModel.VideoHeight = height;
 			ViewModel.VideoWidth = width;
+		}
+
+		protected override void OnCurrentFrameNumberSet()
+		{
+			ReadGrayscaleFrame();
 		}
 
 		/// <summary>

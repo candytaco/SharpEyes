@@ -49,19 +49,17 @@
 
         <Menu Height="23" VerticalAlignment="Top" IsMainMenu="True" Margin="0,0,0,0" Grid.ColumnSpan="2" Grid.Row="0">
             <MenuItem Header="_File" Name="fileMenu">
-                <MenuItem Header="_Open Video" Name="openVideoMenuItem" Click="OpenVideoMenuItem_Click"></MenuItem>
+                <MenuItem Header="_Open Video" Name="openVideoMenuItem" Click="OpenVideoMenuItem_Click" />
                 <MenuItem Header="_Load Gaze" Name="loadGazeMenuItem" Click="LoadGazeMenuItem_Click" IsEnabled="False"/>
                 <MenuItem Header="Load Gaze 2" Name="loadGaze2MenuItem" Click="LoadGaze2MenuItem_Click" IsEnabled="False"/>
                 <Separator/>
                 <MenuItem Header="_Save Gaze" Name="saveGazeMenuItem" Click="SaveGazeMenuItem_Click" IsEnabled="False"/>
                 <MenuItem Header="_Save Gaze As" Name="saveGazeAsMenuItem" Click="SaveGazeAsMenuItem_Click" IsEnabled="False"/>
                 <MenuItem Header="Auto save on exit" Name="AutoSaveOnExitMenuItem" IsCheckable="True" IsChecked="True"/>
-                <Separator></Separator>
+                <Separator />
             </MenuItem>
-            <MenuItem Header="_Edit" Name="editMenu">
-            </MenuItem>
-            <MenuItem Header="_Tools" Name="toolsMenu">
-            </MenuItem>
+            <MenuItem Header="_Edit" Name="editMenu" />
+            <MenuItem Header="_Tools" Name="toolsMenu" />
             <MenuItem Header="_Help" Name="helpMenu">
                 <MenuItem Header="_Help" Name="HelpMenuItem" Click="HelpMenuitem_Click" />
                 <MenuItem Header="_Report bug" Name="ReportBugmenuItem" Click="ReportBugmenuItem_Click" />
