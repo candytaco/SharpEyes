@@ -619,7 +619,7 @@ namespace Eyetracking
 				ViewModel.TemplatePupilFinderConfigUserControlViewModel.CurrentTemplateIndex = 0;
 				ViewModel.TemplatePupilFinderConfigUserControlViewModel.TemplatePreviewImage = GetTemplateImage(0);
 			}
-			catch (InvalidDataException)
+			catch (Exception)
 			{
 				ShowMessageBox("Corrupted Templates", "Templates file is corrupted", ButtonEnum.Ok, Icon.Error);
 			}
