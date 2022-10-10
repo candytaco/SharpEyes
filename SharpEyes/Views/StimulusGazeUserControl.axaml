@@ -5,7 +5,6 @@
              mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
              xmlns:uc="clr-namespace:SharpEyes.Views"
              xmlns:vm="clr-namespace:SharpEyes.ViewModels"
-             xmlns:VLC="clr-namespace:LibVLCSharp.Avalonia;assembly=LibVLCSharp.Avalonia"
              x:Class="SharpEyes.Views.StimulusGazeUserControl">
   <Design.DataContext>
     <vm:StimulusGazeViewModel/>
