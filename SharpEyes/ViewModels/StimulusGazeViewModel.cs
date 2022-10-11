@@ -9,8 +9,10 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Eyetracking;
+using NumSharp;
 using ReactiveUI;
 using SharpEyes.Models;
+using Num = NumSharp.np;
 
 namespace SharpEyes.ViewModels
 {
@@ -19,6 +21,11 @@ namespace SharpEyes.ViewModels
 		// == Commands ==
 		public ReactiveCommand<Unit, Unit> LoadVideoCommand { get; set; }
 		public ReactiveCommand<Unit, Unit>? PlayPauseCommand { get; set; } = null;
+		public ReactiveCommand<Unit, Unit>? PreviousFrameCommand { get; set; } = null;
+		public ReactiveCommand<Unit, Unit>? NextFrameCommand { get; set; } = null;
+		public ReactiveCommand<Unit, Unit> LoadGazeCommand { get; set; }
+		public ReactiveCommand<Unit, Unit> SetCurrentAsDataStartCommand { get; set; }
+		public ReactiveCommand<Unit, Unit>? FindDataStartCommand { get; set; } = null;
 
 		// == window reference for showing dialogs
 		public Window? MainWindow =>
@@ -129,6 +136,16 @@ namespace SharpEyes.ViewModels
 		}
 
 		// Gaze overlay info
+		private NDArray? gazeLocations = null;
+
+		private bool _isGazeLoaded = false;
+		public bool IsGazeLoaded
+		{
+			get => _isGazeLoaded;
+			set => this.RaiseAndSetIfChanged(ref _isGazeLoaded, value);
+		}
+		private int? dataStartFrame = null;
+
 		private double _gazeX = 0;
 		private double _gazeY = 0;
 		public double GazeX
@@ -224,8 +241,13 @@ namespace SharpEyes.ViewModels
 		{
 			LoadVideoCommand = ReactiveCommand.Create(LoadVideo);
 			PlayPauseCommand = ReactiveCommand.Create(PlayPause);
+			LoadGazeCommand = ReactiveCommand.Create(LoadGaze);
+			SetCurrentAsDataStartCommand = ReactiveCommand.Create(SetCurrentAsDataStart);
 			videoPlaybackTimer = new DispatcherTimer();
 			videoPlaybackTimer.Tick += this.VideoTimerTick;
+
+			PreviousFrameCommand = ReactiveCommand.Create(() => { ChangeFrame(-1); });
+			NextFrameCommand = ReactiveCommand.Create(() => { ChangeFrame(1); });
 		}
 
 		public async void LoadVideo()
@@ -260,6 +282,12 @@ namespace SharpEyes.ViewModels
 			IsVideoPlaying = !IsVideoPlaying;
 		}
 
+		public void ChangeFrame(int delta)
+		{
+			if (videoReader != null)
+				ShowFrame(videoReader.CurrentFrameNumber + delta);
+		}
+
 		/// <summary>
 		/// Called by the dispatcher timer to play the video. this is called once every frame to read
 		/// in a video frame and update the display
@@ -269,8 +297,7 @@ namespace SharpEyes.ViewModels
 			if (videoReader.CurrentFrameNumber >= videoReader.frameCount - 1)
 				PlayPause();
 			videoReader.ReadFrame();
-			VideoFrame = videoReader.GetFrameForDisplay();
-			CurrentVideoFrame = videoReader.CurrentFrameNumber;
+			UpdateDisplay();
 		}
 
 		public void ShowFrame()
@@ -281,8 +308,65 @@ namespace SharpEyes.ViewModels
 		public void ShowFrame(int frame)
 		{
 			videoReader.CurrentFrameNumber = frame;
+			UpdateDisplay();
+		}
+
+		/// <summary>
+		/// Given a video frame index, gets the first corresponding index in the gaze locations
+		/// </summary>
+		/// <param name="videoFrame"></param>
+		/// <returns></returns>
+		private int VideoTimeToDataIndex(int videoFrame)
+		{
+			int videoFramesElapsed = videoFrame - dataStartFrame.Value;
+			if (videoFramesElapsed < 0)
+				return 0;
+			double videoElapsedTime = (double)videoFramesElapsed / videoReader.fps;
+			return (int)(videoElapsedTime * EyetrackingFPS);
+		}
+
+		public void UpdateDisplay()
+		{
 			VideoFrame = videoReader.GetFrameForDisplay();
 			CurrentVideoFrame = videoReader.CurrentFrameNumber;
+			// TODO: set gaze circle location
+			if (dataStartFrame != null)
+			{
+				int dataFrame = VideoTimeToDataIndex(CurrentVideoFrame);
+				GazeX = gazeLocations[dataFrame, 0];
+				GazeY = gazeLocations[dataFrame, 1];
+			}
+		}
+
+		// after gaze is manually edited, updates it.
+		public void UpdateGaze()
+		{
+
+		}
+
+		public async void LoadGaze()
+		{
+			OpenFileDialog openFileDialog = new OpenFileDialog()
+			{
+				Title = "Load gaze locations"
+			};
+			openFileDialog.Filters.Add(new FileDialogFilter()
+			{
+				Name = "Numpy file",
+				Extensions = { "npy" }
+			});
+			string[] fileName = await openFileDialog.ShowAsync(MainWindow);
+
+			if (fileName == null || fileName.Length == 0)
+				return;
+
+			gazeLocations = Num.load(fileName[0]);
+			IsGazeLoaded = true;
+		}
+
+		public void SetCurrentAsDataStart()
+		{
+			dataStartFrame = videoReader.CurrentFrameNumber;
 		}
 	}
 }

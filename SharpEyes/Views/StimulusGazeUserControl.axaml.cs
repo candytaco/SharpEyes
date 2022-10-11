@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -10,6 +11,7 @@ namespace SharpEyes.Views
 	{
 		private bool areThumbEventsAttached = false;
 		private bool isDraggingVideoSlider = false;
+		private bool isMouseDownOnVideoCanvas = true;
 		private StimulusGazeViewModel? viewModel => (StimulusGazeViewModel)this.DataContext;
 		public StimulusGazeUserControl()
 		{
@@ -17,24 +19,45 @@ namespace SharpEyes.Views
 			this.GotFocus += (sender, args) => { AttachThumbEvents(); };
 		}
 
+		private void SetGazeLocation(Point point)
+		{
+			if (viewModel.IsMovingGaze)
+			{
+				viewModel.GazeX = point.X;
+				viewModel.GazeY = point.Y;
+			}
+		}
+
 		private void VideoCanvas_OnPointerPressed(object? sender, PointerPressedEventArgs e)
 		{
-			
+			isMouseDownOnVideoCanvas = true;
+			if (viewModel.IsMovingGaze && viewModel.IsVideoPlaying)
+			{
+				viewModel.PlayPause();
+				SetGazeLocation(e.GetPosition(VideoCanvas));
+			}
 		}
 
 		private void VideoCanvas_OnPointerMoved(object? sender, PointerEventArgs e)
 		{
-			
+			if (isMouseDownOnVideoCanvas)
+				SetGazeLocation(e.GetPosition(VideoCanvas));
 		}
 
 		private void VideoCanvas_OnPointerReleased(object? sender, PointerReleasedEventArgs e)
 		{
-			
+			isMouseDownOnVideoCanvas = false;
+			viewModel.UpdateGaze();
 		}
 
 		private void VideoCanvas_OnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
 		{
-			
+			if (viewModel.IsVideoPlaying)
+				viewModel.PlayPause();
+			if (e.Delta.Y > 0)
+				viewModel.ShowFrame(viewModel.CurrentVideoFrame - 1);
+			else
+				viewModel.ShowFrame(viewModel.CurrentVideoFrame + 1);
 		}
 
 		/// <summary>

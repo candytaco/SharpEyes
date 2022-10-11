@@ -3,8 +3,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
-             xmlns:uc="clr-namespace:SharpEyes.Views"
              xmlns:vm="clr-namespace:SharpEyes.ViewModels"
+             xmlns:system="clr-namespace:System;assembly=System.Runtime"
              x:Class="SharpEyes.Views.StimulusGazeUserControl">
   <Design.DataContext>
     <vm:StimulusGazeViewModel/>
@@ -72,11 +72,13 @@
           <TextBlock Name="CurrentVideoTimeTextBlock" HorizontalAlignment="Left" VerticalAlignment="Center" Text="{Binding CurrentVideoTime}"/>
           <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
             <Button Name="PreviousFrameButton" ToolTip.Tip="Previous Frame" Height="32" VerticalContentAlignment="Center"
-                    Command="{Binding PreviousFrameCommand}" HotKey="Q">⮜</Button>
+                    Command="{Binding PreviousFrameCommand}" HotKey="Q">⮜
+            </Button>
             <Button Name="PlayPauseButton" Height="32" VerticalContentAlignment="Center" Margin="2 0 2 0" Content="{Binding PlayPauseButtonText}"
                     Command="{Binding PlayPauseCommand}" HotKey="Space"/>
             <Button Name="NextFrameButton" ToolTip.Tip="Next Frame" Height="32" VerticalContentAlignment="Center"
-                    Command="{Binding NextFrameCommand}" HotKey="W">⮞</Button>
+                    Command="{Binding NextFrameCommand}" HotKey="W">⮞
+            </Button>
           </StackPanel>
           <TextBlock Name="TotalVideoTimeTextBlock" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="4 0 4 0" Text="{Binding TotalVideoTime}"/>
         </Panel>
@@ -94,7 +96,8 @@
     <!--Gaze info stuff-->
     <DockPanel Margin="0" Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" >
       <StackPanel HorizontalAlignment="Center" DockPanel.Dock="Top">
-        <Button Margin="4 2" Width="180" HorizontalContentAlignment="Center">Set current as data start</Button>
+        <Button Margin="4 2" Width="180" HorizontalContentAlignment="Center"
+                Command="{Binding SetCurrentAsDataStartCommand}">Set current as data start</Button>
         <Button Margin="4 2" Width="180" HorizontalContentAlignment="Center">Auto find data start</Button>
       </StackPanel>
       <ScrollViewer DockPanel.Dock="Top" Margin="2">
