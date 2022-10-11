@@ -7,8 +7,10 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Threading;
 using Eyetracking;
 using ReactiveUI;
+using SharpEyes.Models;
 
 namespace SharpEyes.ViewModels
 {
@@ -61,6 +63,9 @@ namespace SharpEyes.ViewModels
 			set => this.RaiseAndSetIfChanged(ref _progressBarValue, value);
 		}
 		
+		// == video stuff ==
+		private VideoReader? videoReader = null;
+		private DispatcherTimer videoPlaybackTimer;
 
 		private int _videoWidth = 1024;
 		public int VideoWidth
@@ -219,6 +224,8 @@ namespace SharpEyes.ViewModels
 		{
 			LoadVideoCommand = ReactiveCommand.Create(LoadVideo);
 			PlayPauseCommand = ReactiveCommand.Create(PlayPause);
+			videoPlaybackTimer = new DispatcherTimer();
+			videoPlaybackTimer.Tick += this.VideoTimerTick;
 		}
 
 		public async void LoadVideo()
@@ -236,11 +243,46 @@ namespace SharpEyes.ViewModels
 
 			if (fileName == null || fileName.Length == 0)
 				return;
-			
+
+			videoReader = new VideoReader(fileName[0]);
+			videoReader.ReadFrame();
+			VideoFrame = videoReader.GetFrameForDisplay();
+			videoPlaybackTimer.Interval = TimeSpan.FromMilliseconds(1000.0 / (double)videoReader.fps);
+			TotalVideoFrames = videoReader.frameCount;
 		}
 
 		public void PlayPause()
 		{
+			if (IsVideoPlaying)
+				videoPlaybackTimer.Stop();
+			else
+				videoPlaybackTimer.Start();
+			IsVideoPlaying = !IsVideoPlaying;
+		}
+
+		/// <summary>
+		/// Called by the dispatcher timer to play the video. this is called once every frame to read
+		/// in a video frame and update the display
+		/// </summary>
+		public void VideoTimerTick(object? sender, EventArgs e)
+		{
+			if (videoReader.CurrentFrameNumber >= videoReader.frameCount - 1)
+				PlayPause();
+			videoReader.ReadFrame();
+			VideoFrame = videoReader.GetFrameForDisplay();
+			CurrentVideoFrame = videoReader.CurrentFrameNumber;
+		}
+
+		public void ShowFrame()
+		{
+			ShowFrame(CurrentVideoFrame);
+		}
+
+		public void ShowFrame(int frame)
+		{
+			videoReader.CurrentFrameNumber = frame;
+			VideoFrame = videoReader.GetFrameForDisplay();
+			CurrentVideoFrame = videoReader.CurrentFrameNumber;
 		}
 	}
 }
