@@ -12,9 +12,9 @@ namespace Eyetracking
 	public struct VideoKeyFrame
 	{
 		/// <summary>
-		/// Video time in milliseconds
+		/// Video time in frames
 		/// </summary>
-		public double VideoTime { get; }
+		public int VideoFrame { get; }
 
 		/// <summary>
 		/// Timestamp representation of video time
@@ -36,9 +36,9 @@ namespace Eyetracking
 		/// </summary>
 		public double GazeY { get; }
 
-		public VideoKeyFrame(double time, int index, string timestamp, double gazeX, double gazeY)
+		public VideoKeyFrame(int frame, int index, string timestamp, double gazeX, double gazeY)
 		{
-			VideoTime = time;
+			VideoFrame = frame;
 			VideoTimeStamp = timestamp;
 			DataIndex = index;
 			GazeX = gazeX;
@@ -47,27 +47,27 @@ namespace Eyetracking
 
 		public static bool operator <(VideoKeyFrame lhs, double time)
 		{
-			return lhs.VideoTime < time;
+			return lhs.VideoFrame < time;
 		}
 
 		public static bool operator >= (VideoKeyFrame lhs, double time)
 		{
-			return !(lhs.VideoTime < time);
+			return !(lhs.VideoFrame < time);
 		}
 
 		public static bool operator >(VideoKeyFrame lhs, double time)
 		{
-			return lhs.VideoTime > time;
+			return lhs.VideoFrame > time;
 		}
 
 		public static bool operator <=(VideoKeyFrame lhs, double time)
 		{
-			return !(lhs.VideoTime > time);
+			return !(lhs.VideoFrame > time);
 		}
 
 		public static bool operator ==(VideoKeyFrame lhs, double time)
 		{
-			return (lhs.VideoTime - time) < Double.Epsilon;
+			return (lhs.VideoFrame - time) < Double.Epsilon;
 		}
 
 		public static bool operator !=(VideoKeyFrame lhs, double time)

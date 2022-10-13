@@ -24,6 +24,7 @@ namespace SharpEyes.ViewModels
 		public ReactiveCommand<Unit, Unit>? PreviousFrameCommand { get; set; } = null;
 		public ReactiveCommand<Unit, Unit>? NextFrameCommand { get; set; } = null;
 		public ReactiveCommand<Unit, Unit> LoadGazeCommand { get; set; }
+		public ReactiveCommand<Unit, Unit>? SaveGazeCommand { get; set; } = null;
 		public ReactiveCommand<Unit, Unit> SetCurrentAsDataStartCommand { get; set; }
 		public ReactiveCommand<Unit, Unit>? FindDataStartCommand { get; set; } = null;
 
@@ -146,6 +147,25 @@ namespace SharpEyes.ViewModels
 		}
 		private int? dataStartFrame = null;
 
+		private int? dataEndFrame
+		{
+			get
+			{
+				if ((object)gazeLocations == null || dataStartFrame == null)
+					return null;
+				return DataIndexToVideoTime(gazeLocations.Shape[0]);
+			}
+		}
+
+		private int? dataFrame // used to index into the gaze matrix. Updated by UpdateDisplay
+		{
+			get
+			{
+				if (dataStartFrame == null) return null;
+				return VideoTimeToDataIndex(CurrentVideoFrame);
+			}
+		}
+
 		private double _gazeX = 0;
 		private double _gazeY = 0;
 		public double GazeX
@@ -230,12 +250,25 @@ namespace SharpEyes.ViewModels
 		}
 
 		private List<VideoKeyFrame> _videoKeyFrames = new List<VideoKeyFrame>();
-
 		public List<VideoKeyFrame> VideoKeyFrames
 		{
 			get => _videoKeyFrames;
 			set => this.RaiseAndSetIfChanged(ref _videoKeyFrames, value);
 		}
+
+		// set some default keyframes when the data start is set?
+		private bool _setDefaultKeyFrames = true;
+		public bool SetDefaultKeyFrames
+		{
+			get => _setDefaultKeyFrames;
+			set => this.RaiseAndSetIfChanged(ref _setDefaultKeyFrames, value);
+		}
+
+		private string gazeFileName = null;
+
+		private string defaultSaveName => gazeFileName == null
+			? "gaze locations"
+			: System.IO.Path.GetFileNameWithoutExtension(gazeFileName) + " corrected.npy";
 
 		public StimulusGazeViewModel()
 		{
@@ -252,6 +285,14 @@ namespace SharpEyes.ViewModels
 
 		public async void LoadVideo()
 		{
+			// reset gaze stuff
+			dataStartFrame = null;
+			IsGazeLoaded = false;
+			gazeLocations = null;
+			VideoKeyFrames.Clear();
+			GazeX = 0;
+			GazeY = 0;
+
 			OpenFileDialog openFileDialog = new OpenFileDialog()
 			{
 				Title = "Load stimulus video"
@@ -271,6 +312,7 @@ namespace SharpEyes.ViewModels
 			VideoFrame = videoReader.GetFrameForDisplay();
 			videoPlaybackTimer.Interval = TimeSpan.FromMilliseconds(1000.0 / (double)videoReader.fps);
 			TotalVideoFrames = videoReader.frameCount;
+			SaveGazeCommand = null;
 		}
 
 		public void PlayPause()
@@ -325,6 +367,18 @@ namespace SharpEyes.ViewModels
 			return (int)(videoElapsedTime * EyetrackingFPS);
 		}
 
+		/// <summary>
+		/// For a given index in the data, get the corresponding video frame
+		/// </summary>
+		/// <param name="dataIndex">index in eyetracking data</param>
+		/// <returns>video frame number</returns>
+		private int DataIndexToVideoTime(int dataIndex)
+		{
+			double dataElapsedTime = (double)dataIndex / EyetrackingFPS; // in seconds
+			int dataElapsedFrames = (int)Math.Round(dataElapsedTime * videoReader.fps);
+			return dataStartFrame.Value + dataElapsedFrames;
+		}
+
 		public void UpdateDisplay()
 		{
 			VideoFrame = videoReader.GetFrameForDisplay();
@@ -332,7 +386,6 @@ namespace SharpEyes.ViewModels
 			// TODO: set gaze circle location
 			if (dataStartFrame != null)
 			{
-				int dataFrame = VideoTimeToDataIndex(CurrentVideoFrame);
 				GazeX = gazeLocations[dataFrame, 0];
 				GazeY = gazeLocations[dataFrame, 1];
 			}
@@ -341,7 +394,102 @@ namespace SharpEyes.ViewModels
 		// after gaze is manually edited, updates it.
 		public void UpdateGaze()
 		{
+			double deltaX = GazeX - gazeLocations[dataFrame, 0];
+			double deltaY = GazeY - gazeLocations[dataFrame, 1];
 
+			AddKeyFrame();
+
+			// if there is a keyframe before, ramp the delta from the previous keyframe 
+			// to this new keyframe
+			if (PreviousDataKeyFrame.HasValue)
+			{
+				int numFrames = dataFrame.Value - PreviousDataKeyFrame.Value;
+				double multiplier;
+				for (int i = PreviousDataKeyFrame.Value; i < dataFrame; i++)
+				{
+					multiplier = (double)(i - PreviousDataKeyFrame.Value) / numFrames;
+					gazeLocations[i, 0] += multiplier * deltaX;
+					gazeLocations[i, 1] += multiplier * deltaY;
+				}
+			}
+			// update all following data frames with this delta
+			gazeLocations[new Slice(dataFrame.Value, null), 0] += deltaX;
+			gazeLocations[new Slice(dataFrame.Value, null), 1] += deltaY;
+		}
+
+		public void AddKeyFrame()
+		{
+			AddKeyFrame(CurrentVideoFrame);
+		}
+
+		public void AddKeyFrame(int frame)
+		{
+			if (dataStartFrame.HasValue && (frame >= dataStartFrame.Value) &&
+			    (frame <= dataEndFrame))
+			{
+				int index = VideoTimeToDataIndex(frame);
+				for (int i = 0; i < VideoKeyFrames.Count; i++)
+				{
+					// if this frame already exists as a keyframe, remove it
+					if (VideoKeyFrames[i].DataIndex == index)
+					{
+						VideoKeyFrames.RemoveAt(i);
+						break;
+					}
+				}
+
+				VideoKeyFrames.Add(new VideoKeyFrame(frame, index, videoReader.FramesToTimecode(frame),
+															gazeLocations[index, 0], gazeLocations[index, 1]));
+				VideoKeyFrames.Sort((left, right) => left.VideoFrame.CompareTo(right.VideoFrame));
+				this.RaisePropertyChanged("VideoKeyFrames");
+			}
+		}
+
+		private int? PreviousVideoKeyFrame
+		{
+			get
+			{
+				for (int i = VideoKeyFrames.Count - 1; i > -1; i--)
+				{
+					if (VideoKeyFrames[i] < CurrentVideoFrame)
+						return VideoKeyFrames[i].VideoFrame;
+				}
+				return null;
+			}
+		}
+
+		private int? PreviousDataKeyFrame 
+		{
+			get
+			{
+				if (PreviousVideoKeyFrame.HasValue)
+					return VideoTimeToDataIndex(PreviousVideoKeyFrame.Value);
+				return null;
+			}
+		}
+
+
+		private int? NextVideoKeyFrame
+		{
+			get
+			{
+				for (int i = 0; i < VideoKeyFrames.Count; i++)
+				{
+					if (VideoKeyFrames[i] > CurrentVideoFrame)
+						return VideoKeyFrames[i].VideoFrame;
+				}
+				return null;
+			}
+		}
+
+		private int? NextDataKeyFrame
+		{
+			get
+			{
+				if (NextVideoKeyFrame.HasValue)
+					return VideoTimeToDataIndex(NextVideoKeyFrame.Value);
+				return null;
+			}
 		}
 
 		public async void LoadGaze()
@@ -362,11 +510,43 @@ namespace SharpEyes.ViewModels
 
 			gazeLocations = Num.load(fileName[0]);
 			IsGazeLoaded = true;
+			SaveGazeCommand = ReactiveCommand.Create(SaveGaze);
+			gazeFileName = fileName[0];
+		}
+
+		public async void SaveGaze()
+		{
+			SaveFileDialog saveFileDialog = new SaveFileDialog()
+			{
+				Title = "Load gaze locations",
+				InitialFileName = defaultSaveName
+			};
+			saveFileDialog.Filters.Add(new FileDialogFilter()
+			{
+				Name = "Numpy file",
+				Extensions = { "npy" },
+			});
+			string? fileName = await saveFileDialog.ShowAsync(MainWindow);
+
+			if (fileName != null)
+			{
+				Num.save(fileName, gazeLocations);
+			}
 		}
 
 		public void SetCurrentAsDataStart()
 		{
 			dataStartFrame = videoReader.CurrentFrameNumber;
+
+			VideoKeyFrames.Clear();
+			if (SetDefaultKeyFrames)
+			{
+				AddKeyFrame(dataStartFrame.Value);	// start of data
+				AddKeyFrame(dataStartFrame.Value + videoReader.fps * 37 * 2);	// end of eyetracking calibration in driving
+				if (dataEndFrame >= videoReader.frameCount)
+					AddKeyFrame(videoReader.frameCount - 1);
+				else AddKeyFrame(dataEndFrame.Value - 1);
+			}
 		}
 	}
 }
