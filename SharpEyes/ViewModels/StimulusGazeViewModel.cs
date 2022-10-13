@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reactive;
 using System.Text;
 using Avalonia;
@@ -249,8 +251,8 @@ namespace SharpEyes.ViewModels
 			set => this.RaiseAndSetIfChanged(ref _trailLength, value);
 		}
 
-		private List<VideoKeyFrame> _videoKeyFrames = new List<VideoKeyFrame>();
-		public List<VideoKeyFrame> VideoKeyFrames
+		private ObservableCollection<VideoKeyFrame> _videoKeyFrames = new ObservableCollection<VideoKeyFrame>(new List<VideoKeyFrame>());
+		public ObservableCollection<VideoKeyFrame> VideoKeyFrames
 		{
 			get => _videoKeyFrames;
 			set => this.RaiseAndSetIfChanged(ref _videoKeyFrames, value);
@@ -440,7 +442,7 @@ namespace SharpEyes.ViewModels
 
 				VideoKeyFrames.Add(new VideoKeyFrame(frame, index, videoReader.FramesToTimecode(frame),
 															gazeLocations[index, 0], gazeLocations[index, 1]));
-				VideoKeyFrames.Sort((left, right) => left.VideoFrame.CompareTo(right.VideoFrame));
+				VideoKeyFrames.OrderBy((keyframe) => keyframe.VideoFrame);
 				this.RaisePropertyChanged("VideoKeyFrames");
 			}
 		}
