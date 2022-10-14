@@ -277,6 +277,7 @@ namespace SharpEyes.ViewModels
 			LoadVideoCommand = ReactiveCommand.Create(LoadVideo);
 			PlayPauseCommand = ReactiveCommand.Create(PlayPause);
 			LoadGazeCommand = ReactiveCommand.Create(LoadGaze);
+			SaveGazeCommand = ReactiveCommand.Create(SaveGaze);
 			SetCurrentAsDataStartCommand = ReactiveCommand.Create(SetCurrentAsDataStart);
 			videoPlaybackTimer = new DispatcherTimer();
 			videoPlaybackTimer.Tick += this.VideoTimerTick;
@@ -442,8 +443,7 @@ namespace SharpEyes.ViewModels
 
 				VideoKeyFrames.Add(new VideoKeyFrame(frame, index, videoReader.FramesToTimecode(frame),
 															gazeLocations[index, 0], gazeLocations[index, 1]));
-				VideoKeyFrames.OrderBy((keyframe) => keyframe.VideoFrame);
-				this.RaisePropertyChanged("VideoKeyFrames");
+				VideoKeyFrames = new ObservableCollection<VideoKeyFrame>(VideoKeyFrames.OrderBy((keyframe) => keyframe.VideoFrame));
 			}
 		}
 
@@ -512,7 +512,6 @@ namespace SharpEyes.ViewModels
 
 			gazeLocations = Num.load(fileName[0]);
 			IsGazeLoaded = true;
-			SaveGazeCommand = ReactiveCommand.Create(SaveGaze);
 			gazeFileName = fileName[0];
 		}
 
