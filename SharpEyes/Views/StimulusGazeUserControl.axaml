@@ -72,12 +72,14 @@
           <TextBlock Name="CurrentVideoTimeTextBlock" HorizontalAlignment="Left" VerticalAlignment="Center" Text="{Binding CurrentVideoTime}"/>
           <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
             <Button Name="PreviousFrameButton" ToolTip.Tip="Previous Frame" Height="32" VerticalContentAlignment="Center"
-                    Command="{Binding PreviousFrameCommand}" HotKey="Q">⮜
+                    Command="{Binding PreviousFrameCommand}" HotKey="Q">
+              ⮜
             </Button>
             <Button Name="PlayPauseButton" Height="32" VerticalContentAlignment="Center" Margin="2 0 2 0" Content="{Binding PlayPauseButtonText}"
                     Command="{Binding PlayPauseCommand}" HotKey="Space"/>
             <Button Name="NextFrameButton" ToolTip.Tip="Next Frame" Height="32" VerticalContentAlignment="Center"
-                    Command="{Binding NextFrameCommand}" HotKey="W">⮞
+                    Command="{Binding NextFrameCommand}" HotKey="W">
+              ⮞
             </Button>
           </StackPanel>
           <TextBlock Name="TotalVideoTimeTextBlock" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="4 0 4 0" Text="{Binding TotalVideoTime}"/>
@@ -95,21 +97,21 @@
 
     <!--Gaze info stuff-->
     <DockPanel Margin="0" Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" >
-      
+
       <ScrollViewer DockPanel.Dock="Top" Margin="2">
         <StackPanel>
-<!-- Data start finding-->
-            <!--Gaze marker info-->
-<Expander Margin="4 2" IsExpanded="True" Header="Data start finding" HorizontalContentAlignment="Center"
-          VerticalAlignment="Top">
-    <StackPanel HorizontalAlignment="Center" DockPanel.Dock="Top">
-        <Button Margin="4 " Width="180" HorizontalContentAlignment="Center"
-                Command="{Binding SetCurrentAsDataStartCommand}">Set current as data start</Button>
-        <Button Margin="4 " Width="180" HorizontalContentAlignment="Center">Auto find data start</Button>
-        <ToggleSwitch OnContent="Set default keyframes" OffContent="Set default keyframes" HorizontalAlignment="Center"
-                      IsChecked="{Binding SetDefaultKeyFrames}"/>
-    </StackPanel>
-</Expander>
+          <!-- Data start finding-->
+          <!--Gaze marker info-->
+          <Expander Margin="4 2" IsExpanded="True" Header="Data start finding" HorizontalContentAlignment="Center"
+                    VerticalAlignment="Top">
+            <StackPanel HorizontalAlignment="Center" DockPanel.Dock="Top">
+              <Button Margin="4 " Width="180" HorizontalContentAlignment="Center"
+                      Command="{Binding SetCurrentAsDataStartCommand}">Set current as data start</Button>
+              <Button Margin="4 " Width="180" HorizontalContentAlignment="Center">Auto find data start</Button>
+              <ToggleSwitch OnContent="Set default keyframes" OffContent="Set default keyframes" HorizontalAlignment="Center"
+                            IsChecked="{Binding SetDefaultKeyFrames}"/>
+            </StackPanel>
+          </Expander>
           <Expander Margin="4 2" IsExpanded="True" Header="Gaze info" HorizontalContentAlignment="Center"
                     VerticalAlignment="Top">
             <StackPanel>
@@ -130,17 +132,17 @@
 
           <Expander Margin="4 2" IsExpanded="True" Header="Keyframes" HorizontalContentAlignment="Center"
                     VerticalAlignment="Top">
-              <StackPanel>
-                  <Button Margin="4">Add keyframe</Button>
-                  <DataGrid Name="KeyFramesDataGrid" Margin="4" AutoGenerateColumns="False" Items="{Binding VideoKeyFrames}">
-                      <DataGrid.Columns>
-                          <DataGridTextColumn Header="Stimulus time" Binding="{Binding VideoTimeStamp}"/>
-                          <DataGridTextColumn Header="Gaze data index" Binding="{Binding DataIndex}"/>
-                          <DataGridTextColumn Header="Gaze X" Binding="{Binding GazeX, StringFormat={}{0:#.#}}"/>
-                          <DataGridTextColumn Header="Gaze Y" Binding="{Binding GazeY, StringFormat={}{0:#.#}}"/>
-                      </DataGrid.Columns>
-                  </DataGrid>
-              </StackPanel>
+            <StackPanel>
+              <Button Margin="4">Add keyframe</Button>
+              <DataGrid Name="KeyFramesDataGrid" Margin="4" AutoGenerateColumns="False" Items="{Binding VideoKeyFrames}">
+                <DataGrid.Columns>
+                  <DataGridTextColumn Header="Stimulus time" Binding="{Binding VideoTimeStamp}"/>
+                  <DataGridTextColumn Header="Gaze data index" Binding="{Binding DataIndex}"/>
+                  <DataGridTextColumn Header="Gaze X" Binding="{Binding GazeX, StringFormat={}{0:#.#}}"/>
+                  <DataGridTextColumn Header="Gaze Y" Binding="{Binding GazeY, StringFormat={}{0:#.#}}"/>
+                </DataGrid.Columns>
+              </DataGrid>
+            </StackPanel>
           </Expander>
         </StackPanel>
 

@@ -13,22 +13,22 @@
         Closing="Window_OnClosing"
         Title="SharpEyes">
 
-    <Design.DataContext>
-        <vm:MainWindowViewModel/>
-    </Design.DataContext>
+  <Design.DataContext>
+    <vm:MainWindowViewModel/>
+  </Design.DataContext>
 
   <Window.Styles>
     <Style Selector="TabControl WrapPanel">
       <Setter Property="HorizontalAlignment" Value="Right"/>
       <Setter Property="Height" Value="48"/>
     </Style>
-      <Style Selector="TitleBar">
-          <Setter Property="Background" Value="#00000000" />
-      </Style>
+    <Style Selector="TitleBar">
+      <Setter Property="Background" Value="#00000000" />
+    </Style>
   </Window.Styles>
 
-    <Grid Name="mainGrid">
-      <!--<uc:PupilFindingMenuStrip HorizontalAlignment="Left" VerticalAlignment="Top"/>-->
+  <Grid Name="mainGrid">
+    <!--<uc:PupilFindingMenuStrip HorizontalAlignment="Left" VerticalAlignment="Top"/>-->
     <TabControl ZIndex="-1">
       <TabItem Header="Pupil Finding" VerticalContentAlignment="Center">
         <uc:PupilFindingUserControl HorizontalAlignment="Stretch" VerticalContentAlignment="Stretch"
@@ -36,7 +36,9 @@
                                     DataContext="{Binding pupilFindingUserControlViewModel}"/>
       </TabItem>
       <TabItem Header="Calibration">
-        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center">Calibration not yet implemented</TextBlock>
+        <uc:CalibrationUserControl HorizontalAlignment="Stretch" VerticalContentAlignment="Stretch"
+                                   Name="CalibrationUserControl"
+                                   DataContext="{Binding calibrationViewModel}"/>
       </TabItem>
       <TabItem Header="Stimulus &#38; Gaze" VerticalContentAlignment="Center">
         <uc:StimulusGazeUserControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch"

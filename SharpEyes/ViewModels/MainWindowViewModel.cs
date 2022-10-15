@@ -9,10 +9,13 @@ namespace SharpEyes.ViewModels
 		public PupilFindingUserControlViewModel pupilFindingUserControlViewModel { get; }
 		public StimulusGazeViewModel stimulusGazeViewModel { get; }
 
+		public CalibrationViewModel calibrationViewModel { get; }
+
 		public MainWindowViewModel()
 		{
 			pupilFindingUserControlViewModel = new PupilFindingUserControlViewModel();
 			stimulusGazeViewModel = new StimulusGazeViewModel();
+			calibrationViewModel = new CalibrationViewModel();
 		}
 	}
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using Eyetracking;
 using MessageBox.Avalonia;
 using MessageBox.Avalonia.BaseWindows.Base;
@@ -118,6 +119,30 @@ namespace SharpEyes.Models
 			imageStream.Seek(0, SeekOrigin.Begin);
 			bitmapFrame = new Bitmap(imageStream);
 			return bitmapFrame;
+		}
+
+		/// <summary>
+		/// Writes the current frame into a WriteableBitmap buffer, which should be faster
+		/// </summary>
+		/// <param name="buffer"></param>
+		public virtual void WriteToBitmapBuffer(WriteableBitmap buffer)
+		{
+			unsafe
+			{
+				using ILockedFramebuffer frameBuffer = buffer.Lock();
+
+				int bytesPerPixel = frameBuffer.RowBytes / frameBuffer.Size.Width;
+
+				for (int y = 0; y < frameBuffer.Size.Height; y++)
+				{
+					byte* row = (byte*)frameBuffer.Address + frameBuffer.RowBytes * y;
+					for (int x = 0; x < frameBuffer.Size.Width; x++)
+					{
+
+					}
+				}
+			}
+			// TODO: copy from cvFrame memory to the WriteableBitmap memory
 		}
 
 		/// <summary>
