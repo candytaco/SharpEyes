@@ -52,30 +52,6 @@ namespace Eyetracking
 
 	public abstract class PupilFinder : VideoReader
 	{
-		/// <summary>
-		/// Median function, since numsharp does not implement a median
-		/// </summary>
-		/// <param name="list"></param>
-		/// <returns></returns>
-		public static double Median(double[] list)
-		{
-			Array.Sort(list);
-			int middle = list.Length / 2;
-			return (list.Length % 2 != 0) ? (double)list[middle] : ((double)list[middle] + (double)list[middle - 1]) / 2;
-		}
-
-		/// <summary>
-		/// Overloaded median for a list of double. Take that, python.
-		/// </summary>
-		/// <param name="list"></param>
-		/// <returns></returns>
-		public static double Median(List<double> list)
-		{
-			list.Sort();
-			int middle = list.Count / 2;
-			return (list.Count % 2 != 0) ? (double)list[middle] : ((double)list[middle] + (double)list[middle - 1]) / 2;
-		}
-
 		// video information
 		public string autoTimestampFileName
 		{
@@ -83,7 +59,7 @@ namespace Eyetracking
 			{
 				if (videoFileName == null) return null;
 				return Path.Combine(Path.GetDirectoryName(videoFileName),
-									String.Format("{0} timestamps.npy", Path.GetFileNameWithoutExtension(videoFileName)));
+									String.Format("{0} Timestamps.npy", Path.GetFileNameWithoutExtension(videoFileName)));
 			}
 		}
 		public string autoPupilsFileName
@@ -92,7 +68,7 @@ namespace Eyetracking
 			{
 				if (videoFileName == null) return null;
 				return Path.Combine(Path.GetDirectoryName(videoFileName),
-									String.Format("{0} pupils.npy", Path.GetFileNameWithoutExtension(videoFileName)));
+									String.Format("{0} Pupils.npy", Path.GetFileNameWithoutExtension(videoFileName)));
 			}
 		}
 
@@ -140,7 +116,7 @@ namespace Eyetracking
 		private NDArray timeStamps = null;
 		protected Mat grayFrame = new Mat();
 		protected Mat filteringFrame = new Mat();   // helper for filtering
-		protected Mat filteredFrame = new Mat();	// processed frame in which to find pupils
+		protected Mat filteredFrame = new Mat();	// processed frame in which to find Pupils
 		protected bool[] isFrameProcessed;          // has each frame been processed?
 		public bool AreAllFramesProcessed           // has all frames been processed?
 		{
@@ -167,7 +143,7 @@ namespace Eyetracking
 		// UI delegates/references
 		public SetStatusDelegate SetStatusDelegate { get; private set; }
 		public FrameProcessedDelegate UpdateFrameDelegate;
-		public FramesProcessedDelegate OnFramesPupilsProcessedDelegate; // delegate for when pupils are found in a chunk of frames
+		public FramesProcessedDelegate OnFramesPupilsProcessedDelegate; // delegate for when Pupils are found in a chunk of frames
 		public CancelPupilFindingDelegate CancelPupilFindingDelegate;	// delegate for interrupting pupil finding
 
 		public PupilFinder(string videoFileName, PupilFindingUserControlViewModel viewModel = null)
@@ -236,10 +212,10 @@ namespace Eyetracking
 		}
 
 		/// <summary>
-		/// Find pupils in some set of frames. Must be overridden in child classes.
+		/// Find Pupils in some set of frames. Must be overridden in child classes.
 		/// Will auto-pause if average confidence is below the threshold for the specified number of frames
 		/// </summary>
-		/// <param name="frames"> number of frames from current to find pupils for </param>
+		/// <param name="frames"> number of frames from current to find Pupils for </param>
 		/// <param name="threshold"> confidence threshold at which to auto-pause pupil finding</param>
 		/// <param name="thresholdFrames"> confidence threshold duration at which to auto pause pupil finding</param>
 		/// <param name="doNotStopForBlink"></param>
@@ -253,13 +229,13 @@ namespace Eyetracking
 
 
 		/// <summary>
-		/// Parses timestamps from the video
+		/// Parses Timestamps from the video
 		/// </summary>
 		public void ParseTimeStamps()
 		{
 			ViewModel.CanPlayVideo = false;
 			Seek(0);
-			SetStatusDelegate("Parsing timestamps 0%");
+			SetStatusDelegate("Parsing Timestamps 0%");
 			DateTime start = DateTime.Now;
 			BackgroundWorker worker = new BackgroundWorker
 			{
@@ -298,7 +274,7 @@ namespace Eyetracking
 
 			worker.ProgressChanged += delegate (object sender, ProgressChangedEventArgs e)
 			{
-				SetStatusDelegate(string.Format("Parsing timestamps {0}%", e.ProgressPercentage));
+				SetStatusDelegate(string.Format("Parsing Timestamps {0}%", e.ProgressPercentage));
 				ViewModel.ProgressBarValue = e.ProgressPercentage;
 			};
 
@@ -320,9 +296,9 @@ namespace Eyetracking
 				for (i = 1; i < timeStamps.shape[0]; i++)
 				{
 					thisTime = timeStamps[i, 3] + 1000 * (timeStamps[i, 2] + 60 * timeStamps[i, 1] + 3600 * timeStamps[i, 0]);
-					if (thisTime <= lastTime)   // timestamps should always increment
+					if (thisTime <= lastTime)   // Timestamps should always increment
 					{
-						ShowMessageBox("Warning", "Parsed timestamps are not incrementing", icon: Icon.Warning);
+						ShowMessageBox("Warning", "Parsed Timestamps are not incrementing", icon: Icon.Warning);
 						break;
 					}
 				}
@@ -472,92 +448,6 @@ namespace Eyetracking
 			pupilLocations *= Num.NaN;    // use -1 to indicate pupil not yet found on this frame
 		}
 
-		/// <summary>
-		/// Returns the timestamp for a frame. We do this instead of making timestamps public
-		/// to prevent modifications
-		/// </summary>
-		/// <param name="frameNumber"></param>
-		/// <returns>tuple of <hour, minutes, seconds, milliseconds> timestamp</hour></returns>
-		public Tuple<int, int, int, int> GetTimestampForFrame(int frameNumber)
-		{
-			return new Tuple<int, int, int, int>(timeStamps[frameNumber, 0],
-												 timeStamps[frameNumber, 1],
-												 timeStamps[frameNumber, 2],
-												 timeStamps[frameNumber, 3]);
-		}
-
-		/// <summary>
-		/// Gets the median pupil location for a given range of frames
-		/// </summary>
-		/// <param name="startFrame"></param>
-		/// <param name="endFrame"></param>
-		/// <returns></returns>
-		public Point GetMedianPupilLocation(int startFrame, int endFrame)
-		{
-			if (startFrame < 0 || endFrame < 0 || endFrame < startFrame)
-				throw new ArgumentOutOfRangeException();
-
-			List<double> xPositions = new List<double>();
-			List<double> yPositions = new List<double>();
-			for (int i = startFrame; i < endFrame; i++)
-			{
-				double x = pupilLocations[i, 0];
-				double y = pupilLocations[i, 1];
-				if (Double.IsNaN(x)) continue;
-				xPositions.Add(x);
-				yPositions.Add(y);
-			}
-
-			return new Point(Median(xPositions), Median(yPositions));
-		}
-
-		/// <summary>
-		/// For a timestamp, gets the index of the closest frame
-		/// </summary>
-		/// <param name="timestamp">timestamp in HH:MM:SS.mmm format</param>
-		/// <returns>index of frame</returns>
-		public int TimeStampToFrameNumber(string timestamp)
-		{
-			if (timeStamps == null) // TODO: after calibration, this hangs because it's waiting on a lock, apparently on timeStamps
-				throw new InvalidOperationException();
-
-			Match match = Regex.Match(timestamp, "([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2}).([0-9]{1,3})");
-			if (!match.Success)
-				throw new ArgumentException();
-
-			// Groups[0] is entire string that matched the regex
-			int hour = int.Parse(match.Groups[1].Value);
-			int minute = int.Parse(match.Groups[2].Value);
-			int second = int.Parse(match.Groups[3].Value);
-			int millisecond = int.Parse(match.Groups[4].Value);
-
-			// iterate through all timestamps and get the timestamp with the lowest difference
-			int minIndex = 0;
-			int minDiff = int.MaxValue;	// difference in milliseconds from desired timestamp
-			//object comparisonLock = new object();
-
-			for (int i = 0; i < timeStamps.shape[0]; i++)
-			//Parallel.For(0, timeStamps.shape[0], i =>
-			{
-				int diff = (hour - timeStamps[i, 0]) * 3600 * 1000 +
-					(minute - timeStamps[i, 1]) * 60 * 1000 +
-					(second - timeStamps[i, 2]) * 1000 +
-					millisecond - timeStamps[i, 3];
-				if (diff < 0) diff *= -1;
-				//lock (comparisonLock)
-				//{
-				if (diff < minDiff)
-				{
-					minDiff = diff;
-						minIndex = i;
-				}
-				//}
-
-			}//);
-
-			return minIndex;
-		}
-
 		// UI interaction code
 		// quick default delegates. Holdover from WPF implementation
 		// TODO: check if we still actually need the delegate pattern
@@ -652,12 +542,15 @@ namespace Eyetracking
 			return success;
 		}
 
-
-
 		protected void UpdateVideoTime(int frame)
 		{
 			CurrentFrameNumber = frame;
 			UpdateFrame();
+		}
+
+		public PupilInfo GetPupilInfo()
+		{
+			return new PupilInfo(pupilLocations, timeStamps, fps);
 		}
 	}
 }

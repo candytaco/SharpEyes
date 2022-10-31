@@ -8,6 +8,8 @@ using Avalonia.Media;
 using ReactiveUI;
 using Eyetracking;
 using SharpEyes.Views;
+using Avalonia.Controls;
+using Num = NumSharp.np;
 
 namespace SharpEyes.ViewModels
 {
@@ -111,6 +113,13 @@ namespace SharpEyes.ViewModels
 			set => this.RaiseAndSetIfChanged(ref _shapesToDraw, value);
 		}
 
+		private PupilInfo _pupilInfo = null;
+		public PupilInfo PupilInfo
+		{
+			get => _pupilInfo;
+			set => this.RaiseAndSetIfChanged(ref _pupilInfo, value);
+		}
+
 		public CalibrationViewModel()
 		{
 			LoadCalibrationPupilsCommand = ReactiveCommand.Create(LoadCalibrationPupils);
@@ -131,9 +140,27 @@ namespace SharpEyes.ViewModels
 			});
 		}
 
-		public void LoadCalibrationPupils()
+		public async void LoadCalibrationPupils()
 		{
+			OpenFileDialog openFileDialog = new OpenFileDialog()
+			{
+				Title = "Load Pupils...",
+				Filters = { new FileDialogFilter() { Name = "Numpy File (*.npy)", Extensions = { "npy" } } }
+			};
+			string[] fileName = await openFileDialog.ShowAsync(MainWindow);
 
+			if (fileName == null || fileName.Length == 0)
+				return;
+			string pupilsFile = fileName[0];
+
+			openFileDialog.Title = "Load Timestamps...";
+			fileName = await openFileDialog.ShowAsync(MainWindow);
+
+			if (fileName == null || fileName.Length == 0)
+				return;
+			string timestampsFile = fileName[0];
+
+			PupilInfo = new PupilInfo(Num.load(pupilsFile), Num.load(timestampsFile));
 		}
 
 		public void ImportCalibrationPupils()
