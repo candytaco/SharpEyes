@@ -23,7 +23,7 @@ namespace Eyetracking
 		{
 			base.FindPupils(Frames);
 			DateTime start = DateTime.Now;
-			SetStatusDelegate("Finding pupils 0/100%");
+			SetStatusDelegate("Finding Pupils 0/100%");
 			BackgroundWorker worker = new BackgroundWorker
 			{
 				WorkerReportsProgress = true,
@@ -54,7 +54,7 @@ namespace Eyetracking
 
 			worker.ProgressChanged += delegate (object sender, ProgressChangedEventArgs e)
 			{
-				SetStatusDelegate(string.Format("Finding pupils {0}%", e.ProgressPercentage));
+				SetStatusDelegate(string.Format("Finding Pupils {0}%", e.ProgressPercentage));
 			};
 
 			worker.RunWorkerCompleted += delegate (object sender, RunWorkerCompletedEventArgs e)

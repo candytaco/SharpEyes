@@ -50,7 +50,7 @@
           </Button>
           <ToggleSwitch Margin="0 4" Name="AutoAddTemplateToggleSwitch"
                         OnContent="Auto add" OffContent="Auto add"
-                        ToolTip.Tip="Automatically add manually edited pupils as templates"
+                        ToolTip.Tip="Automatically add manually edited Pupils as templates"
                         IsThreeState="False" IsChecked="{Binding AutoAddNewTemplate}"
                         DockPanel.Dock="Top"/>
           <Button Margin="0 4" Name="RemoveTemplateButton" DockPanel.Dock="Top"

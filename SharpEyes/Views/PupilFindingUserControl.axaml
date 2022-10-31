@@ -211,12 +211,12 @@
                     IsEnabled="{Binding CanPlayVideo}"
                     IsExpanded="{Binding ShowTimestampParsing}" Name="TimestampParsingExpander">
             <StackPanel>
-              <ToggleSwitch Name="AutoReadTimestampsToggleSwitch" OffContent="Auto read timestamps" OnContent="Auto read timestamps" IsChecked="{Binding AutoReadTimestamps}"/>
+              <ToggleSwitch Name="AutoReadTimestampsToggleSwitch" OffContent="Auto read Timestamps" OnContent="Auto read Timestamps" IsChecked="{Binding AutoReadTimestamps}"/>
               <StackPanel Orientation="Horizontal" Margin="0 8 0 0 " HorizontalAlignment="Center">
                 <Button Name="ReadTimestampButton" Width="150" HorizontalContentAlignment="Center" Margin="2 0 2 0"
-                        Command="{Binding ReadTimestampsCommand}">Read timestamps</Button>
+                        Command="{Binding ReadTimestampsCommand}">Read Timestamps</Button>
                 <Button Name="LoadTimestampButton" Width="150" HorizontalContentAlignment="Center" Margin="2 0 2 0"
-                        Command="{Binding LoadTimestampsCommand}">Load timestamps</Button>
+                        Command="{Binding LoadTimestampsCommand}">Load Timestamps</Button>
               </StackPanel>
             </StackPanel>
           </Expander>

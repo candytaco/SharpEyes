@@ -43,12 +43,6 @@ namespace SharpEyes.ViewModels
 		public ReactiveCommand<Unit, Unit>? LoadTimestampsCommand { get; } = null;
 		public ReactiveCommand<Unit, Unit>? SaveDataCommand { get; private set; } = null;
 
-		// == window reference. needed for showing dialogs ==
-		public Window? MainWindow =>
-			Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
-				? desktop.MainWindow
-				: null;
-
 		// == UI elements ==
 		private EditingState _editingState = EditingState.None;
 		public EditingState EditingState
@@ -343,7 +337,7 @@ namespace SharpEyes.ViewModels
 		public double BlinkRejectionBlinkSigma { get; set; } = 2.0;
 		public double BlinkRejectionPupilSigma { get; set; } = 2.0;
 
-		// timestamps
+		// Timestamps
 		private bool _showTimestampParsing = false;
 
 		public bool ShowTimestampParsing
@@ -581,7 +575,7 @@ namespace SharpEyes.ViewModels
 			{
 				OpenFileDialog openFileDialog = new OpenFileDialog()
 				{
-					Title = "Load timestamps...",
+					Title = "Load Timestamps...",
 					Filters = { new FileDialogFilter() { Name = "Numpy File (*.npy)", Extensions = { "npy" } } }
 				};
 				string[] fileName = await openFileDialog.ShowAsync(MainWindow);
