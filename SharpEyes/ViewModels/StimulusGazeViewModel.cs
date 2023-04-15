@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Text;
@@ -505,12 +506,49 @@ namespace SharpEyes.ViewModels
 				Name = "Numpy file",
 				Extensions = { "npy" }
 			});
+			openFileDialog.Filters.Add(new FileDialogFilter()
+			{
+				Name = "Comma-separated values",
+				Extensions = { "csv" }
+			});
 			string[] fileName = await openFileDialog.ShowAsync(MainWindow);
 
 			if (fileName == null || fileName.Length == 0)
 				return;
+			if (System.IO.Path.GetExtension(fileName[0]) == ".npy")
+				gazeLocations = Num.load(fileName[0]);
+			else // parse a csv file
+			{
+				using StreamReader csvFile = new StreamReader(fileName[0]);
+				string line = csvFile.ReadLine();
+				List<double[]> values = new List<double[]>();
+				bool isFirstLine = true;
+				while (line != null)
+				{
+					try
+					{
+						string[] tokens = line.Split(',');
+						double x = Double.Parse(tokens[0]);
+						double y = Double.Parse(tokens[1]);
+						values.Add(new double[]{x, y});
+						isFirstLine = false;
+						line = csvFile.ReadLine();
+					}
+					catch (Exception e)
+					{	// so if the first line is a header, we throw it away,
+						// but if there's a parsing error anywhere else we raise it
+						if (!isFirstLine)
+							throw;
+					}
+				}
 
-			gazeLocations = Num.load(fileName[0]);
+				gazeLocations = new NDArray(NPTypeCode.Double, Shape.Matrix(values.Count, 2));
+				for (int i = 0; i < values.Count; i++)
+				{
+					gazeLocations[i, 0] = values[i][0];
+					gazeLocations[i, 1] = values[i][1];
+				}
+			}
 			IsGazeLoaded = true;
 			gazeFileName = fileName[0];
 		}
